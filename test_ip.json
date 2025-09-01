@@ -1,0 +1,6 @@
+{
+  "ip_address": "192.168.1.100",
+  "department_id": 1,
+  "network_segment_id": 1,
+  "description": "测试IP地址"
+}

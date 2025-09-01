@@ -1,0 +1,40 @@
+# FastAPI框架及相关依赖
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# 数据库相关
+sqlalchemy==2.0.23
+pymysql==1.1.0
+mysqlclient==2.2.0
+alembic==1.12.1
+
+# 数据验证和序列化
+pydantic==2.5.0
+pydantic[email]==2.5.0
+
+# 环境配置
+python-dotenv==1.0.0
+
+# Excel文件处理
+openpyxl==3.1.2
+pandas==2.1.4
+
+# 异步文件操作
+aiofiles==23.2.1
+
+# HTTP客户端
+httpx==0.25.2
+
+# 日期时间处理
+python-dateutil==2.8.2
+
+# JSON处理
+orjson==3.9.10
+
+# 密码加密
+bcrypt==4.0.1
+passlib==1.7.4
+
+# JWT令牌
+python-jose[cryptography]==3.3.0
