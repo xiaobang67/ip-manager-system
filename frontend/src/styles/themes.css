@@ -1,0 +1,405 @@
+/* 主题系统 CSS 变量定义 */
+
+/* 默认主题（明亮主题） */
+:root {
+    /* 主要颜色 */
+    --primary-color: #409eff;
+    --primary-light: #79bbff;
+    --primary-dark: #337ecc;
+
+    /* 背景颜色 */
+    --bg-color: #ffffff;
+    --bg-color-page: #f5f7fa;
+    --bg-color-overlay: #ffffff;
+
+    /* 文本颜色 */
+    --text-color-primary: #303133;
+    --text-color-regular: #606266;
+    --text-color-secondary: #909399;
+    --text-color-placeholder: #c0c4cc;
+
+    /* 边框颜色 */
+    --border-color: #dcdfe6;
+    --border-color-light: #e4e7ed;
+    --border-color-lighter: #ebeef5;
+    --border-color-extra-light: #f2f6fc;
+
+    /* 填充颜色 */
+    --fill-color: #f0f2f5;
+    --fill-color-light: #f5f7fa;
+    --fill-color-lighter: #fafafa;
+    --fill-color-extra-light: #fafcff;
+    --fill-color-blank: #ffffff;
+
+    /* 成功颜色 */
+    --success-color: #67c23a;
+    --success-light: #95d475;
+    --success-lighter: #b3e19d;
+
+    /* 警告颜色 */
+    --warning-color: #e6a23c;
+    --warning-light: #ebb563;
+    --warning-lighter: #f0c78a;
+
+    /* 危险颜色 */
+    --danger-color: #f56c6c;
+    --danger-light: #f78989;
+    --danger-lighter: #fab6b6;
+
+    /* 信息颜色 */
+    --info-color: #909399;
+    --info-light: #a6a9ad;
+    --info-lighter: #c8c9cc;
+
+    /* 阴影 */
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+    --box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    --box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+    --box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.12);
+
+    /* 遮罩 */
+    --mask-color: rgba(255, 255, 255, 0.9);
+    --overlay-color: rgba(0, 0, 0, 0.8);
+}
+
+/* 暗黑主题 */
+[data-theme="dark"] {
+    /* 主要颜色 */
+    --primary-color: #409eff;
+    --primary-light: #79bbff;
+    --primary-dark: #337ecc;
+
+    /* 背景颜色 */
+    --bg-color: #1d1e1f;
+    --bg-color-page: #0a0a0a;
+    --bg-color-overlay: #1d1e1f;
+
+    /* 文本颜色 */
+    --text-color-primary: #e5eaf3;
+    --text-color-regular: #cfd3dc;
+    --text-color-secondary: #a3a6ad;
+    --text-color-placeholder: #8d9095;
+
+    /* 边框颜色 */
+    --border-color: #4c4d4f;
+    --border-color-light: #414243;
+    --border-color-lighter: #363637;
+    --border-color-extra-light: #2b2b2c;
+
+    /* 填充颜色 */
+    --fill-color: #2d2e2f;
+    --fill-color-light: #262727;
+    --fill-color-lighter: #1d1e1f;
+    --fill-color-extra-light: #191a1b;
+    --fill-color-blank: #141414;
+
+    /* 成功颜色 */
+    --success-color: #67c23a;
+    --success-light: #95d475;
+    --success-lighter: #b3e19d;
+
+    /* 警告颜色 */
+    --warning-color: #e6a23c;
+    --warning-light: #ebb563;
+    --warning-lighter: #f0c78a;
+
+    /* 危险颜色 */
+    --danger-color: #f56c6c;
+    --danger-light: #f78989;
+    --danger-lighter: #fab6b6;
+
+    /* 信息颜色 */
+    --info-color: #909399;
+    --info-light: #a6a9ad;
+    --info-lighter: #c8c9cc;
+
+    /* 阴影 */
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.48), 0 0 6px rgba(0, 0, 0, 0.16);
+    --box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
+    --box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.48), 0 0 6px rgba(0, 0, 0, 0.16);
+    --box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.72), 0 0 6px rgba(0, 0, 0, 0.32);
+
+    /* 遮罩 */
+    --mask-color: rgba(0, 0, 0, 0.8);
+    --overlay-color: rgba(0, 0, 0, 0.8);
+}
+
+/* 全局样式应
+用主题变量 */
+body {
+    background-color: var(--bg-color-page);
+    color: var(--text-color-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 卡片样式 */
+.el-card {
+    background-color: var(--bg-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color-primary) !important;
+}
+
+.el-card__header {
+    background-color: var(--bg-color) !important;
+    border-bottom-color: var(--border-color-lighter) !important;
+    color: var(--text-color-primary) !important;
+}
+
+.el-card__body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color-primary) !important;
+}
+
+/* 表格样式 */
+.el-table {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color-primary) !important;
+}
+
+.el-table th.el-table__cell {
+    background-color: var(--fill-color) !important;
+    color: var(--text-color-primary) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+.el-table td.el-table__cell {
+    border-bottom-color: var(--border-color-lighter) !important;
+    color: var(--text-color-regular) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+    background-color: var(--fill-color-light) !important;
+}
+
+.el-table__body tr:hover>td.el-table__cell {
+    background-color: var(--fill-color) !important;
+}
+
+/* 表单样式 */
+.el-form-item__label {
+    color: var(--text-color-primary) !important;
+}
+
+.el-input__wrapper {
+    background-color: var(--bg-color) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 0 0 1px var(--border-color) inset !important;
+}
+
+.el-input__wrapper:hover {
+    border-color: var(--border-color-light) !important;
+    box-shadow: 0 0 0 1px var(--border-color-light) inset !important;
+}
+
+.el-input__wrapper.is-focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 1px var(--primary-color) inset !important;
+}
+
+.el-input__inner {
+    color: var(--text-color-primary) !important;
+    background-color: transparent !important;
+}
+
+.el-input__inner::placeholder {
+    color: var(--text-color-placeholder) !important;
+}
+
+/* 选择器样式 */
+.el-select-dropdown {
+    background-color: var(--bg-color-overlay) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: var(--box-shadow-light) !important;
+}
+
+.el-select-dropdown__item {
+    color: var(--text-color-regular) !important;
+}
+
+.el-select-dropdown__item:hover {
+    background-color: var(--fill-color) !important;
+}
+
+.el-select-dropdown__item.selected {
+    color: var(--primary-color) !important;
+    background-color: var(--fill-color-light) !important;
+}
+
+/* 对话框样式 */
+.el-dialog {
+    background-color: var(--bg-color) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: var(--box-shadow-light) !important;
+}
+
+.el-dialog__header {
+    background-color: var(--bg-color) !important;
+    border-bottom-color: var(--border-color-lighter) !important;
+}
+
+.el-dialog__title {
+    color: var(--text-color-primary) !important;
+}
+
+.el-dialog__body {
+    color: var(--text-color-regular) !important;
+}
+
+/* 菜单样式 */
+.el-menu {
+    background-color: var(--bg-color) !important;
+    border-right-color: var(--border-color) !important;
+}
+
+.el-menu-item {
+    color: var(--text-color-regular) !important;
+}
+
+.el-menu-item:hover {
+    background-color: var(--fill-color) !important;
+    color: var(--primary-color) !important;
+}
+
+.el-menu-item.is-active {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+/* 标签页样式 */
+.el-tabs__header {
+    background-color: var(--bg-color) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+.el-tabs__nav {
+    background-color: var(--bg-color) !important;
+}
+
+.el-tabs__item {
+    color: var(--text-color-regular) !important;
+    border-color: var(--border-color) !important;
+}
+
+.el-tabs__item:hover {
+    color: var(--primary-color) !important;
+}
+
+.el-tabs__item.is-active {
+    color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+}
+
+.el-tabs__content {
+    color: var(--text-color-regular) !important;
+}
+
+/* 分页样式 */
+.el-pagination {
+    color: var(--text-color-regular) !important;
+}
+
+.el-pagination button {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color-regular) !important;
+    border-color: var(--border-color) !important;
+}
+
+.el-pagination button:hover {
+    color: var(--primary-color) !important;
+}
+
+.el-pagination button.is-active {
+    color: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* 加载样式 */
+.el-loading-mask {
+    background-color: var(--mask-color) !important;
+}
+
+/* 消息提示样式 */
+.el-message {
+    background-color: var(--bg-color-overlay) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color-primary) !important;
+    box-shadow: var(--box-shadow-light) !important;
+}
+
+/* 通知样式 */
+.el-notification {
+    background-color: var(--bg-color-overlay) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color-primary) !important;
+    box-shadow: var(--box-shadow-light) !important;
+}
+
+/* 抽屉样式 */
+.el-drawer {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color-primary) !important;
+}
+
+.el-drawer__header {
+    color: var(--text-color-primary) !important;
+    border-bottom-color: var(--border-color-lighter) !important;
+}
+
+/* 工具提示样式 */
+.el-tooltip__popper {
+    background-color: var(--bg-color-overlay) !important;
+    color: var(--text-color-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--fill-color-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-color-placeholder);
+}
+
+/* 主题切换动画 */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 自定义组件样式 */
+.theme-toggle-button {
+    background-color: var(--bg-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color-regular) !important;
+}
+
+.theme-toggle-button:hover {
+    background-color: var(--fill-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+/* 页面容器样式 */
+.page-container {
+    background-color: var(--bg-color-page);
+    min-height: 100vh;
+    color: var(--text-color-primary);
+}
+
+.content-container {
+    background-color: var(--bg-color);
+    border-color: var(--border-color);
+    box-shadow: var(--box-shadow);
+}

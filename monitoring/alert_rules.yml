@@ -1,0 +1,345 @@
+# IPAM系统告警规则配置
+
+groups:
+  # 系统资源告警
+  - name: system_alerts
+    rules:
+      # CPU使用率告警
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "CPU使用率过高"
+          description: "实例 {{ $labels.instance }} CPU使用率已达到 {{ $value }}%，持续时间超过5分钟"
+
+      # 内存使用率告警
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "内存使用率过高"
+          description: "实例 {{ $labels.instance }} 内存使用率已达到 {{ $value }}%"
+
+      # 磁盘空间告警
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "磁盘空间不足"
+          description: "实例 {{ $labels.instance }} 磁盘 {{ $labels.mountpoint }} 使用率已达到 {{ $value }}%"
+
+      # 磁盘IO告警
+      - alert: HighDiskIO
+        expr: irate(node_disk_io_time_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "磁盘IO使用率过高"
+          description: "实例 {{ $labels.instance }} 磁盘IO使用率已达到 {{ $value }}%"
+
+  # 应用服务告警
+  - name: application_alerts
+    rules:
+      # 应用服务不可用
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: application
+        annotations:
+          summary: "服务不可用"
+          description: "服务 {{ $labels.job }} 实例 {{ $labels.instance }} 已停止响应"
+
+      # HTTP响应时间过长
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: application
+        annotations:
+          summary: "HTTP响应时间过长"
+          description: "95%的HTTP请求响应时间超过2秒，当前值: {{ $value }}秒"
+
+      # HTTP错误率过高
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: application
+        annotations:
+          summary: "HTTP错误率过高"
+          description: "HTTP 5xx错误率已达到 {{ $value }}%"
+
+      # 应用连接数过多
+      - alert: TooManyConnections
+        expr: nginx_connections_active > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "Nginx活跃连接数过多"
+          description: "Nginx活跃连接数已达到 {{ $value }}"
+
+  # 数据库告警
+  - name: database_alerts
+    rules:
+      # MySQL服务不可用
+      - alert: MySQLDown
+        expr: mysql_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mysql
+        annotations:
+          summary: "MySQL服务不可用"
+          description: "MySQL实例 {{ $labels.instance }} 无法连接"
+
+      # MySQL连接数过多
+      - alert: MySQLTooManyConnections
+        expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: mysql
+        annotations:
+          summary: "MySQL连接数过多"
+          description: "MySQL连接使用率已达到 {{ $value }}%"
+
+      # MySQL慢查询过多
+      - alert: MySQLSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: mysql
+        annotations:
+          summary: "MySQL慢查询过多"
+          description: "MySQL慢查询频率: {{ $value }} 次/秒"
+
+      # MySQL复制延迟
+      - alert: MySQLReplicationLag
+        expr: mysql_slave_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: mysql
+        annotations:
+          summary: "MySQL复制延迟"
+          description: "MySQL从库延迟 {{ $value }} 秒"
+
+      # InnoDB缓冲池命中率低
+      - alert: MySQLInnoDBBufferPoolHitRate
+        expr: (mysql_global_status_innodb_buffer_pool_read_requests - mysql_global_status_innodb_buffer_pool_reads) / mysql_global_status_innodb_buffer_pool_read_requests * 100 < 95
+        for: 10m
+        labels:
+          severity: warning
+          service: mysql
+        annotations:
+          summary: "InnoDB缓冲池命中率低"
+          description: "InnoDB缓冲池命中率仅为 {{ $value }}%，建议增加innodb_buffer_pool_size"
+
+  # Redis告警
+  - name: redis_alerts
+    rules:
+      # Redis服务不可用
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis服务不可用"
+          description: "Redis实例 {{ $labels.instance }} 无法连接"
+
+      # Redis内存使用率过高
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis内存使用率过高"
+          description: "Redis内存使用率已达到 {{ $value }}%"
+
+      # Redis连接数过多
+      - alert: RedisTooManyConnections
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis连接数过多"
+          description: "Redis当前连接数: {{ $value }}"
+
+      # Redis键过期率异常
+      - alert: RedisHighEvictionRate
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis键过期率异常"
+          description: "Redis键过期率: {{ $value }} 个/秒"
+
+  # 业务逻辑告警
+  - name: business_alerts
+    rules:
+      # IP地址使用率过高
+      - alert: IPUtilizationHigh
+        expr: (ipam_allocated_ips / ipam_total_ips) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: ipam
+        annotations:
+          summary: "IP地址使用率过高"
+          description: "网段 {{ $labels.subnet }} IP使用率已达到 {{ $value }}%"
+
+      # 网段IP地址即将耗尽
+      - alert: SubnetIPsAlmostExhausted
+        expr: (ipam_available_ips_per_subnet < 10) and (ipam_available_ips_per_subnet > 0)
+        for: 1m
+        labels:
+          severity: critical
+          service: ipam
+        annotations:
+          summary: "网段IP地址即将耗尽"
+          description: "网段 {{ $labels.subnet }} 仅剩 {{ $value }} 个可用IP地址"
+
+      # IP冲突检测
+      - alert: IPConflictDetected
+        expr: increase(ipam_ip_conflicts_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ipam
+        annotations:
+          summary: "检测到IP地址冲突"
+          description: "在过去5分钟内检测到 {{ $value }} 个IP地址冲突"
+
+      # 异常登录尝试
+      - alert: SuspiciousLoginAttempts
+        expr: rate(ipam_failed_login_attempts_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "异常登录尝试"
+          description: "来自 {{ $labels.source_ip }} 的登录失败率: {{ $value }} 次/秒"
+
+      # 数据库操作异常
+      - alert: DatabaseOperationErrors
+        expr: rate(ipam_database_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "数据库操作异常"
+          description: "数据库操作错误率: {{ $value }} 次/秒"
+
+  # 容器告警
+  - name: container_alerts
+    rules:
+      # 容器重启频繁
+      - alert: ContainerRestartingTooOften
+        expr: rate(container_last_seen[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "容器重启频繁"
+          description: "容器 {{ $labels.name }} 在过去5分钟内重启了 {{ $value }} 次"
+
+      # 容器CPU使用率过高
+      - alert: ContainerCPUUsageHigh
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "容器CPU使用率过高"
+          description: "容器 {{ $labels.name }} CPU使用率已达到 {{ $value }}%"
+
+      # 容器内存使用率过高
+      - alert: ContainerMemoryUsageHigh
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "容器内存使用率过高"
+          description: "容器 {{ $labels.name }} 内存使用率已达到 {{ $value }}%"
+
+  # 网络告警
+  - name: network_alerts
+    rules:
+      # 网络流量异常
+      - alert: NetworkTrafficHigh
+        expr: rate(node_network_receive_bytes_total[5m]) > 100 * 1024 * 1024  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "网络接收流量过高"
+          description: "网络接口 {{ $labels.device }} 接收流量: {{ $value | humanize }}B/s"
+
+      # 网络错误包过多
+      - alert: NetworkErrorsHigh
+        expr: rate(node_network_receive_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "网络错误包过多"
+          description: "网络接口 {{ $labels.device }} 错误包率: {{ $value }} 个/秒"
+
+  # SSL证书告警
+  - name: ssl_alerts
+    rules:
+      # SSL证书即将过期
+      - alert: SSLCertificateExpiringSoon
+        expr: (ssl_certificate_expiry_seconds - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          service: ssl
+        annotations:
+          summary: "SSL证书即将过期"
+          description: "域名 {{ $labels.instance }} 的SSL证书将在 {{ $value }} 天后过期"
+
+      # SSL证书已过期
+      - alert: SSLCertificateExpired
+        expr: ssl_certificate_expiry_seconds - time() < 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ssl
+        annotations:
+          summary: "SSL证书已过期"
+          description: "域名 {{ $labels.instance }} 的SSL证书已过期"

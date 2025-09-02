@@ -1,0 +1,46 @@
+# FastAPI and ASGI server
+fastapi==0.103.0
+uvicorn[standard]==0.23.2
+
+# Database
+sqlalchemy==2.0.20
+alembic==1.11.3
+pymysql==1.1.0
+cryptography==41.0.4
+
+# Redis
+redis==4.6.0
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+bleach==6.0.0
+
+# Validation and serialization
+pydantic==2.3.0
+pydantic-settings==2.0.3
+
+# HTTP client
+httpx==0.24.1
+
+# Utilities
+python-dotenv==1.0.0
+structlog==23.1.0
+
+# Report generation
+pandas==2.0.3
+openpyxl==3.1.2
+reportlab==4.0.4
+
+# Development and Testing
+pytest==7.4.0
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.11.1
+pytest-xdist==3.3.1
+pytest-html==3.2.0
+pytest-benchmark==4.0.0
+factory-boy==3.3.0
+faker==19.3.1
+coverage==7.3.0
