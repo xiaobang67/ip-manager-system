@@ -8,18 +8,24 @@ import redis
 from typing import List, Optional
 from pydantic import BaseModel
 
-# 导入API扩展
-from api_extensions import add_missing_endpoints
-
-# 暂时禁用API v1路由导入，避免依赖问题
-API_V1_AVAILABLE = False
-
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# 导入API扩展
+from api_extensions import add_missing_endpoints
+
+# 尝试启用API v1路由
+try:
+    from app.api.v1.api import api_router
+    API_V1_AVAILABLE = True
+    logger.info("API v1 router loaded successfully")
+except ImportError as e:
+    logger.warning(f"API v1 router not available: {e}")
+    API_V1_AVAILABLE = False
 
 # 数据库配置
 DB_CONFIG = {
@@ -29,7 +35,8 @@ DB_CONFIG = {
     'database': os.getenv('DB_NAME', 'ipam'),
     'port': int(os.getenv('DB_PORT', '3306')),
     'charset': 'utf8mb4',
-    'cursorclass': pymysql.cursors.DictCursor
+    'cursorclass': pymysql.cursors.DictCursor,
+    'use_unicode': True
 }
 
 # Redis配置
@@ -100,6 +107,11 @@ def get_db_connection():
     """获取数据库连接"""
     try:
         connection = pymysql.connect(**DB_CONFIG)
+        # 确保连接使用UTF-8字符集
+        with connection.cursor() as cursor:
+            cursor.execute("SET NAMES utf8mb4")
+            cursor.execute("SET CHARACTER SET utf8mb4")
+            cursor.execute("SET character_set_connection=utf8mb4")
         return connection
     except Exception as e:
         logger.error(f"Database connection failed: {e}")
@@ -254,16 +266,28 @@ async def create_subnet(subnet: SubnetCreate):
     finally:
         connection.close()
 
-@app.get("/api/v1/subnets", response_model=List[SubnetResponse])
+class SubnetListResponse(BaseModel):
+    subnets: List[SubnetResponse]
+    total: int
+    page: int
+    size: int
+
+@app.get("/api/v1/subnets", response_model=SubnetListResponse)
 async def list_subnets(skip: int = 0, limit: int = 50):
     """获取网段列表"""
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # 获取总数
+            cursor.execute("SELECT COUNT(*) as total FROM subnets")
+            total_result = cursor.fetchone()
+            total = total_result['total']
+            
+            # 获取分页数据
             cursor.execute("SELECT * FROM subnets LIMIT %s OFFSET %s", (limit, skip))
             results = cursor.fetchall()
             
-            return [
+            subnets = [
                 SubnetResponse(
                     id=row['id'],
                     network=row['network'],
@@ -275,6 +299,13 @@ async def list_subnets(skip: int = 0, limit: int = 50):
                     created_at=str(row['created_at'])
                 ) for row in results
             ]
+            
+            return SubnetListResponse(
+                subnets=subnets,
+                total=total,
+                page=skip // limit + 1,
+                size=limit
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch subnets: {str(e)}")
     finally:

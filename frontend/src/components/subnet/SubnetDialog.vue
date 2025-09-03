@@ -148,23 +148,61 @@ export default {
       network: [
         { required: true, message: '请输入网段', trigger: 'blur' },
         {
-          pattern: /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/,
-          message: '请输入正确的CIDR格式',
+          validator: (rule, value, callback) => {
+            if (!value) {
+              callback()
+              return
+            }
+            // 支持CIDR格式或普通IP地址格式
+            const cidrPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/
+            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/
+            if (cidrPattern.test(value) || ipPattern.test(value)) {
+              callback()
+            } else {
+              callback(new Error('请输入正确的网段格式（如 192.168.1.0/24 或 192.168.1.0）'))
+            }
+          },
           trigger: 'blur'
         }
       ],
       netmask: [
-        { required: true, message: '请输入子网掩码', trigger: 'blur' },
         {
-          pattern: /^(\d{1,3}\.){3}\d{1,3}$/,
-          message: '请输入正确的子网掩码格式',
+          validator: (rule, value, callback) => {
+            if (!value) {
+              // 如果网段包含CIDR格式，子网掩码可以为空
+              if (form.network && form.network.includes('/')) {
+                callback()
+                return
+              }
+              callback(new Error('请输入子网掩码'))
+              return
+            }
+            // 支持点分十进制格式或CIDR前缀长度
+            const dotDecimalPattern = /^(\d{1,3}\.){3}\d{1,3}$/
+            const cidrPattern = /^\d{1,2}$/
+            if (dotDecimalPattern.test(value) || cidrPattern.test(value)) {
+              callback()
+            } else {
+              callback(new Error('请输入正确的子网掩码格式（如 255.255.255.0 或 24）'))
+            }
+          },
           trigger: 'blur'
         }
       ],
       gateway: [
         {
-          pattern: /^(\d{1,3}\.){3}\d{1,3}$/,
-          message: '请输入正确的IP地址格式',
+          validator: (rule, value, callback) => {
+            if (!value) {
+              callback()
+              return
+            }
+            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/
+            if (ipPattern.test(value)) {
+              callback()
+            } else {
+              callback(new Error('请输入正确的IP地址格式'))
+            }
+          },
           trigger: 'blur'
         }
       ],
@@ -194,17 +232,27 @@ export default {
       }
 
       try {
+        // 自动填充子网掩码
+        if (form.network.includes('/') && !form.netmask) {
+          const parts = form.network.split('/')
+          if (parts.length === 2) {
+            form.netmask = parts[1]
+          }
+        }
+
         const response = await subnetApi.validateSubnet({
           network: form.network,
+          netmask: form.netmask,
+          gateway: form.gateway,
           exclude_id: props.mode === 'edit' ? props.subnet?.id : null
         })
 
-        networkValidation.isValid = response.data.is_valid
-        networkValidation.message = response.data.message
-        networkValidation.overlapping_subnets = response.data.overlapping_subnets || []
+        networkValidation.isValid = response.is_valid
+        networkValidation.message = response.message
+        networkValidation.overlapping_subnets = response.overlapping_subnets || []
       } catch (error) {
         networkValidation.isValid = false
-        networkValidation.message = '网段验证失败'
+        networkValidation.message = error.response?.data?.detail || '网段验证失败'
         networkValidation.overlapping_subnets = []
       }
     }, 500)

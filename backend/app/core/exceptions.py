@@ -104,7 +104,21 @@ class ErrorHandler:
     
     def setup_logger(self):
         """设置错误日志记录器"""
-        handler = logging.FileHandler("logs/errors.log")
+        import os
+        
+        # 确保logs目录存在
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            try:
+                os.makedirs(log_dir)
+            except OSError:
+                # 如果无法创建目录，使用控制台日志
+                handler = logging.StreamHandler()
+            else:
+                handler = logging.FileHandler("logs/errors.log")
+        else:
+            handler = logging.FileHandler("logs/errors.log")
+            
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )

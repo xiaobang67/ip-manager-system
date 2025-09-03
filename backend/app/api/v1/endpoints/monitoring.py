@@ -9,7 +9,8 @@ from datetime import datetime
 from app.core.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.services.monitoring_service import MonitoringService
-from app.services.report_service import ReportService
+# 暂时禁用report_service，避免pandas版本兼容性问题
+# from app.services.report_service import ReportService
 from app.services.alert_service import AlertService
 from app.schemas.monitoring import (
     IPUtilizationStats,
@@ -207,41 +208,42 @@ async def check_alerts(
     return {"message": "警报检查已启动"}
 
 
-@router.post("/reports/generate", response_model=ReportResponse)
-async def generate_report(
-    report_request: ReportRequest,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    生成报告
-    """
-    report_service = ReportService(db)
-    return report_service.generate_report(report_request, current_user.id, background_tasks)
+# 暂时禁用报告相关端点，避免pandas版本兼容性问题
+# @router.post("/reports/generate", response_model=ReportResponse)
+# async def generate_report(
+#     report_request: ReportRequest,
+#     background_tasks: BackgroundTasks,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     """
+#     生成报告
+#     """
+#     report_service = ReportService(db)
+#     return report_service.generate_report(report_request, current_user.id, background_tasks)
 
 
-@router.get("/reports/{report_id}")
-async def get_report_status(
-    report_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    获取报告生成状态
-    """
-    report_service = ReportService(db)
-    return report_service.get_report_status(report_id)
+# @router.get("/reports/{report_id}")
+# async def get_report_status(
+#     report_id: str,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     """
+#     获取报告生成状态
+#     """
+#     report_service = ReportService(db)
+#     return report_service.get_report_status(report_id)
 
 
-@router.get("/reports/{report_id}/download")
-async def download_report(
-    report_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    下载报告文件
-    """
-    report_service = ReportService(db)
-    return report_service.download_report(report_id)
+# @router.get("/reports/{report_id}/download")
+# async def download_report(
+#     report_id: str,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     """
+#     下载报告文件
+#     """
+#     report_service = ReportService(db)
+#     return report_service.download_report(report_id)

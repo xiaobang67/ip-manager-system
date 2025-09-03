@@ -464,6 +464,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
 import customFieldsAPI from '@/api/customFields'
+import { safeGetCustomFields } from '@/utils/customFieldsDebug'
 import tagsAPI from '@/api/tags'
 import { debounce } from '@/utils/debounce'
 
@@ -542,10 +543,11 @@ export default {
 
     const loadCustomFields = async () => {
       try {
-        const response = await customFieldsAPI.getFields('ip')
-        customFields.value = response.data || []
+        // 使用安全的自定义字段加载方法
+        customFields.value = await safeGetCustomFields('ip')
       } catch (error) {
         console.error('加载自定义字段失败：', error)
+        // 错误信息已在safeGetCustomFields中处理
       }
     }
     

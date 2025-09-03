@@ -19,10 +19,10 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database
-    DATABASE_URL: str = "mysql+pymysql://ipam_user:ipam_pass123@localhost:3306/ipam"
+    DATABASE_URL: str = "mysql+pymysql://ipam_user:ipam_pass123@mysql:3306/ipam"
     
     # Redis
-    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_URL: str = "redis://redis:6379"
     
     # CORS
     ALLOWED_HOSTS: List[str] = ["*"]

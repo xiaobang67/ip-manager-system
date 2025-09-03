@@ -9,7 +9,8 @@ import json
 import io
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
-import pandas as pd
+# 暂时禁用pandas导入，避免numpy版本兼容性问题
+# import pandas as pd
 
 
 class AuditService:
@@ -391,30 +392,33 @@ class AuditService:
             wb.save(output)
             return output.getvalue()
         
-        # 转换为DataFrame
-        df_data = []
+        # 准备数据
+        processed_logs = []
         for log in logs:
             row = log.copy()
             row["old_values"] = json.dumps(log["old_values"]) if log["old_values"] else ""
             row["new_values"] = json.dumps(log["new_values"]) if log["new_values"] else ""
             row["created_at"] = log["created_at"].isoformat() if log["created_at"] else ""
-            df_data.append(row)
-        
-        df = pd.DataFrame(df_data)
+            processed_logs.append(row)
         
         # 创建Excel文件
         wb = Workbook()
         ws = wb.active
         ws.title = "Audit Logs"
         
-        # 添加表头
-        for col_num, column_title in enumerate(df.columns, 1):
-            ws.cell(row=1, column=col_num, value=column_title)
-        
-        # 添加数据
-        for row_num, row_data in enumerate(df.values, 2):
-            for col_num, cell_value in enumerate(row_data, 1):
-                ws.cell(row=row_num, column=col_num, value=str(cell_value))
+        # 获取列名
+        if processed_logs:
+            columns = list(processed_logs[0].keys())
+            
+            # 添加表头
+            for col_num, column_title in enumerate(columns, 1):
+                ws.cell(row=1, column=col_num, value=column_title)
+            
+            # 添加数据
+            for row_num, log in enumerate(processed_logs, 2):
+                for col_num, column in enumerate(columns, 1):
+                    value = log.get(column, "")
+                    ws.cell(row=row_num, column=col_num, value=str(value))
         
         output = io.BytesIO()
         wb.save(output)

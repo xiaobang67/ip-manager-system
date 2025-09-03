@@ -113,6 +113,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import customFieldsAPI from '@/api/customFields'
+import { safeGetCustomFields } from '@/utils/customFieldsDebug'
 
 export default {
   name: 'CustomFieldManager',
@@ -149,10 +150,11 @@ export default {
 
     const loadFields = async () => {
       try {
-        const response = await customFieldsAPI.getFields()
-        fields.value = response.data
+        // 使用安全的自定义字段加载方法
+        fields.value = await safeGetCustomFields()
       } catch (error) {
-        ElMessage.error('加载字段列表失败')
+        console.error('加载字段列表失败：', error)
+        // 错误信息已在safeGetCustomFields中处理
       }
     }
 

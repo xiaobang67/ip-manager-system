@@ -39,8 +39,14 @@ const routes = [
   {
     path: '/audit-logs',
     name: 'AuditLogs',
-    component: () => import('@/components/AuditLogsManagement.vue'),
+    component: () => import('@/views/AuditLogs.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/custom-fields-test',
+    name: 'CustomFieldsTest',
+    component: () => import('@/components/CustomFieldsTest.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

@@ -1,53 +1,5 @@
 <template>
   <div class="monitoring-dashboard">
-    <!-- 主要内容区域 -->
-    <div class="dashboard-content">
-      <!-- 左侧导航菜单 -->
-      <div class="sidebar-navigation">
-        <div class="nav-header">
-          <h2>IP地址管理系统</h2>
-          <p class="nav-description">企业网络资源管理平台</p>
-        </div>
-        
-        <div class="nav-menu">
-          <div class="nav-item" @click="navigateTo('/ip-management')">
-            <el-icon class="nav-icon"><Connection /></el-icon>
-            <span class="nav-text">IP管理</span>
-          </div>
-          <div class="nav-item" @click="navigateTo('/subnet-management')">
-            <el-icon class="nav-icon"><Grid /></el-icon>
-            <span class="nav-text">网段管理</span>
-          </div>
-          <div class="nav-item" @click="navigateTo('/user-management')" v-if="isAdmin">
-            <el-icon class="nav-icon"><User /></el-icon>
-            <span class="nav-text">用户管理</span>
-          </div>
-          <div class="nav-item" @click="navigateTo('/audit-logs')" v-if="isAdmin">
-            <el-icon class="nav-icon"><Document /></el-icon>
-            <span class="nav-text">审计日志</span>
-          </div>
-        </div>
-        
-        <!-- 用户信息 -->
-        <div class="user-section">
-          <el-dropdown @command="handleUserAction" placement="top-start">
-            <div class="user-info">
-              <el-icon class="user-avatar"><User /></el-icon>
-              <span class="username">{{ currentUser?.username || 'User' }}</span>
-              <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人资料</el-dropdown-item>
-                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </div>
-      
-      <!-- 右侧主要内容 -->
-      <div class="main-content">
 
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="stats-cards">
@@ -240,13 +192,11 @@
       </el-col>
     </el-row>
 
-        <!-- 报告生成对话框 -->
-        <ReportGenerationDialog 
-          v-model="showReportDialog"
-          @report-generated="handleReportGenerated"
-        />
-      </div>
-    </div>
+    <!-- 报告生成对话框 -->
+    <ReportGenerationDialog 
+      v-model="showReportDialog"
+      @report-generated="handleReportGenerated"
+    />
   </div>
 </template>
 
@@ -269,7 +219,16 @@ import ReportGenerationDialog from './ReportGenerationDialog.vue'
 export default {
   name: 'MonitoringDashboard',
   components: {
-    ReportGenerationDialog
+    ReportGenerationDialog,
+    Connection,
+    PieChart,
+    Grid,
+    Warning,
+    Refresh,
+    Document,
+    Setting,
+    User,
+    ArrowDown
   },
   setup() {
     const router = useRouter()
@@ -298,7 +257,7 @@ export default {
       loading.value = true
       try {
         const response = await getDashboardSummary()
-        Object.assign(dashboardData, response.data)
+        Object.assign(dashboardData, response)
         
         // 更新IP使用率图表
         await nextTick()
@@ -315,7 +274,7 @@ export default {
     const loadSubnetStats = async () => {
       try {
         const response = await getTopUtilizedSubnets(10)
-        topSubnets.value = response.data
+        topSubnets.value = response
       } catch (error) {
         ElMessage.error('加载网段统计失败')
         console.error('Subnet stats error:', error)
@@ -325,12 +284,20 @@ export default {
     // 加载分配趋势
     const loadAllocationTrends = async () => {
       try {
+        console.log('Loading allocation trends for days:', trendDays.value)
         const response = await getAllocationTrends(trendDays.value)
+        console.log('Allocation trends response:', response)
         await nextTick()
-        updateAllocationTrendChart(response.data)
+        if (response && Array.isArray(response)) {
+          console.log('Updating chart with data:', response)
+          updateAllocationTrendChart(response)
+        } else {
+          console.error('Invalid response data:', response)
+          ElMessage.error('分配趋势数据格式错误')
+        }
       } catch (error) {
-        ElMessage.error('加载分配趋势失败')
         console.error('Allocation trends error:', error)
+        ElMessage.error(`加载分配趋势失败: ${error.message || error}`)
       }
     }
 
@@ -339,7 +306,7 @@ export default {
       alertsLoading.value = true
       try {
         const response = await getAlertHistory({ limit: 10 })
-        recentAlerts.value = response.data
+        recentAlerts.value = response
       } catch (error) {
         ElMessage.error('加载警报历史失败')
         console.error('Alert history error:', error)
@@ -583,204 +550,7 @@ export default {
 
 <style scoped>
 .monitoring-dashboard {
-  height: 100vh;
-  overflow: hidden;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.dashboard-content {
-  display: flex;
-  height: 100%;
-}
-
-/* 左侧导航栏样式 */
-.sidebar-navigation {
-  width: 300px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-navigation::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-  pointer-events: none;
-}
-
-.nav-header {
-  padding: 35px 25px 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  position: relative;
-  z-index: 1;
-}
-
-.nav-header h2 {
-  margin: 0 0 10px 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.5px;
-}
-
-.nav-description {
-  margin: 0;
-  font-size: 14px;
-  opacity: 0.9;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 400;
-}
-
-.nav-menu {
-  flex: 1;
-  padding: 25px 0;
-  position: relative;
-  z-index: 1;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 18px 25px;
-  margin: 8px 15px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.nav-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  transform: translateX(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.nav-item:hover::before {
-  left: 100%;
-}
-
-.nav-item:active {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: translateX(4px);
-}
-
-.nav-icon {
-  font-size: 20px;
-  margin-right: 15px;
-  width: 24px;
-  display: flex;
-  justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.nav-item:hover .nav-icon {
-  transform: scale(1.1);
-}
-
-.nav-text {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.user-section {
-  padding: 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  position: relative;
-  z-index: 1;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  padding: 15px 18px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.user-info::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  transition: left 0.5s;
-}
-
-.user-info:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.user-info:hover::before {
-  left: 100%;
-}
-
-.user-avatar {
-  font-size: 22px;
-  margin-right: 12px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  transition: transform 0.3s ease;
-}
-
-.user-info:hover .user-avatar {
-  transform: scale(1.1);
-}
-
-.username {
-  flex: 1;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.dropdown-icon {
-  font-size: 14px;
-  opacity: 0.8;
-  transition: transform 0.3s ease;
-}
-
-.user-info:hover .dropdown-icon {
-  transform: rotate(180deg);
-}
-
-/* 右侧主要内容区域 */
-.main-content {
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
+  padding: 0;
   background: transparent;
 }
 
