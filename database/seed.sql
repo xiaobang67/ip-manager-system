@@ -1,7 +1,7 @@
 -- IPAM系统种子数据脚本
 -- 用于初始化系统的基础数据
 
-USE ipam_db;
+USE ipam;
 
 -- 禁用外键检查
 SET FOREIGN_KEY_CHECKS = 0;

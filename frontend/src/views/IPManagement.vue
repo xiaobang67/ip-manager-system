@@ -363,7 +363,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
-import { ipAPI, subnetAPI } from '@/api'
+import { ipAPI, subnetApi } from '@/api'
 import AdvancedSearch from '@/components/AdvancedSearch.vue'
 
 export default {
@@ -501,7 +501,7 @@ export default {
     
     const loadSubnets = async () => {
       try {
-        const response = await subnetAPI.getSubnets()
+        const response = await subnetApi.getSubnets()
         subnets.value = response.data || []
       } catch (error) {
         ElMessage.error('加载网段列表失败：' + error.message)

@@ -190,7 +190,7 @@ import {
   updateAlertRule,
   deleteAlertRule
 } from '@/api/monitoring'
-import { getSubnets } from '@/api/subnet'
+import { subnetApi } from '@/api/subnet'
 
 export default {
   name: 'AlertManagement',
@@ -263,7 +263,7 @@ export default {
     // 加载可用网段
     const loadAvailableSubnets = async () => {
       try {
-        const response = await getSubnets()
+        const response = await subnetApi.getSubnets()
         availableSubnets.value = response.data.items || response.data
       } catch (error) {
         console.error('Load subnets error:', error)

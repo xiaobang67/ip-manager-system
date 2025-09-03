@@ -1,7 +1,7 @@
 # 前端开发环境Dockerfile
 # 使用国内镜像源以提高构建速度
 
-FROM registry.cn-hangzhou.aliyuncs.com/library/node:16-alpine
+FROM node:16-alpine
 
 # 设置工作目录
 WORKDIR /app
@@ -22,13 +22,13 @@ COPY . .
 RUN npm run build
 
 # 使用Nginx提供静态文件服务
-FROM registry.cn-hangzhou.aliyuncs.com/library/nginx:alpine
+FROM nginx:alpine
 
 # 复制构建产物
 COPY --from=0 /app/dist /usr/share/nginx/html
 
-# 复制Nginx配置（如果有的话）
-# COPY nginx.conf /etc/nginx/nginx.conf
+# 复制Nginx配置
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # 暴露端口
 EXPOSE 80

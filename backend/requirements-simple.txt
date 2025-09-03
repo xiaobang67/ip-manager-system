@@ -1,0 +1,25 @@
+# 核心依赖
+fastapi==0.103.0
+uvicorn[standard]==0.23.2
+
+# 数据库
+sqlalchemy==2.0.20
+pymysql==1.1.0
+
+# Redis
+redis==4.6.0
+
+# 认证和安全
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# 验证和序列化
+pydantic>=2.0.0
+pydantic-settings==2.0.3
+
+# 工具
+python-dotenv==1.0.0
+
+# HTTP 客户端
+httpx==0.24.1

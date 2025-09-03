@@ -1,7 +1,7 @@
 # 后端开发环境Dockerfile
 # 使用国内镜像源以提高构建速度
 
-FROM registry.cn-hangzhou.aliyuncs.com/library/python:3.9-slim
+FROM python:3.9-slim
 
 # 设置工作目录
 WORKDIR /app
@@ -36,4 +36,4 @@ COPY . .
 EXPOSE 8000
 
 # 启动应用（开发模式）
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "enhanced_main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

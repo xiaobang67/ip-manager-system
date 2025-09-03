@@ -45,7 +45,7 @@
               <div class="stat-number">{{ statistics.role_distribution?.admin || 0 }}</div>
               <div class="stat-label">管理员</div>
             </div>
-            <el-icon class="stat-icon admin"><Crown /></el-icon>
+            <el-icon class="stat-icon admin"><Star /></el-icon>
           </el-card>
         </el-col>
         <el-col :span="6">
@@ -385,7 +385,7 @@ import {
   Refresh,
   User,
   UserFilled,
-  Crown,
+  Star,
   Lock
 } from '@element-plus/icons-vue'
 import {

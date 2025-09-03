@@ -242,8 +242,13 @@ const actions = {
       return true
     } catch (error) {
       console.error('Token verification error:', error)
-      commit('CLEAR_AUTH')
-      return false
+      // 只有在401错误时才清除认证信息，其他错误可能是网络问题
+      if (error.response?.status === 401) {
+        commit('CLEAR_AUTH')
+        return false
+      }
+      // 网络错误等情况，假设token仍然有效
+      return true
     }
   },
   

@@ -18,7 +18,7 @@ export default {
     userTheme: {
       handler(newTheme) {
         if (newTheme && newTheme !== this.currentTheme) {
-          this.setTheme(newTheme)
+          this.$store.dispatch('theme/initThemeFromUser', newTheme)
         }
       },
       immediate: true
@@ -30,20 +30,15 @@ export default {
     initializeTheme() {
       // 如果用户已登录且有主题偏好，使用用户偏好
       if (this.isAuthenticated && this.userTheme) {
-        this.setTheme(this.userTheme)
+        this.$store.dispatch('theme/initThemeFromUser', this.userTheme)
       } else {
-        // 否则使用本地存储的主题或默认主题
-        const savedTheme = localStorage.getItem('theme') || 'light'
-        this.setTheme(savedTheme)
+        // 否则使用默认主题
+        this.$store.dispatch('theme/setTheme', 'light')
       }
     }
   },
   created() {
     this.initializeTheme()
-  },
-  mounted() {
-    // 应用初始主题
-    this.setTheme(this.currentTheme)
   }
 }
 </script>
