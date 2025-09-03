@@ -3,6 +3,15 @@
     <!-- 顶部导航栏 -->
     <el-header class="app-header">
       <div class="header-left">
+        <!-- 侧边栏折叠按钮 -->
+        <el-button 
+          v-if="isAuthenticated"
+          type="text" 
+          class="sidebar-toggle"
+          @click="toggleSidebar"
+        >
+          <el-icon><Expand v-if="sidebarCollapsed" /><Fold v-else /></el-icon>
+        </el-button>
         <h1 class="app-title">IP地址管理系统</h1>
       </div>
       
@@ -38,10 +47,71 @@
       </div>
     </el-header>
     
-    <!-- 主要内容区域 -->
-    <el-main class="app-main">
-      <slot />
-    </el-main>
+    <!-- 主体容器 -->
+    <el-container class="app-container">
+      <!-- 侧边导航栏 -->
+      <el-aside 
+        v-if="isAuthenticated"
+        :width="sidebarWidth" 
+        class="app-sidebar"
+        :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+      >
+        <div class="sidebar-content">
+          <!-- 系统标题区域 -->
+          <div class="sidebar-header">
+            <div class="system-info">
+              <div class="system-title" v-show="!sidebarCollapsed">IP地址管理系统</div>
+              <div class="system-subtitle" v-show="!sidebarCollapsed">企业网络资源管理平台</div>
+            </div>
+          </div>
+          
+          <!-- 导航菜单 -->
+          <el-menu
+            :default-active="activeMenu"
+            class="sidebar-menu"
+            :collapse="sidebarCollapsed"
+            :collapse-transition="false"
+            router
+          >
+            <el-menu-item index="/dashboard">
+              <el-icon><Monitor /></el-icon>
+              <template #title>仪表盘</template>
+            </el-menu-item>
+            
+            <el-menu-item index="/ip-management">
+              <el-icon><Connection /></el-icon>
+              <template #title>IP管理</template>
+            </el-menu-item>
+            
+            <el-menu-item index="/subnet-management">
+              <el-icon><Grid /></el-icon>
+              <template #title>网段管理</template>
+            </el-menu-item>
+            
+            <el-menu-item 
+              v-if="userRole === 'admin'"
+              index="/user-management"
+            >
+              <el-icon><User /></el-icon>
+              <template #title>用户管理</template>
+            </el-menu-item>
+            
+            <el-menu-item 
+              v-if="userRole === 'admin'"
+              index="/audit-logs"
+            >
+              <el-icon><Document /></el-icon>
+              <template #title>审计日志</template>
+            </el-menu-item>
+          </el-menu>
+        </div>
+      </el-aside>
+      
+      <!-- 主要内容区域 -->
+      <el-main class="app-main" :class="{ 'main-expanded': !isAuthenticated || sidebarCollapsed }">
+        <slot />
+      </el-main>
+    </el-container>
     
     <!-- 用户个人信息对话框 -->
     <UserProfile v-model="showUserProfile" />
@@ -61,14 +131,32 @@ export default {
   },
   data() {
     return {
-      showUserProfile: false
+      showUserProfile: false,
+      sidebarCollapsed: false
     }
   },
   computed: {
-    ...mapGetters('auth', ['isAuthenticated', 'userName'])
+    ...mapGetters('auth', ['isAuthenticated', 'userName', 'userRole']),
+    
+    // 侧边栏宽度
+    sidebarWidth() {
+      return this.sidebarCollapsed ? '64px' : '240px'
+    },
+    
+    // 当前激活的菜单项
+    activeMenu() {
+      return this.$route.path
+    }
   },
   methods: {
     ...mapActions('auth', ['logout']),
+    
+    // 切换侧边栏折叠状态
+    toggleSidebar() {
+      this.sidebarCollapsed = !this.sidebarCollapsed
+      // 保存折叠状态到本地存储
+      localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString())
+    },
     
     handleUserMenuCommand(command) {
       switch (command) {
@@ -91,6 +179,14 @@ export default {
         this.$message.error('退出登录失败')
       }
     }
+  },
+  
+  mounted() {
+    // 从本地存储恢复侧边栏折叠状态
+    const savedState = localStorage.getItem('sidebarCollapsed')
+    if (savedState !== null) {
+      this.sidebarCollapsed = savedState === 'true'
+    }
   }
 }
 </script>
@@ -111,11 +207,26 @@ export default {
   padding: 0 20px;
   height: 60px;
   box-shadow: var(--box-shadow-base);
+  z-index: 1000;
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.sidebar-toggle {
+  color: var(--text-color-primary) !important;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--bg-color-hover);
+  color: var(--primary-color) !important;
 }
 
 .app-title {
@@ -143,13 +254,158 @@ export default {
   color: var(--primary-color) !important;
 }
 
-.app-main {
+.app-container {
   flex: 1;
+  height: calc(100vh - 60px);
+}
+
+/* 侧边栏样式 */
+.app-sidebar {
+  background: var(--bg-color) !important;
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border-color-lighter);
+  background: transparent !important;
+}
+
+.system-info {
+  text-align: center;
+  background: transparent !important;
+  padding: 0 8px;
+}
+
+.system-title {
+  color: var(--text-color-primary);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  background: transparent !important;
+}
+
+.system-subtitle {
+  color: var(--text-color-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  background: transparent !important;
+}
+
+.sidebar-collapsed .system-title,
+.sidebar-collapsed .system-subtitle {
+  opacity: 0;
+}
+
+/* 菜单样式 */
+.sidebar-menu {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+}
+
+.sidebar-menu :deep(.el-menu-item) {
+  color: var(--text-color-regular);
+  margin: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  height: 48px;
+  line-height: 48px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover) {
+  background-color: var(--fill-color);
+  color: var(--primary-color);
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active) {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+}
+
+.sidebar-menu :deep(.el-menu-item .el-icon) {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* 折叠状态下的菜单样式 */
+.sidebar-collapsed .sidebar-menu :deep(.el-menu-item) {
+  margin: 4px 0 !important;
+  text-align: center !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-menu-item .el-icon) {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-menu-item span) {
+  display: none !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-menu-item) {
+  position: relative !important;
+}
+
+/* 主要内容区域 */
+.app-main {
   background-color: var(--bg-color-page);
-  padding: 20px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  overflow-y: auto;
+}
+
+.main-expanded {
+  margin-left: 0;
 }
 
 /* 响应式设计 */
+@media (max-width: 1024px) {
+  .app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    height: calc(100vh - 60px);
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .app-sidebar:not(.sidebar-collapsed) {
+    transform: translateX(0);
+  }
+  
+  .app-main {
+    margin-left: 0 !important;
+  }
+}
+
 @media (max-width: 768px) {
   .app-header {
     padding: 0 16px;
@@ -166,6 +422,14 @@ export default {
   .app-main {
     padding: 16px;
   }
+  
+  .sidebar-header {
+    padding: 20px 16px;
+  }
+  
+  .system-title {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -180,5 +444,47 @@ export default {
   .app-main {
     padding: 12px;
   }
+  
+  .sidebar-header {
+    padding: 16px 12px;
+  }
+  
+  .system-title {
+    font-size: 14px;
+  }
+  
+  .system-subtitle {
+    font-size: 11px;
+  }
+}
+
+/* 暗黑主题适配 */
+[data-theme="dark"] .app-sidebar {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+[data-theme="dark"] .sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 动画效果 */
+.sidebar-menu :deep(.el-menu-item) {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu :deep(.el-menu-item::before) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  transition: width 0.3s ease;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover::before) {
+  width: 100%;
 }
 </style>

@@ -173,6 +173,7 @@ import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Search, Check } from '@element-plus/icons-vue'
 import customFieldsAPI from '@/api/customFields'
+import { safeGetEntityCustomFields } from '@/utils/customFieldsDebug'
 import tagsAPI from '@/api/tags'
 import { debounce } from '@/utils/debounce'
 
@@ -213,8 +214,9 @@ export default {
 
     const loadCustomFields = async () => {
       try {
-        const response = await customFieldsAPI.getEntityFields(props.entityType, props.entityId)
-        customFields.value = response.data.fields
+        // 使用安全的自定义字段加载方法
+        const result = await safeGetEntityCustomFields(props.entityType, props.entityId)
+        customFields.value = result.fields || []
         
         // 初始化字段值
         customFields.value.forEach(field => {
@@ -222,6 +224,7 @@ export default {
         })
       } catch (error) {
         console.error('加载自定义字段失败:', error)
+        // 错误信息已在safeGetEntityCustomFields中处理
       }
     }
 

@@ -8,9 +8,30 @@ import store from '@/store'
 import router from '@/router'
 import errorHandler from '@/utils/errorHandler'
 
+/**
+ * 标准化自定义字段数据
+ * 解决后端可能返回name而不是field_name的兼容性问题
+ */
+function normalizeCustomField(field) {
+  if (!field || typeof field !== 'object') {
+    return field
+  }
+  
+  return {
+    ...field,
+    // 确保field_name字段存在，兼容可能的name字段
+    field_name: field.field_name || field.name || '未知字段',
+    // 确保其他必要字段存在
+    field_type: field.field_type || field.type || 'text',
+    entity_type: field.entity_type || 'ip',
+    is_required: Boolean(field.is_required || field.required),
+    id: field.id || 0
+  }
+}
+
 // 创建axios实例
 const service = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8000/api',
+  baseURL: '/api', // 统一使用相对路径，通过Nginx代理
   timeout: 15000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json'
@@ -37,8 +58,31 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
+    // 处理自定义字段数据的兼容性问题
+    const data = response.data
+    
+    // 如果是自定义字段相关的响应，进行数据标准化
+    if (response.config.url && response.config.url.includes('/custom-fields')) {
+      if (Array.isArray(data)) {
+        // 直接是数组的情况
+        return data.map(normalizeCustomField)
+      } else if (data && Array.isArray(data.data)) {
+        // 包装在data属性中的情况
+        return {
+          ...data,
+          data: data.data.map(normalizeCustomField)
+        }
+      } else if (data && data.fields && Array.isArray(data.fields)) {
+        // 包装在fields属性中的情况
+        return {
+          ...data,
+          fields: data.fields.map(normalizeCustomField)
+        }
+      }
+    }
+    
     // 直接返回响应数据
-    return response.data
+    return data
   },
   async error => {
     // 使用统一的错误处理器

@@ -4,6 +4,7 @@
 from .auth_service import AuthService
 from .monitoring_service import MonitoringService
 from .alert_service import AlertService
-from .report_service import ReportService
+# 暂时禁用report_service，避免pandas版本兼容性问题
+# from .report_service import ReportService
 
-__all__ = ["AuthService", "MonitoringService", "AlertService", "ReportService"]
+__all__ = ["AuthService", "MonitoringService", "AlertService"]

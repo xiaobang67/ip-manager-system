@@ -1,5 +1,6 @@
 <template>
-  <div class="ip-management">
+  <AppLayout>
+    <div class="ip-management">
     <!-- 页面标题和操作栏 -->
     <div class="header-section">
       <h1>IP地址管理</h1>
@@ -356,7 +357,8 @@
         </el-table-column>
       </el-table>
     </el-dialog>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <script>
@@ -364,11 +366,13 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
+import AppLayout from '@/components/AppLayout.vue'
 import AdvancedSearch from '@/components/AdvancedSearch.vue'
 
 export default {
   name: 'IPManagement',
   components: {
+    AppLayout,
     Plus,
     Operation,
     Refresh,
@@ -487,7 +491,8 @@ export default {
         }
         
         const response = await ipAPI.searchIPs(params)
-        ipList.value = response.data || []
+        // 处理不同的响应格式
+        ipList.value = response.data || response || []
         // 注意：这里需要后端返回总数，暂时使用估算
         total.value = ipList.value.length >= pageSize.value ? 
           (currentPage.value * pageSize.value + 1) : 
@@ -502,7 +507,8 @@ export default {
     const loadSubnets = async () => {
       try {
         const response = await subnetApi.getSubnets()
-        subnets.value = response.data || []
+        // 处理不同的响应格式
+        subnets.value = response.subnets || response.data || []
       } catch (error) {
         ElMessage.error('加载网段列表失败：' + error.message)
       }
@@ -511,7 +517,15 @@ export default {
     const loadStatistics = async () => {
       try {
         const response = await ipAPI.getStatistics(subnetFilter.value || undefined)
-        statistics.value = response.data || statistics.value
+        // 处理不同的响应格式
+        const stats = response.data || response || {}
+        statistics.value = {
+          total: stats.total_ips || 0,
+          available: stats.available_ips || 0,
+          allocated: stats.allocated_ips || 0,
+          reserved: stats.reserved_ips || 0,
+          utilization_rate: stats.utilization_rate || 0
+        }
       } catch (error) {
         console.error('加载统计信息失败：', error)
       }

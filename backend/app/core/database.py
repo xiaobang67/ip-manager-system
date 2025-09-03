@@ -30,7 +30,7 @@ engine = create_engine(
         # MySQL性能优化参数
         "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         "use_unicode": True,
-        "cursorclass": "pymysql.cursors.DictCursor" if "pymysql" in settings.DATABASE_URL else None
+        # "cursorclass": "pymysql.cursors.DictCursor" if "pymysql" in settings.DATABASE_URL else None
     },
     # 连接池事件监听器
     pool_reset_on_return='commit',  # 连接返回池时提交事务

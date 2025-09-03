@@ -15,7 +15,70 @@ def add_missing_endpoints(app, get_db_connection):
     @app.get("/api/subnets")
     async def get_subnets_api(skip: int = 0, limit: int = 50):
         """获取网段列表 - /api 路径"""
-        return await list_subnets_internal(skip, limit, get_db_connection)
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 获取总数
+                cursor.execute("SELECT COUNT(*) as total FROM subnets")
+                total_result = cursor.fetchone()
+                total = total_result['total']
+                
+                # 获取分页数据，包含IP统计信息
+                cursor.execute("""
+                    SELECT 
+                        s.*,
+                        COUNT(ip.id) as allocated_count,
+                        CASE 
+                            WHEN s.netmask REGEXP '^[0-9]+$' THEN 
+                                POWER(2, 32 - CAST(s.netmask AS UNSIGNED)) - 2
+                            ELSE 
+                                CASE s.netmask
+                                    WHEN '255.255.255.0' THEN 254
+                                    WHEN '255.255.254.0' THEN 510
+                                    WHEN '255.255.252.0' THEN 1022
+                                    WHEN '255.255.248.0' THEN 2046
+                                    WHEN '255.255.240.0' THEN 4094
+                                    WHEN '255.255.224.0' THEN 8190
+                                    WHEN '255.255.192.0' THEN 16382
+                                    WHEN '255.255.128.0' THEN 32766
+                                    WHEN '255.255.0.0' THEN 65534
+                                    ELSE 254
+                                END
+                        END as ip_count
+                    FROM subnets s
+                    LEFT JOIN ip_addresses ip ON s.id = ip.subnet_id
+                    GROUP BY s.id
+                    ORDER BY s.created_at DESC
+                    LIMIT %s OFFSET %s
+                """, (limit, skip))
+                results = cursor.fetchall()
+                
+                subnets = []
+                for row in results:
+                    subnet_data = {
+                        "id": row['id'],
+                        "network": row['network'],
+                        "netmask": row['netmask'],
+                        "gateway": row['gateway'],
+                        "description": row['description'],
+                        "vlan_id": row['vlan_id'],
+                        "location": row['location'],
+                        "created_at": str(row['created_at']),
+                        "allocated_count": int(row['allocated_count'] or 0),
+                        "ip_count": int(row['ip_count'] or 0)
+                    }
+                    subnets.append(subnet_data)
+                
+                return {
+                    "subnets": subnets,
+                    "total": total,
+                    "page": skip // limit + 1,
+                    "size": limit
+                }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch subnets: {str(e)}")
+        finally:
+            connection.close()
     
     @app.get("/api/subnets/search")
     async def search_subnets_api(q: Optional[str] = None, vlan_id: Optional[int] = None):
@@ -228,6 +291,493 @@ def add_missing_endpoints(app, get_db_connection):
         """获取收藏的搜索（模拟数据）"""
         return []  # 暂时返回空数组
     
+    # IP分配相关端点
+    @app.post("/api/ips/allocate")
+    async def allocate_ip_api(data: dict):
+        """分配IP地址"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 验证必填字段
+                subnet_id = data.get('subnet_id')
+                if not subnet_id:
+                    raise HTTPException(status_code=400, detail="网段ID不能为空")
+                
+                # 检查网段是否存在
+                cursor.execute("SELECT id FROM subnets WHERE id = %s", (subnet_id,))
+                if not cursor.fetchone():
+                    raise HTTPException(status_code=404, detail="网段不存在")
+                
+                # 如果指定了首选IP，尝试分配
+                preferred_ip = data.get('preferred_ip')
+                if preferred_ip:
+                    cursor.execute("""
+                        SELECT id, status FROM ip_addresses 
+                        WHERE ip_address = %s AND subnet_id = %s
+                    """, (preferred_ip, subnet_id))
+                    ip_record = cursor.fetchone()
+                    
+                    if not ip_record:
+                        raise HTTPException(status_code=404, detail=f"IP地址 {preferred_ip} 不存在")
+                    
+                    if ip_record['status'] != 'available':
+                        raise HTTPException(status_code=409, detail=f"IP地址 {preferred_ip} 不可用，当前状态: {ip_record['status']}")
+                    
+                    ip_id = ip_record['id']
+                else:
+                    # 自动分配可用IP
+                    cursor.execute("""
+                        SELECT id, ip_address FROM ip_addresses 
+                        WHERE subnet_id = %s AND status = 'available' 
+                        ORDER BY INET_ATON(ip_address) 
+                        LIMIT 1
+                    """, (subnet_id,))
+                    ip_record = cursor.fetchone()
+                    
+                    if not ip_record:
+                        raise HTTPException(status_code=404, detail="网段中没有可用的IP地址")
+                    
+                    ip_id = ip_record['id']
+                    preferred_ip = ip_record['ip_address']
+                
+                # 更新IP地址状态
+                cursor.execute("""
+                    UPDATE ip_addresses SET 
+                        status = 'allocated',
+                        mac_address = %s,
+                        hostname = %s,
+                        device_type = %s,
+                        location = %s,
+                        assigned_to = %s,
+                        description = %s,
+                        allocated_at = NOW(),
+                        allocated_by = 1,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (
+                    data.get('mac_address'),
+                    data.get('hostname'),
+                    data.get('device_type'),
+                    data.get('location'),
+                    data.get('assigned_to'),
+                    data.get('description'),
+                    ip_id
+                ))
+                
+                connection.commit()
+                
+                # 返回更新后的IP信息
+                cursor.execute("SELECT * FROM ip_addresses WHERE id = %s", (ip_id,))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "ip_address": result['ip_address'],
+                    "subnet_id": result['subnet_id'],
+                    "status": result['status'],
+                    "hostname": result['hostname'],
+                    "mac_address": result['mac_address'],
+                    "device_type": result['device_type'],
+                    "location": result['location'],
+                    "assigned_to": result['assigned_to'],
+                    "description": result['description'],
+                    "allocated_at": str(result['allocated_at']) if result['allocated_at'] else None,
+                    "allocated_by": result['allocated_by'],
+                    "created_at": str(result['created_at']),
+                    "updated_at": str(result['updated_at'])
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"分配IP地址失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/ips/reserve")
+    async def reserve_ip_api(data: dict):
+        """保留IP地址"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                ip_address = data.get('ip_address')
+                reason = data.get('reason')
+                
+                if not ip_address:
+                    raise HTTPException(status_code=400, detail="IP地址不能为空")
+                if not reason:
+                    raise HTTPException(status_code=400, detail="保留原因不能为空")
+                
+                # 查找IP记录
+                cursor.execute("SELECT id, status FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                ip_record = cursor.fetchone()
+                
+                if not ip_record:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 不存在")
+                
+                if ip_record['status'] != 'available':
+                    raise HTTPException(status_code=409, detail=f"IP地址 {ip_address} 不可用，当前状态: {ip_record['status']}")
+                
+                # 更新IP状态为保留
+                cursor.execute("""
+                    UPDATE ip_addresses SET 
+                        status = 'reserved',
+                        description = %s,
+                        assigned_to = %s,
+                        allocated_at = NOW(),
+                        allocated_by = 1,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (reason, f"保留 - {reason}", ip_record['id']))
+                
+                connection.commit()
+                
+                # 返回更新后的IP信息
+                cursor.execute("SELECT * FROM ip_addresses WHERE id = %s", (ip_record['id'],))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "ip_address": result['ip_address'],
+                    "subnet_id": result['subnet_id'],
+                    "status": result['status'],
+                    "hostname": result['hostname'],
+                    "mac_address": result['mac_address'],
+                    "device_type": result['device_type'],
+                    "location": result['location'],
+                    "assigned_to": result['assigned_to'],
+                    "description": result['description'],
+                    "allocated_at": str(result['allocated_at']) if result['allocated_at'] else None,
+                    "allocated_by": result['allocated_by'],
+                    "created_at": str(result['created_at']),
+                    "updated_at": str(result['updated_at'])
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"保留IP地址失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/ips/release")
+    async def release_ip_api(data: dict):
+        """释放IP地址"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                ip_address = data.get('ip_address')
+                reason = data.get('reason')
+                
+                if not ip_address:
+                    raise HTTPException(status_code=400, detail="IP地址不能为空")
+                
+                # 查找IP记录
+                cursor.execute("SELECT id, status FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                ip_record = cursor.fetchone()
+                
+                if not ip_record:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 不存在")
+                
+                if ip_record['status'] not in ['allocated', 'reserved']:
+                    raise HTTPException(status_code=400, detail=f"IP地址 {ip_address} 无法释放，当前状态: {ip_record['status']}")
+                
+                # 更新IP状态为可用
+                cursor.execute("""
+                    UPDATE ip_addresses SET 
+                        status = 'available',
+                        mac_address = NULL,
+                        hostname = NULL,
+                        device_type = NULL,
+                        location = NULL,
+                        assigned_to = NULL,
+                        description = %s,
+                        allocated_at = NULL,
+                        allocated_by = NULL,
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (reason, ip_record['id']))
+                
+                connection.commit()
+                
+                # 返回更新后的IP信息
+                cursor.execute("SELECT * FROM ip_addresses WHERE id = %s", (ip_record['id'],))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "ip_address": result['ip_address'],
+                    "subnet_id": result['subnet_id'],
+                    "status": result['status'],
+                    "hostname": result['hostname'],
+                    "mac_address": result['mac_address'],
+                    "device_type": result['device_type'],
+                    "location": result['location'],
+                    "assigned_to": result['assigned_to'],
+                    "description": result['description'],
+                    "allocated_at": str(result['allocated_at']) if result['allocated_at'] else None,
+                    "allocated_by": result['allocated_by'],
+                    "created_at": str(result['created_at']),
+                    "updated_at": str(result['updated_at'])
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"释放IP地址失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/ips/bulk-operation")
+    async def bulk_ip_operation_api(data: dict):
+        """批量IP地址操作"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                ip_addresses = data.get('ip_addresses', [])
+                operation = data.get('operation')
+                reason = data.get('reason', '')
+                
+                if not ip_addresses:
+                    raise HTTPException(status_code=400, detail="请选择要操作的IP地址")
+                
+                if operation not in ['reserve', 'release']:
+                    raise HTTPException(status_code=400, detail="无效的操作类型")
+                
+                success_ips = []
+                failed_ips = []
+                
+                for ip_address in ip_addresses:
+                    try:
+                        # 查找IP记录
+                        cursor.execute("SELECT id, status FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                        ip_record = cursor.fetchone()
+                        
+                        if not ip_record:
+                            failed_ips.append({"ip": ip_address, "error": "IP地址不存在"})
+                            continue
+                        
+                        if operation == 'reserve':
+                            if ip_record['status'] != 'available':
+                                failed_ips.append({"ip": ip_address, "error": f"IP不可用，当前状态: {ip_record['status']}"})
+                                continue
+                            
+                            cursor.execute("""
+                                UPDATE ip_addresses SET 
+                                    status = 'reserved',
+                                    description = %s,
+                                    assigned_to = %s,
+                                    allocated_at = NOW(),
+                                    allocated_by = 1,
+                                    updated_at = NOW()
+                                WHERE id = %s
+                            """, (reason, f"批量保留 - {reason}", ip_record['id']))
+                            
+                        elif operation == 'release':
+                            if ip_record['status'] not in ['allocated', 'reserved']:
+                                failed_ips.append({"ip": ip_address, "error": f"IP无法释放，当前状态: {ip_record['status']}"})
+                                continue
+                            
+                            cursor.execute("""
+                                UPDATE ip_addresses SET 
+                                    status = 'available',
+                                    mac_address = NULL,
+                                    hostname = NULL,
+                                    device_type = NULL,
+                                    location = NULL,
+                                    assigned_to = NULL,
+                                    description = %s,
+                                    allocated_at = NULL,
+                                    allocated_by = NULL,
+                                    updated_at = NOW()
+                                WHERE id = %s
+                            """, (reason, ip_record['id']))
+                        
+                        success_ips.append(ip_address)
+                        
+                    except Exception as e:
+                        failed_ips.append({"ip": ip_address, "error": str(e)})
+                
+                connection.commit()
+                
+                return {
+                    "success_count": len(success_ips),
+                    "failed_count": len(failed_ips),
+                    "success_ips": success_ips,
+                    "failed_ips": failed_ips,
+                    "message": f"批量操作完成：成功{len(success_ips)}个，失败{len(failed_ips)}个"
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"批量操作失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/ips/{ip_address}/history")
+    async def get_ip_history_api(ip_address: str):
+        """获取IP地址历史记录"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 首先验证IP地址是否存在
+                cursor.execute("SELECT id FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                ip_record = cursor.fetchone()
+                
+                if not ip_record:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 不存在")
+                
+                # 查询审计日志（如果存在）
+                cursor.execute("""
+                    SELECT 
+                        action,
+                        old_values,
+                        new_values,
+                        created_at,
+                        'system' as username
+                    FROM audit_logs 
+                    WHERE entity_type = 'ip' AND entity_id = %s 
+                    ORDER BY created_at DESC 
+                    LIMIT 50
+                """, (ip_record['id'],))
+                
+                results = cursor.fetchall()
+                
+                return [
+                    {
+                        "action": row['action'],
+                        "username": row['username'],
+                        "old_values": row['old_values'],
+                        "new_values": row['new_values'],
+                        "created_at": str(row['created_at'])
+                    } for row in results
+                ]
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"获取IP历史记录失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/ips/advanced-search")
+    async def advanced_search_ips_api(data: dict):
+        """高级搜索IP地址"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 构建查询条件
+                where_conditions = []
+                params = []
+                
+                # 基本搜索
+                if data.get('query'):
+                    where_conditions.append("(ip_address LIKE %s OR hostname LIKE %s OR assigned_to LIKE %s)")
+                    query_param = f"%{data['query']}%"
+                    params.extend([query_param, query_param, query_param])
+                
+                # 网段过滤
+                if data.get('subnet_id'):
+                    where_conditions.append("subnet_id = %s")
+                    params.append(data['subnet_id'])
+                
+                # 状态过滤
+                if data.get('status'):
+                    where_conditions.append("status = %s")
+                    params.append(data['status'])
+                
+                # 设备类型过滤
+                if data.get('device_type'):
+                    where_conditions.append("device_type = %s")
+                    params.append(data['device_type'])
+                
+                # 位置过滤
+                if data.get('location'):
+                    where_conditions.append("location LIKE %s")
+                    params.append(f"%{data['location']}%")
+                
+                # 分配给过滤
+                if data.get('assigned_to'):
+                    where_conditions.append("assigned_to LIKE %s")
+                    params.append(f"%{data['assigned_to']}%")
+                
+                # MAC地址过滤
+                if data.get('mac_address'):
+                    where_conditions.append("mac_address LIKE %s")
+                    params.append(f"%{data['mac_address']}%")
+                
+                # 主机名过滤
+                if data.get('hostname'):
+                    where_conditions.append("hostname LIKE %s")
+                    params.append(f"%{data['hostname']}%")
+                
+                # IP范围过滤
+                if data.get('ip_range_start') and data.get('ip_range_end'):
+                    where_conditions.append("INET_ATON(ip_address) BETWEEN INET_ATON(%s) AND INET_ATON(%s)")
+                    params.extend([data['ip_range_start'], data['ip_range_end']])
+                
+                where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+                
+                # 分页参数
+                skip = data.get('skip', 0)
+                limit = data.get('limit', 50)
+                
+                # 获取总数
+                count_query = f"SELECT COUNT(*) as total FROM ip_addresses WHERE {where_clause}"
+                cursor.execute(count_query, params)
+                total = cursor.fetchone()['total']
+                
+                # 获取数据
+                data_query = f"""
+                    SELECT * FROM ip_addresses 
+                    WHERE {where_clause} 
+                    ORDER BY INET_ATON(ip_address) 
+                    LIMIT %s OFFSET %s
+                """
+                cursor.execute(data_query, params + [limit, skip])
+                results = cursor.fetchall()
+                
+                # 计算分页信息
+                page = (skip // limit) + 1 if limit > 0 else 1
+                total_pages = (total + limit - 1) // limit if limit > 0 else 1
+                
+                items = [
+                    {
+                        "id": row['id'],
+                        "ip_address": row['ip_address'],
+                        "subnet_id": row['subnet_id'],
+                        "status": row['status'],
+                        "hostname": row['hostname'],
+                        "mac_address": row['mac_address'],
+                        "device_type": row['device_type'],
+                        "location": row['location'],
+                        "assigned_to": row['assigned_to'],
+                        "description": row['description'],
+                        "allocated_at": str(row['allocated_at']) if row['allocated_at'] else None,
+                        "allocated_by": row['allocated_by'],
+                        "created_at": str(row['created_at']),
+                        "updated_at": str(row['updated_at'])
+                    } for row in results
+                ]
+                
+                return {
+                    "items": items,
+                    "total": total,
+                    "page": page,
+                    "page_size": limit,
+                    "total_pages": total_pages
+                }
+                
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"高级搜索失败: {str(e)}")
+        finally:
+            connection.close()
+    
     # 标签相关API端点
     @app.get("/api/tags/")
     async def get_tags_api(limit: int = 1000):
@@ -268,12 +818,11 @@ def add_missing_endpoints(app, get_db_connection):
                 return [
                     {
                         "id": row['id'],
-                        "name": row['name'],
+                        "field_name": row['field_name'],
                         "field_type": row['field_type'],
                         "entity_type": row['entity_type'],
                         "is_required": bool(row['is_required']),
-                        "default_value": row['default_value'],
-                        "options": row['options'],
+                        "field_options": row['field_options'],
                         "created_at": str(row['created_at'])
                     } for row in results
                 ]

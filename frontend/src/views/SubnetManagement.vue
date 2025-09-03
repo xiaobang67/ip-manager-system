@@ -1,5 +1,6 @@
 <template>
-  <div class="subnet-management">
+  <AppLayout>
+    <div class="subnet-management">
     <div class="page-header">
       <h1>网段管理</h1>
       <div class="header-actions">
@@ -122,7 +123,8 @@
       v-model:visible="detailDialogVisible"
       :subnet="currentSubnet"
     />
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <script>
@@ -130,6 +132,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
 import { subnetApi } from '@/api/subnet'
+import AppLayout from '@/components/AppLayout.vue'
 import SubnetDialog from '@/components/subnet/SubnetDialog.vue'
 import SubnetDetailDialog from '@/components/subnet/SubnetDetailDialog.vue'
 import { debounce } from '@/utils/debounce'
@@ -137,6 +140,7 @@ import { debounce } from '@/utils/debounce'
 export default {
   name: 'SubnetManagement',
   components: {
+    AppLayout,
     SubnetDialog,
     SubnetDetailDialog
   },
@@ -162,6 +166,7 @@ export default {
     // 获取网段列表
     const fetchSubnets = async () => {
       loading.value = true
+      
       try {
         const params = {
           skip: (currentPage.value - 1) * pageSize.value,
@@ -178,9 +183,38 @@ export default {
           response = await subnetApi.getSubnets(params)
         }
 
-        subnets.value = response.data.subnets
-        total.value = response.data.total
+        // 处理API响应数据
+        if (!response) {
+          subnets.value = []
+          total.value = 0
+          return
+        }
+
+        let subnetData = []
+        let totalCount = 0
+
+        if (response.subnets && Array.isArray(response.subnets)) {
+          subnetData = response.subnets
+          totalCount = response.total || 0
+        } else if (response.data?.subnets && Array.isArray(response.data.subnets)) {
+          subnetData = response.data.subnets
+          totalCount = response.data.total || 0
+        } else if (Array.isArray(response)) {
+          subnetData = response
+          totalCount = response.length
+        } else if (response.data && Array.isArray(response.data)) {
+          subnetData = response.data
+          totalCount = response.data.length
+        } else {
+          subnetData = []
+          totalCount = 0
+        }
+
+        subnets.value = subnetData
+        total.value = totalCount
       } catch (error) {
+        subnets.value = []
+        total.value = 0
         ElMessage.error('获取网段列表失败: ' + (error.response?.data?.detail || error.message))
       } finally {
         loading.value = false
@@ -199,9 +233,30 @@ export default {
         loading.value = true
         try {
           const response = await subnetApi.getSubnetsByVlan(vlanFilter.value)
-          subnets.value = response.data
-          total.value = response.data.length
+          
+          if (!response) {
+            subnets.value = []
+            total.value = 0
+            return
+          }
+
+          let subnetData = []
+          
+          if (Array.isArray(response)) {
+            subnetData = response
+          } else if (response.data && Array.isArray(response.data)) {
+            subnetData = response.data
+          } else if (response.subnets && Array.isArray(response.subnets)) {
+            subnetData = response.subnets
+          } else {
+            subnetData = []
+          }
+
+          subnets.value = subnetData
+          total.value = subnetData.length
         } catch (error) {
+          subnets.value = []
+          total.value = 0
           ElMessage.error('按VLAN过滤失败: ' + (error.response?.data?.detail || error.message))
         } finally {
           loading.value = false
@@ -234,7 +289,7 @@ export default {
     // 排序处理
     const handleSortChange = ({ column, prop, order }) => {
       // 这里可以实现排序逻辑
-      console.log('Sort change:', { column, prop, order })
+      // TODO: 实现服务端排序
     }
 
     // 显示创建对话框

@@ -1,5 +1,6 @@
 <template>
-  <div class="user-management">
+  <AppLayout>
+    <div class="user-management">
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
@@ -372,7 +373,8 @@
         </span>
       </template>
     </el-dialog>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <script setup>
@@ -388,6 +390,7 @@ import {
   Star,
   Lock
 } from '@element-plus/icons-vue'
+import AppLayout from '@/components/AppLayout.vue'
 import {
   getUsers,
   getUserStatistics,
@@ -570,11 +573,50 @@ const loadUsers = async () => {
     }
 
     const response = await getUsers(params)
-    users.value = response.users
-    totalUsers.value = response.total
+    
+    // 增加严格的数据验证和多格式支持
+    if (!response) {
+      console.warn('用户API响应为空')
+      users.value = []
+      totalUsers.value = 0
+      return
+    }
+
+    // 处理多种可能的响应格式
+    let usersData = []
+    let totalCount = 0
+
+    if (response.users && Array.isArray(response.users)) {
+      // 格式1: { users: [], total: number }
+      usersData = response.users
+      totalCount = response.total || 0
+    } else if (response.data?.users && Array.isArray(response.data.users)) {
+      // 格式2: { data: { users: [], total: number } }
+      usersData = response.data.users
+      totalCount = response.data.total || 0
+    } else if (Array.isArray(response)) {
+      // 格式3: 直接返回数组
+      usersData = response
+      totalCount = response.length
+    } else if (response.data && Array.isArray(response.data)) {
+      // 格式4: { data: [] }
+      usersData = response.data
+      totalCount = response.data.length
+    } else {
+      console.warn('未识别的用户API响应格式:', response)
+      usersData = []
+      totalCount = 0
+    }
+
+    users.value = usersData
+    totalUsers.value = totalCount
+
+    console.log('获取到用户数据:', { count: usersData.length, total: totalCount })
   } catch (error) {
     console.error('加载用户列表失败:', error)
-    ElMessage.error('加载用户列表失败')
+    users.value = []
+    totalUsers.value = 0
+    ElMessage.error('加载用户列表失败: ' + (error.response?.data?.detail || error.message))
   } finally {
     loading.value = false
   }
@@ -593,18 +635,48 @@ const loadStatistics = async () => {
 const loadAvailableRoles = async () => {
   try {
     const response = await getAvailableRoles()
-    availableRoles.value = response.roles
+    
+    // 处理多种可能的响应格式
+    if (Array.isArray(response)) {
+      // 格式1: 直接返回数组
+      availableRoles.value = response
+    } else if (response.roles && Array.isArray(response.roles)) {
+      // 格式2: { roles: [] }
+      availableRoles.value = response.roles
+    } else if (response.data && Array.isArray(response.data)) {
+      // 格式3: { data: [] }
+      availableRoles.value = response.data
+    } else {
+      console.warn('未识别的角色API响应格式:', response)
+      availableRoles.value = []
+    }
   } catch (error) {
     console.error('加载角色列表失败:', error)
+    availableRoles.value = []
   }
 }
 
 const loadAvailableThemes = async () => {
   try {
     const response = await getAvailableThemes()
-    availableThemes.value = response.themes
+    
+    // 处理多种可能的响应格式
+    if (Array.isArray(response)) {
+      // 格式1: 直接返回数组
+      availableThemes.value = response
+    } else if (response.themes && Array.isArray(response.themes)) {
+      // 格式2: { themes: [] }
+      availableThemes.value = response.themes
+    } else if (response.data && Array.isArray(response.data)) {
+      // 格式3: { data: [] }
+      availableThemes.value = response.data
+    } else {
+      console.warn('未识别的主题API响应格式:', response)
+      availableThemes.value = []
+    }
   } catch (error) {
     console.error('加载主题列表失败:', error)
+    availableThemes.value = []
   }
 }
 
