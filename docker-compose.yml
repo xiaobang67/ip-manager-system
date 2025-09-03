@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # MySQL Database
   mysql:
-    image: registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0
+    image: mysql:8.0
     container_name: ipam_mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpass123
@@ -14,14 +14,15 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     networks:
       - ipam_network
     restart: unless-stopped
 
   # Redis Cache
   redis:
-    image: registry.cn-hangzhou.aliyuncs.com/library/redis:6-alpine
+    image: redis:6-alpine
     container_name: ipam_redis
     ports:
       - "6379:6379"
@@ -38,10 +39,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=mysql+pymysql://ipam_user:ipam_pass123@mysql:3306/ipam
-      - REDIS_URL=redis://redis:6379
-      - SECRET_KEY=your-secret-key-change-in-production
-      - DEBUG=true
+      - DB_HOST=mysql
+      - DB_USER=ipam_user
+      - DB_PASSWORD=ipam_pass123
+      - DB_NAME=ipam
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
     depends_on:
       - mysql
       - redis

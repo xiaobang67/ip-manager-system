@@ -462,7 +462,7 @@ import {
   Search, Filter, Clock, Star, Collection, Refresh, 
   Edit, Delete 
 } from '@element-plus/icons-vue'
-import { ipAPI, subnetAPI } from '@/api'
+import { ipAPI, subnetApi } from '@/api'
 import customFieldsAPI from '@/api/customFields'
 import tagsAPI from '@/api/tags'
 import { debounce } from '@/utils/debounce'
@@ -524,7 +524,7 @@ export default {
     // 方法
     const loadSubnets = async () => {
       try {
-        const response = await subnetAPI.getSubnets()
+        const response = await subnetApi.getSubnets()
         subnets.value = response.data || []
       } catch (error) {
         console.error('加载网段列表失败：', error)

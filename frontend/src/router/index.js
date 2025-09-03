@@ -49,6 +49,9 @@ const router = createRouter({
   routes
 })
 
+// 标记是否已经初始化过认证
+let authInitialized = false
+
 // Navigation guard for authentication
 router.beforeEach(async (to, from, next) => {
   const isAuthenticated = store.getters['auth/isAuthenticated']
@@ -75,12 +78,14 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // 如果已登录，验证token有效性（仅在应用启动时）
-  if (isAuthenticated && from.path === '/') {
+  // 仅在应用首次加载时验证token有效性
+  if (isAuthenticated && !authInitialized) {
+    authInitialized = true
     try {
       await store.dispatch('auth/initAuth')
     } catch (error) {
       console.error('Auth initialization error:', error)
+      authInitialized = false // 重置标记，允许重试
       next('/login')
       return
     }

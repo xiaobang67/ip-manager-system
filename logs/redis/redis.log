@@ -1,0 +1,53 @@
+1:C 02 Sep 2025 08:51:55.164 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 02 Sep 2025 08:51:55.166 # Redis version=6.2.19, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 02 Sep 2025 08:51:55.168 # Configuration loaded
+1:M 02 Sep 2025 08:51:55.170 * monotonic clock: POSIX clock_gettime
+1:M 02 Sep 2025 08:51:55.173 * Running mode=standalone, port=6379.
+1:M 02 Sep 2025 08:51:55.174 # Server initialized
+1:M 02 Sep 2025 08:51:55.176 * Ready to accept connections
+1:signal-handler (1756803149) Received SIGTERM scheduling shutdown...
+1:M 02 Sep 2025 08:52:29.860 # User requested shutdown...
+1:M 02 Sep 2025 08:52:29.861 * Calling fsync() on the AOF file.
+1:M 02 Sep 2025 08:52:29.863 * Saving the final RDB snapshot before exiting.
+1:M 02 Sep 2025 08:52:29.868 * DB saved on disk
+1:M 02 Sep 2025 08:52:29.869 # Redis is now ready to exit, bye bye...
+1:C 03 Sep 2025 01:36:09.371 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 03 Sep 2025 01:36:09.372 # Redis version=6.2.19, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 03 Sep 2025 01:36:09.373 # Configuration loaded
+1:M 03 Sep 2025 01:36:09.375 * monotonic clock: POSIX clock_gettime
+1:M 03 Sep 2025 01:36:09.376 * Running mode=standalone, port=6379.
+1:M 03 Sep 2025 01:36:09.377 # Server initialized
+1:M 03 Sep 2025 01:36:09.380 * Ready to accept connections
+1:M 03 Sep 2025 01:55:08.585 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 01:56:38.567 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 01:58:08.563 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 01:59:38.558 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:01:08.558 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:02:38.550 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:04:08.546 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:05:38.542 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:07:08.534 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:08:38.527 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:10:08.517 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:11:38.509 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:13:08.503 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:14:38.494 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:16:08.490 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:17:38.480 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:19:08.475 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:20:38.467 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:22:08.462 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:23:38.458 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:25:08.453 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:26:38.446 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:28:08.443 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:29:38.439 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:31:08.434 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:32:38.428 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:M 03 Sep 2025 02:34:08.421 # Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+1:signal-handler (1756866882) Received SIGTERM scheduling shutdown...
+1:M 03 Sep 2025 02:34:42.173 # User requested shutdown...
+1:M 03 Sep 2025 02:34:42.174 * Calling fsync() on the AOF file.
+1:M 03 Sep 2025 02:34:42.176 * Saving the final RDB snapshot before exiting.
+1:M 03 Sep 2025 02:34:42.181 * DB saved on disk
+1:M 03 Sep 2025 02:34:42.183 # Redis is now ready to exit, bye bye...

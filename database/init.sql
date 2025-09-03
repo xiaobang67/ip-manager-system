@@ -4,6 +4,10 @@
 -- Create database if not exists
 CREATE DATABASE IF NOT EXISTS ipam CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Grant permissions to ipam_user
+GRANT ALL PRIVILEGES ON ipam.* TO 'ipam_user'@'%';
+FLUSH PRIVILEGES;
+
 -- Use the database
 USE ipam;
 

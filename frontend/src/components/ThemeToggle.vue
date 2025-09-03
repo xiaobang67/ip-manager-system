@@ -21,23 +21,7 @@ export default {
     ...mapGetters('theme', ['isDarkMode'])
   },
   methods: {
-    ...mapActions('theme', ['toggleTheme']),
-    
-    async toggleTheme() {
-      // 切换主题
-      await this.$store.dispatch('theme/toggleTheme')
-      
-      // 如果用户已登录，同步更新用户偏好设置
-      if (this.$store.getters['auth/isAuthenticated']) {
-        try {
-          const newTheme = this.$store.getters['theme/currentTheme']
-          await this.$store.dispatch('auth/updateProfile', { theme: newTheme })
-        } catch (error) {
-          console.error('Failed to sync theme preference:', error)
-          // 即使同步失败，主题切换仍然有效，只是不会保存到服务器
-        }
-      }
-    }
+    ...mapActions('theme', ['toggleTheme'])
   }
 }
 </script>
