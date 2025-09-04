@@ -911,6 +911,500 @@ def add_missing_endpoints(app, get_db_connection):
             {"value": "dark", "label": "暗黑主题", "description": "适合夜间使用的暗黑主题"}
         ]
 
+    # 网段验证端点
+    @app.post("/api/subnets/validate")
+    async def validate_subnet_api(data: dict):
+        """验证网段格式和重叠检测"""
+        connection = get_db_connection()
+        try:
+            network = data.get('network')
+            exclude_id = data.get('exclude_id')
+            
+            if not network:
+                return {
+                    "is_valid": False,
+                    "message": "网段地址不能为空"
+                }
+            
+            # 验证CIDR格式
+            try:
+                import ipaddress
+                ipaddress.ip_network(network, strict=False)
+            except ValueError:
+                return {
+                    "is_valid": False,
+                    "message": "无效的网段格式，请使用CIDR格式如192.168.1.0/24"
+                }
+            
+            with connection.cursor() as cursor:
+                # 简化的重叠检查 - 只检查网段地址是否已存在
+                if exclude_id:
+                    cursor.execute("""
+                        SELECT id, network, description FROM subnets 
+                        WHERE id != %s AND network = %s
+                    """, (exclude_id, network))
+                else:
+                    cursor.execute("""
+                        SELECT id, network, description FROM subnets 
+                        WHERE network = %s
+                    """, (network,))
+                
+                overlapping_subnets = cursor.fetchall()
+                
+                if overlapping_subnets:
+                    return {
+                        "is_valid": False,
+                        "message": f"网段与 {len(overlapping_subnets)} 个现有网段重叠",
+                        "overlapping_subnets": [
+                            {
+                                "id": row['id'],
+                                "network": row['network'],
+                                "description": row['description']
+                            } for row in overlapping_subnets
+                        ]
+                    }
+                
+                return {
+                    "is_valid": True,
+                    "message": "网段验证通过"
+                }
+                
+        except Exception as e:
+            return {
+                "is_valid": False,
+                "message": f"验证失败: {str(e)}"
+            }
+        finally:
+            connection.close()
+    
+    # 用户管理API端点
+    @app.get("/api/users")
+    @app.get("/api/users/")
+    async def get_users_api(skip: int = 0, limit: int = 20, active_only: bool = False):
+        """获取用户列表"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 构建查询条件
+                where_clause = "WHERE is_active = TRUE" if active_only else ""
+                
+                # 获取总数
+                cursor.execute(f"SELECT COUNT(*) as total FROM users {where_clause}")
+                total = cursor.fetchone()['total']
+                
+                # 获取用户列表
+                cursor.execute(f"""
+                    SELECT id, username, email, role, theme, is_active, created_at, updated_at 
+                    FROM users {where_clause}
+                    ORDER BY created_at DESC 
+                    LIMIT %s OFFSET %s
+                """, (limit, skip))
+                results = cursor.fetchall()
+                
+                users = []
+                for row in results:
+                    users.append({
+                        "id": row['id'],
+                        "username": row['username'],
+                        "email": row['email'],
+                        "role": row['role'],
+                        "theme": row['theme'],
+                        "is_active": bool(row['is_active']),
+                        "created_at": str(row['created_at']) if row['created_at'] else None,
+                        "updated_at": str(row['updated_at']) if row['updated_at'] else None
+                    })
+                
+                return {
+                    "users": users,
+                    "total": total,
+                    "skip": skip,
+                    "limit": limit
+                }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"获取用户列表失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/users/statistics")
+    async def get_user_statistics_api():
+        """获取用户统计信息"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 总用户数
+                cursor.execute("SELECT COUNT(*) as total FROM users")
+                total_users = cursor.fetchone()['total']
+                
+                # 活跃用户数
+                cursor.execute("SELECT COUNT(*) as active FROM users WHERE is_active = TRUE")
+                active_users = cursor.fetchone()['active']
+                
+                # 按角色统计
+                cursor.execute("""
+                    SELECT role, COUNT(*) as count 
+                    FROM users 
+                    GROUP BY role
+                """)
+                role_results = cursor.fetchall()
+                
+                role_distribution = {}
+                for row in role_results:
+                    role_distribution[row['role']] = row['count']
+                
+                return {
+                    "total_users": total_users,
+                    "active_users": active_users,
+                    "inactive_users": total_users - active_users,
+                    "role_distribution": role_distribution
+                }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"获取用户统计失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/users/roles/available")
+    async def get_available_roles_api():
+        """获取可用的用户角色列表"""
+        return {
+            "roles": [
+                {"value": "admin", "label": "管理员"},
+                {"value": "manager", "label": "经理"},
+                {"value": "user", "label": "普通用户"}
+            ]
+        }
+    
+    @app.get("/api/users/themes/available")
+    async def get_available_themes_api():
+        """获取可用的主题列表"""
+        return {
+            "themes": [
+                {"value": "light", "label": "明亮主题"},
+                {"value": "dark", "label": "暗黑主题"}
+            ]
+        }
+    
+    @app.get("/api/users/{user_id}")
+    async def get_user_api(user_id: int):
+        """获取用户详情"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, username, email, role, theme, is_active, created_at, updated_at 
+                    FROM users WHERE id = %s
+                """, (user_id,))
+                result = cursor.fetchone()
+                
+                if not result:
+                    raise HTTPException(status_code=404, detail="用户不存在")
+                
+                return {
+                    "id": result['id'],
+                    "username": result['username'],
+                    "email": result['email'],
+                    "role": result['role'],
+                    "theme": result['theme'],
+                    "is_active": bool(result['is_active']),
+                    "created_at": str(result['created_at']) if result['created_at'] else None,
+                    "updated_at": str(result['updated_at']) if result['updated_at'] else None
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"获取用户信息失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/users")
+    @app.post("/api/users/")
+    async def create_user_api(data: dict):
+        """创建新用户"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                username = data.get('username')
+                password = data.get('password')
+                email = data.get('email')
+                role = data.get('role', 'user')
+                
+                if not username or not password:
+                    raise HTTPException(status_code=400, detail="用户名和密码不能为空")
+                
+                # 检查用户名是否已存在
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                if cursor.fetchone():
+                    raise HTTPException(status_code=400, detail="用户名已存在")
+                
+                # 检查邮箱是否已存在
+                if email:
+                    cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+                    if cursor.fetchone():
+                        raise HTTPException(status_code=400, detail="邮箱地址已存在")
+                
+                # 创建用户（简单的密码哈希，生产环境应使用bcrypt）
+                import hashlib
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                
+                cursor.execute("""
+                    INSERT INTO users (username, password_hash, email, role, theme, is_active, created_at)
+                    VALUES (%s, %s, %s, %s, 'light', TRUE, NOW())
+                """, (username, password_hash, email, role))
+                
+                connection.commit()
+                user_id = cursor.lastrowid
+                
+                # 返回创建的用户信息
+                cursor.execute("""
+                    SELECT id, username, email, role, theme, is_active, created_at 
+                    FROM users WHERE id = %s
+                """, (user_id,))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "username": result['username'],
+                    "email": result['email'],
+                    "role": result['role'],
+                    "theme": result['theme'],
+                    "is_active": bool(result['is_active']),
+                    "created_at": str(result['created_at'])
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"创建用户失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.put("/api/users/{user_id}")
+    async def update_user_api(user_id: int, data: dict):
+        """更新用户信息"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 检查用户是否存在
+                cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+                if not cursor.fetchone():
+                    raise HTTPException(status_code=404, detail="用户不存在")
+                
+                # 构建更新字段
+                update_fields = []
+                update_values = []
+                
+                for field in ['username', 'email', 'role', 'theme', 'is_active']:
+                    if field in data:
+                        # 检查用户名和邮箱的唯一性
+                        if field == 'username':
+                            cursor.execute("SELECT id FROM users WHERE username = %s AND id != %s", (data[field], user_id))
+                            if cursor.fetchone():
+                                raise HTTPException(status_code=400, detail="用户名已存在")
+                        elif field == 'email' and data[field]:
+                            cursor.execute("SELECT id FROM users WHERE email = %s AND id != %s", (data[field], user_id))
+                            if cursor.fetchone():
+                                raise HTTPException(status_code=400, detail="邮箱地址已存在")
+                        
+                        update_fields.append(f"{field} = %s")
+                        update_values.append(data[field])
+                
+                if not update_fields:
+                    raise HTTPException(status_code=400, detail="没有提供要更新的字段")
+                
+                update_values.append(user_id)
+                sql = f"UPDATE users SET {', '.join(update_fields)}, updated_at = NOW() WHERE id = %s"
+                
+                cursor.execute(sql, update_values)
+                connection.commit()
+                
+                # 返回更新后的用户信息
+                cursor.execute("""
+                    SELECT id, username, email, role, theme, is_active, created_at, updated_at 
+                    FROM users WHERE id = %s
+                """, (user_id,))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "username": result['username'],
+                    "email": result['email'],
+                    "role": result['role'],
+                    "theme": result['theme'],
+                    "is_active": bool(result['is_active']),
+                    "created_at": str(result['created_at']) if result['created_at'] else None,
+                    "updated_at": str(result['updated_at']) if result['updated_at'] else None
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"更新用户失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.delete("/api/users/{user_id}")
+    async def delete_user_api(user_id: int):
+        """删除用户"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 检查用户是否存在
+                cursor.execute("SELECT id, username FROM users WHERE id = %s", (user_id,))
+                user = cursor.fetchone()
+                
+                if not user:
+                    raise HTTPException(status_code=404, detail="用户不存在")
+                
+                # 防止删除管理员账号
+                if user['username'] == 'admin':
+                    raise HTTPException(status_code=400, detail="不能删除管理员账号")
+                
+                # 检查是否是已经标记为删除的用户
+                is_already_deleted = '_del_' in user['username'] or '_deleted_' in user['username']
+                
+                # 检查是否有相关的审计日志记录
+                cursor.execute("SELECT COUNT(*) as count FROM audit_logs WHERE user_id = %s", (user_id,))
+                audit_count = cursor.fetchone()['count']
+                
+                if audit_count > 0 and not is_already_deleted:
+                    # 如果有审计日志且未被标记删除，将用户标记为删除而不是物理删除
+                    # 使用更短的删除标记格式，避免超过字段长度限制
+                    import time
+                    short_timestamp = str(int(time.time()))[-6:]  # 只取时间戳的后6位
+                    
+                    # 确保新用户名不超过50个字符
+                    original_username = user['username']
+                    max_prefix_length = 50 - len('_del_') - len(short_timestamp)
+                    if len(original_username) > max_prefix_length:
+                        username_prefix = original_username[:max_prefix_length]
+                    else:
+                        username_prefix = original_username
+                    
+                    new_username = f"{username_prefix}_del_{short_timestamp}"
+                    
+                    cursor.execute("""
+                        UPDATE users SET 
+                            is_active = FALSE, 
+                            username = %s,
+                            email = CASE 
+                                WHEN email IS NOT NULL THEN CONCAT(LEFT(email, 80), '_del_', %s) 
+                                ELSE NULL 
+                            END,
+                            updated_at = NOW() 
+                        WHERE id = %s
+                    """, (new_username, short_timestamp, user_id))
+                    message = "用户已标记为删除（保留审计记录）"
+                elif is_already_deleted:
+                    # 如果用户已经被标记为删除，执行强制删除
+                    # 先删除审计日志记录
+                    cursor.execute("DELETE FROM audit_logs WHERE user_id = %s", (user_id,))
+                    
+                    # 删除可能的相关记录
+                    cursor.execute("DELETE FROM ip_addresses WHERE allocated_by = %s", (user_id,))
+                    cursor.execute("DELETE FROM subnets WHERE created_by = %s", (user_id,))
+                    
+                    # 删除用户
+                    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                    message = "用户强制删除成功（已清理所有相关记录）"
+                else:
+                    # 如果没有审计日志，可以安全删除
+                    # 先删除可能的相关记录
+                    cursor.execute("DELETE FROM ip_addresses WHERE allocated_by = %s", (user_id,))
+                    cursor.execute("DELETE FROM subnets WHERE created_by = %s", (user_id,))
+                    
+                    # 删除用户
+                    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                    message = "用户删除成功"
+                
+                connection.commit()
+                
+                return {"message": message}
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"删除用户失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.put("/api/users/{user_id}/password")
+    async def reset_user_password_api(user_id: int, data: dict):
+        """重置用户密码"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                new_password = data.get('new_password')
+                
+                if not new_password:
+                    raise HTTPException(status_code=400, detail="新密码不能为空")
+                
+                if len(new_password) < 8:
+                    raise HTTPException(status_code=400, detail="密码长度至少8位")
+                
+                # 检查用户是否存在
+                cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+                if not cursor.fetchone():
+                    raise HTTPException(status_code=404, detail="用户不存在")
+                
+                # 更新密码（简单的密码哈希，生产环境应使用bcrypt）
+                import hashlib
+                password_hash = hashlib.sha256(new_password.encode()).hexdigest()
+                
+                cursor.execute("""
+                    UPDATE users SET password_hash = %s, updated_at = NOW() 
+                    WHERE id = %s
+                """, (password_hash, user_id))
+                
+                connection.commit()
+                
+                return {"message": "密码重置成功"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"重置密码失败: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.put("/api/users/{user_id}/toggle-status")
+    async def toggle_user_status_api(user_id: int):
+        """切换用户激活状态"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 检查用户是否存在
+                cursor.execute("SELECT id, username, is_active FROM users WHERE id = %s", (user_id,))
+                user = cursor.fetchone()
+                
+                if not user:
+                    raise HTTPException(status_code=404, detail="用户不存在")
+                
+                # 防止停用管理员账号
+                if user['username'] == 'admin':
+                    raise HTTPException(status_code=400, detail="不能停用管理员账号")
+                
+                # 切换状态
+                new_status = not bool(user['is_active'])
+                cursor.execute("""
+                    UPDATE users SET is_active = %s, updated_at = NOW() 
+                    WHERE id = %s
+                """, (new_status, user_id))
+                
+                connection.commit()
+                
+                action = "激活" if new_status else "停用"
+                return {
+                    "id": user_id,
+                    "is_active": new_status,
+                    "message": f"用户已{action}"
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"切换用户状态失败: {str(e)}")
+        finally:
+            connection.close()
+
 # 内部辅助函数
 async def list_subnets_internal(skip: int, limit: int, get_db_connection):
     """内部网段列表函数"""
