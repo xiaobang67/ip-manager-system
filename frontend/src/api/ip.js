@@ -343,6 +343,19 @@ export const ipAPI = {
       url: '/ips/departments',
       method: 'get'
     })
+  },
+
+  /**
+   * 删除IP地址
+   * @param {Object} data - 删除数据
+   * @returns {Promise}
+   */
+  deleteIP(data) {
+    return request({
+      url: '/ips/delete',
+      method: 'delete',
+      data
+    })
   }
 }
 

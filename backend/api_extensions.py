@@ -563,7 +563,7 @@ def add_missing_endpoints(app, get_db_connection):
                 if not ip_addresses:
                     raise HTTPException(status_code=400, detail="请选择要操作的IP地址")
                 
-                if operation not in ['reserve', 'release']:
+                if operation not in ['reserve', 'release', 'delete']:
                     raise HTTPException(status_code=400, detail="无效的操作类型")
                 
                 success_ips = []
@@ -614,6 +614,13 @@ def add_missing_endpoints(app, get_db_connection):
                                     updated_at = NOW()
                                 WHERE id = %s
                             """, (reason, ip_record['id']))
+                            
+                        elif operation == 'delete':
+                            if ip_record['status'] == 'allocated':
+                                failed_ips.append({"ip": ip_address, "error": "IP已分配，无法删除。请先释放该IP地址"})
+                                continue
+                            
+                            cursor.execute("DELETE FROM ip_addresses WHERE id = %s", (ip_record['id'],))
                         
                         success_ips.append(ip_address)
                         
@@ -638,6 +645,50 @@ def add_missing_endpoints(app, get_db_connection):
         finally:
             connection.close()
     
+    @app.delete("/api/ips/delete")
+    async def delete_ip_api(data: dict):
+        """删除IP地址"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                ip_address = data.get('ip_address')
+                reason = data.get('reason', '')
+                
+                if not ip_address:
+                    raise HTTPException(status_code=400, detail="IP地址不能为空")
+                
+                # 查找IP记录
+                cursor.execute("SELECT id, status FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                ip_record = cursor.fetchone()
+                
+                if not ip_record:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 不存在")
+                
+                # 检查IP地址是否可以删除
+                if ip_record['status'] == 'allocated':
+                    raise HTTPException(status_code=400, detail=f"IP地址 {ip_address} 已分配，无法删除。请先释放该IP地址")
+                
+                # 删除IP地址记录
+                cursor.execute("DELETE FROM ip_addresses WHERE id = %s", (ip_record['id'],))
+                connection.commit()
+                
+                if cursor.rowcount == 0:
+                    raise HTTPException(status_code=500, detail=f"删除IP地址 {ip_address} 失败")
+                
+                return {
+                    "ip_address": ip_address,
+                    "message": f"IP地址 {ip_address} 删除成功",
+                    "reason": reason
+                }
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"删除IP地址失败: {str(e)}")
+        finally:
+            connection.close()
+
     @app.get("/api/ips/{ip_address}/history")
     async def get_ip_history_api(ip_address: str):
         """获取IP地址历史记录"""

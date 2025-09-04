@@ -9,7 +9,7 @@ from app.schemas.ip_address import (
     IPAllocationRequest, IPReservationRequest, IPReleaseRequest,
     IPSearchRequest, IPStatisticsResponse, IPSyncResponse,
     IPConflictResponse, IPRangeStatusRequest, IPRangeStatusResponse,
-    BulkIPOperationRequest, BulkIPOperationResponse
+    BulkIPOperationRequest, BulkIPOperationResponse, IPDeleteRequest
 )
 from app.core.exceptions import ValidationError, NotFoundError, ConflictError
 import ipaddress
@@ -188,6 +188,27 @@ class IPService:
         updated_ip = self.ip_repo.update(ip_record.id, update_data)
         return self._ip_to_response(updated_ip)
 
+    def delete_ip(self, request: IPDeleteRequest, deleted_by: int) -> dict:
+        """删除IP地址"""
+        ip_record = self.ip_repo.get_by_ip_address(request.ip_address)
+        if not ip_record:
+            raise NotFoundError(f"IP地址 {request.ip_address} 不存在")
+        
+        # 检查IP地址是否可以删除
+        if ip_record.status == IPStatus.ALLOCATED:
+            raise ValidationError(f"IP地址 {request.ip_address} 已分配，无法删除。请先释放该IP地址")
+        
+        # 删除IP地址记录
+        success = self.ip_repo.delete(ip_record.id)
+        if not success:
+            raise ValidationError(f"删除IP地址 {request.ip_address} 失败")
+        
+        return {
+            "ip_address": request.ip_address,
+            "message": f"IP地址 {request.ip_address} 删除成功",
+            "reason": request.reason
+        }
+
     def detect_ip_conflicts(self, subnet_id: Optional[int] = None) -> List[IPConflictResponse]:
         """检测IP地址冲突"""
         if subnet_id:
@@ -336,6 +357,11 @@ class IPService:
                 elif request.operation == 'release':
                     release_req = IPReleaseRequest(ip_address=ip_address, reason=request.reason)
                     self.release_ip(release_req, user_id)
+                    success_ips.append(ip_address)
+                
+                elif request.operation == 'delete':
+                    delete_req = IPDeleteRequest(ip_address=ip_address, reason=request.reason)
+                    self.delete_ip(delete_req, user_id)
                     success_ips.append(ip_address)
                 
             except Exception as e:

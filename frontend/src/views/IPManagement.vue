@@ -106,7 +106,7 @@
             {{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
             <el-button
               v-if="row.status === 'available'"
@@ -131,6 +131,15 @@
               @click="releaseIP(row)"
             >
               释放
+            </el-button>
+            <el-button
+              v-if="row.status === 'available' || row.status === 'reserved'"
+              type="danger"
+              size="small"
+              plain
+              @click="deleteIP(row)"
+            >
+              删除
             </el-button>
             <el-button
               type="info"
@@ -317,6 +326,7 @@
           <el-radio-group v-model="bulkForm.operation">
             <el-radio label="reserve">批量保留</el-radio>
             <el-radio label="release">批量释放</el-radio>
+            <el-radio label="delete">批量删除</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="选中IP">
@@ -352,6 +362,50 @@
           :disabled="selectedIPs.length === 0"
         >
           执行操作
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- IP删除对话框 -->
+    <el-dialog
+      v-model="showDeleteDialog"
+      title="删除IP地址"
+      width="500px"
+      @close="resetDeleteForm"
+    >
+      <el-form
+        ref="deleteFormRef"
+        :model="deleteForm"
+        :rules="deleteRules"
+        label-width="100px"
+      >
+        <el-form-item label="IP地址">
+          <el-input v-model="deleteForm.ip_address" disabled />
+        </el-form-item>
+        <el-form-item label="删除原因" prop="reason">
+          <el-input
+            v-model="deleteForm.reason"
+            type="textarea"
+            :rows="3"
+            placeholder="请说明删除原因"
+          />
+        </el-form-item>
+        <el-alert
+          title="警告"
+          type="warning"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <p>删除IP地址将永久移除该记录，此操作不可恢复！</p>
+            <p>请确认该IP地址未被使用且确实需要删除。</p>
+          </template>
+        </el-alert>
+      </el-form>
+      <template #footer>
+        <el-button @click="showDeleteDialog = false">取消</el-button>
+        <el-button type="danger" @click="submitDelete" :loading="submitting">
+          确认删除
         </el-button>
       </template>
     </el-dialog>
@@ -440,6 +494,7 @@ export default {
     const showReleaseDialog = ref(false)
     const showBulkDialog = ref(false)
     const showHistoryDialog = ref(false)
+    const showDeleteDialog = ref(false)
     
     // 表单数据
     const allocationForm = reactive({
@@ -465,6 +520,11 @@ export default {
     
     const bulkForm = reactive({
       operation: 'reserve',
+      reason: ''
+    })
+    
+    const deleteForm = reactive({
+      ip_address: '',
       reason: ''
     })
     
@@ -496,6 +556,12 @@ export default {
       ],
       reason: [
         { required: true, message: '请填写操作原因', trigger: 'blur' }
+      ]
+    }
+    
+    const deleteRules = {
+      reason: [
+        { required: true, message: '请填写删除原因', trigger: 'blur' }
       ]
     }
     
@@ -759,6 +825,11 @@ export default {
       showReleaseDialog.value = true
     }
     
+    const deleteIP = (row) => {
+      deleteForm.ip_address = row.ip_address
+      showDeleteDialog.value = true
+    }
+    
     const viewHistory = async (row) => {
       historyLoading.value = true
       showHistoryDialog.value = true
@@ -831,7 +902,7 @@ export default {
         }
         
         const response = await ipAPI.bulkOperation(data)
-        const result = response.data
+        const result = response.data || response
         
         ElMessage.success(`批量操作完成：成功${result.success_count}个，失败${result.failed_count}个`)
         showBulkDialog.value = false
@@ -913,6 +984,29 @@ export default {
       loadStatistics()
     })
     
+    // 删除IP地址的提交方法
+    const submitDelete = async () => {
+      submitting.value = true
+      try {
+        await ipAPI.deleteIP(deleteForm)
+        ElMessage.success('IP地址删除成功')
+        showDeleteDialog.value = false
+        refreshData()
+      } catch (error) {
+        ElMessage.error('删除失败：' + error.message)
+      } finally {
+        submitting.value = false
+      }
+    }
+    
+    // 删除表单重置方法
+    const resetDeleteForm = () => {
+      Object.assign(deleteForm, {
+        ip_address: '',
+        reason: ''
+      })
+    }
+
     return {
       // 响应式数据
       loading,
@@ -938,18 +1032,21 @@ export default {
       showReleaseDialog,
       showBulkDialog,
       showHistoryDialog,
+      showDeleteDialog,
       
       // 表单数据
       allocationForm,
       reservationForm,
       releaseForm,
       bulkForm,
+      deleteForm,
       
       // 验证规则
       allocationRules,
       reservationRules,
       releaseRules,
       bulkRules,
+      deleteRules,
       
       // 方法
       refreshData,
@@ -964,15 +1061,18 @@ export default {
       allocateIP,
       reserveIP,
       releaseIP,
+      deleteIP,
       viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
       submitBulkOperation,
+      submitDelete,
       resetAllocationForm,
       resetReservationForm,
       resetReleaseForm,
       resetBulkForm,
+      resetDeleteForm,
       getStatusTagType,
       getStatusText,
       formatDate

@@ -251,7 +251,7 @@ class BulkIPOperationRequest(BaseModel):
 
     @validator('operation')
     def validate_operation(cls, v):
-        if v not in ['allocate', 'reserve', 'release']:
+        if v not in ['allocate', 'reserve', 'release', 'delete']:
             raise ValueError('无效的操作类型')
         return v
 
@@ -262,3 +262,16 @@ class BulkIPOperationResponse(BaseModel):
     success_ips: List[str]
     failed_ips: List[dict]  # [{"ip": "x.x.x.x", "error": "error message"}]
     message: str
+
+
+class IPDeleteRequest(BaseModel):
+    ip_address: str = Field(..., description="要删除的IP地址")
+    reason: Optional[str] = Field(None, description="删除原因")
+
+    @validator('ip_address')
+    def validate_ip_address(cls, v):
+        try:
+            ipaddress.ip_address(v)
+            return v
+        except ValueError:
+            raise ValueError('无效的IP地址格式')
