@@ -194,18 +194,37 @@ def add_missing_endpoints(app, get_db_connection):
         return await list_ip_addresses_internal(skip, limit, subnet_id, get_db_connection)
     
     @app.get("/api/ips/search")
-    async def search_ips_api(skip: int = 0, limit: int = 50, q: Optional[str] = None, 
+    async def search_ips_api(skip: int = 0, limit: int = 50, query: Optional[str] = None, 
                             status: Optional[str] = None, subnet_id: Optional[int] = None):
         """搜索IP地址"""
+        print(f"搜索参数: query={query}, status={status}, subnet_id={subnet_id}, skip={skip}, limit={limit}")  # 调试信息
+        
         connection = get_db_connection()
         try:
             with connection.cursor() as cursor:
                 where_conditions = []
                 params = []
                 
-                if q:
-                    where_conditions.append("(ip_address LIKE %s OR hostname LIKE %s OR assigned_to LIKE %s)")
-                    params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
+                if query:
+                    # 智能搜索：检测查询类型
+                    import re
+                    
+                    # 检查是否是完整的IP地址格式
+                    ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+                    if re.match(ip_pattern, query):
+                        # 完整IP地址：只进行精确匹配
+                        where_conditions.append("ip_address = %s")
+                        params.append(query)
+                    else:
+                        # 其他情况：进行模糊匹配，但对IP地址使用更智能的匹配
+                        where_conditions.append("""(
+                            ip_address LIKE %s OR 
+                            hostname LIKE %s OR 
+                            assigned_to LIKE %s OR 
+                            mac_address LIKE %s OR
+                            description LIKE %s
+                        )""")
+                        params.extend([f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"])
                 
                 if status:
                     where_conditions.append("status = %s")

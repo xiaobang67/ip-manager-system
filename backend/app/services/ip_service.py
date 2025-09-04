@@ -379,6 +379,33 @@ class IPService:
                 f"最大允许保留 {max_allowed} 个IP地址"
             )
 
+    def get_departments(self) -> List[str]:
+        """获取所有分配部门列表"""
+        try:
+            # 查询所有已分配IP的assigned_to字段
+            departments = (
+                self.db.query(IPAddress.assigned_to)
+                .filter(
+                    and_(
+                        IPAddress.assigned_to.isnot(None),
+                        IPAddress.assigned_to != '',
+                        IPAddress.status == IPStatus.ALLOCATED
+                    )
+                )
+                .distinct()
+                .all()
+            )
+            
+            # 提取部门名称并排序
+            dept_list = [dept[0] for dept in departments if dept[0] and dept[0].strip()]
+            dept_list.sort()
+            
+            return dept_list
+            
+        except Exception as e:
+            # 如果查询失败，返回空列表
+            return []
+
     def _ip_to_response(self, ip: IPAddress) -> IPAddressResponse:
         """将IP模型转换为响应模型"""
         return IPAddressResponse(

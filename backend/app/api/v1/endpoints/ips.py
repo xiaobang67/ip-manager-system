@@ -227,6 +227,8 @@ async def search_ips(
 ):
     """搜索IP地址 - 简单搜索接口（保持向后兼容）"""
     try:
+        print(f"搜索参数: query={query}, subnet_id={subnet_id}, status={status}, skip={skip}, limit={limit}")  # 调试信息
+        
         ip_service = IPService(db)
         search_request = IPSearchRequest(
             query=query,
@@ -236,8 +238,12 @@ async def search_ips(
             limit=limit
         )
         ips, total = ip_service.search_ips(search_request)
+        
+        print(f"搜索结果: 找到 {len(ips)} 条记录")  # 调试信息
+        
         return ips
     except Exception as e:
+        print(f"搜索错误: {str(e)}")  # 调试信息
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"搜索IP地址失败: {str(e)}"
@@ -567,4 +573,21 @@ async def delete_search_history(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"删除搜索历史失败: {str(e)}"
+        )
+
+
+@router.get("/departments")
+async def get_departments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取分配部门列表"""
+    try:
+        ip_service = IPService(db)
+        departments = ip_service.get_departments()
+        return {"departments": departments}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取部门列表失败: {str(e)}"
         )

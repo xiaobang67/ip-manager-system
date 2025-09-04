@@ -14,12 +14,13 @@ class IPQueryBuilder:
     
     def __init__(self, db: Session):
         self.db = db
-        self.base_query = db.query(IPAddress).options(joinedload(IPAddress.subnet))
+        self.base_query = db.query(IPAddress).join(Subnet, IPAddress.subnet_id == Subnet.id).options(joinedload(IPAddress.subnet))
     
     def build_search_query(self, search_request: IPSearchRequest) -> Tuple[Query, Query]:
         """构建搜索查询和计数查询"""
         query = self.base_query
-        count_query = self.db.query(func.count(IPAddress.id))
+        # 确保count_query也包含必要的联接
+        count_query = self.db.query(func.count(IPAddress.id)).join(Subnet, IPAddress.subnet_id == Subnet.id)
         
         # 应用过滤条件
         filters = self._build_filters(search_request)

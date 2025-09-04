@@ -20,9 +20,9 @@
       </div>
     </div>
 
-    <!-- 高级搜索组件 -->
-    <AdvancedSearch
-      @search="handleAdvancedSearch"
+    <!-- 简单筛选组件 -->
+    <SimpleIPFilter
+      @search="handleSimpleSearch"
       @reset="handleSearchReset"
     />
 
@@ -66,6 +66,20 @@
 
     <!-- IP地址列表表格 -->
     <div class="table-section">
+      <!-- 搜索状态提示 -->
+      <div v-if="currentSearchParams" class="search-status">
+        <el-alert
+          :title="`当前显示搜索结果：共 ${total} 条记录`"
+          type="info"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <span>当前显示搜索结果，点击"重置"按钮可查看所有数据</span>
+          </template>
+        </el-alert>
+      </div>
+      
       <el-table
         :data="ipList"
         v-loading="loading"
@@ -367,7 +381,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
 import AppLayout from '@/components/AppLayout.vue'
-import AdvancedSearch from '@/components/AdvancedSearch.vue'
+import SimpleIPFilter from '@/components/SimpleIPFilter.vue'
 
 export default {
   name: 'IPManagement',
@@ -377,7 +391,7 @@ export default {
     Operation,
     Refresh,
     Search,
-    AdvancedSearch
+    SimpleIPFilter
   },
   setup() {
     // 响应式数据
@@ -547,29 +561,70 @@ export default {
       loadStatistics()
     }
     
-    const handleAdvancedSearch = async (searchParams) => {
+    const handleSimpleSearch = async (searchParams) => {
       loading.value = true
       try {
         // 存储当前搜索参数
         currentSearchParams.value = searchParams
         
+        // 更新内部筛选状态
+        searchQuery.value = searchParams.query || ''
+        statusFilter.value = searchParams.status || ''
+        subnetFilter.value = searchParams.subnet_id || ''
+        
+        // 重置分页到第一页
+        currentPage.value = 1
+        
         // 添加分页参数
         const params = {
           ...searchParams,
-          skip: (currentPage.value - 1) * pageSize.value,
+          skip: 0, // 搜索时总是从第一页开始
           limit: pageSize.value
         }
         
-        // 使用高级搜索API
-        const response = await ipAPI.advancedSearchIPs(params)
-        const result = response.data
+        console.log('搜索参数:', params) // 调试信息
         
-        ipList.value = result.items || []
-        total.value = result.total || 0
+        // 使用简单搜索API
+        const response = await ipAPI.searchIPs(params)
+        const results = response.data || response || []
+        
+        console.log('搜索结果:', results) // 调试信息
+        
+        ipList.value = results
+        
+        // 更准确的总数计算
+        total.value = results.length
+        
+        // 显示搜索结果提示
+        if (Object.keys(searchParams).length > 0) {
+          const hasQuery = searchParams.query
+          const hasFilters = searchParams.subnet_id || searchParams.status || searchParams.assigned_to
+          
+          if (results.length === 0) {
+            ElMessage.warning('未找到匹配的IP地址')
+          } else {
+            let message = ''
+            if (hasQuery && hasFilters) {
+              message = `找到 ${results.length} 个匹配条件的IP地址`
+            } else if (hasQuery) {
+              message = `找到 ${results.length} 个匹配 "${searchParams.query}" 的IP地址`
+            } else {
+              message = `筛选结果：${results.length} 个IP地址`
+            }
+            
+            // 使用info类型的消息，避免过于频繁的成功提示
+            ElMessage({
+              message: message,
+              type: 'info',
+              duration: 2000
+            })
+          }
+        }
         
         // 更新统计信息
         loadStatistics()
       } catch (error) {
+        console.error('搜索错误:', error) // 调试信息
         ElMessage.error('搜索失败：' + error.message)
       } finally {
         loading.value = false
@@ -593,9 +648,9 @@ export default {
       pageSize.value = size
       currentPage.value = 1
       
-      // 如果有当前搜索参数，使用高级搜索，否则使用普通加载
+      // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleAdvancedSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value)
       } else {
         loadIPList()
       }
@@ -604,9 +659,9 @@ export default {
     const handleCurrentChange = (page) => {
       currentPage.value = page
       
-      // 如果有当前搜索参数，使用高级搜索，否则使用普通加载
+      // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleAdvancedSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value)
       } else {
         loadIPList()
       }
@@ -836,7 +891,7 @@ export default {
       refreshData,
       handleSearch,
       handleFilter,
-      handleAdvancedSearch,
+      handleSimpleSearch,
       handleSearchReset,
       handleSizeChange,
       handleCurrentChange,
