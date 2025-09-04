@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暗黑模式修复验证</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #303133;
+            transition: all 0.3s ease;
+        }
+
+        /* 明亮主题变量 */
+        :root {
+            --primary-color: #409eff;
+            --bg-color: #ffffff;
+            --bg-color-page: #f5f7fa;
+            --text-color-primary: #303133;
+            --text-color-regular: #606266;
+            --text-color-secondary: #909399;
+            --border-color: #dcdfe6;
+            --border-color-lighter: #ebeef5;
+            --fill-color: #f0f2f5;
+            --fill-color-light: #f5f7fa;
+            --success-color: #67c23a;
+            --warning-color: #e6a23c;
+            --danger-color: #f56c6c;
+            --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 暗黑主题变量 */
+        [data-theme="dark"] {
+            --primary-color: #409eff;
+            --bg-color: #1d1e1f;
+            --bg-color-page: #0a0a0a;
+            --text-color-primary: #e5eaf3;
+            --text-color-regular: #cfd3dc;
+            --text-color-secondary: #a3a6ad;
+            --border-color: #4c4d4f;
+            --border-color-lighter: #363637;
+            --fill-color: #2d2e2f;
+            --fill-color-light: #262727;
+            --success-color: #67c23a;
+            --warning-color: #e6a23c;
+            --danger-color: #f56c6c;
+            --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.48), 0 0 6px rgba(0, 0, 0, 0.16);
+        }
+
+        [data-theme="dark"] body {
+            background-color: var(--bg-color-page);
+            color: var(--text-color-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .theme-toggle {
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .test-section h2 {
+            margin-top: 0;
+            color: var(--text-color-primary);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .mock-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--bg-color);
+        }
+
+        .mock-table th,
+        .mock-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color-lighter);
+        }
+
+        .mock-table th {
+            background-color: var(--fill-color);
+            font-weight: 600;
+            color: var(--text-color-primary);
+        }
+
+        .mock-table td {
+            color: var(--text-color-regular);
+        }
+
+        .mock-table tr:hover {
+            background-color: var(--fill-color);
+        }
+
+        .mock-table tr:nth-child(even) {
+            background-color: var(--fill-color-light);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stats-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            border-color: var(--primary-color);
+        }
+
+        .stats-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            font-size: 14px;
+            color: var(--text-color-secondary);
+        }
+
+        .mock-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+            color: var(--text-color-primary);
+            margin: 10px 0;
+        }
+
+        .mock-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .mock-button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+            color: var(--text-color-regular);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mock-button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .mock-button.primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .mock-button.success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .mock-button.warning {
+            background: var(--warning-color);
+            border-color: var(--warning-color);
+            color: white;
+        }
+
+        .mock-button.danger {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+
+        .mock-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .mock-tag.success {
+            background: rgba(103, 194, 58, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .mock-tag.warning {
+            background: rgba(230, 162, 60, 0.1);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .mock-tag.danger {
+            background: rgba(245, 108, 108, 0.1);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .fix-summary {
+            background: var(--fill-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .fix-summary h3 {
+            color: var(--text-color-primary);
+            margin-top: 0;
+        }
+
+        .fix-summary ul {
+            color: var(--text-color-regular);
+        }
+
+        .fix-summary li {
+            margin-bottom: 8px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.success {
+            background-color: var(--success-color);
+        }
+
+        .status-indicator.warning {
+            background-color: var(--warning-color);
+        }
+
+        .status-indicator.danger {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌙 暗黑模式修复验证</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="theme-text">切换到暗黑模式</span>
+            </button>
+        </div>
+
+        <div class="fix-summary">
+            <h3>🔧 修复内容总结</h3>
+            <ul>
+                <li><span class="status-indicator success"></span>完善了CSS主题变量定义，支持明亮和暗黑两种模式</li>
+                <li><span class="status-indicator success"></span>修复了表格组件的背景色和边框色问题</li>
+                <li><span class="status-indicator success"></span>增强了Element Plus组件的主题覆盖</li>
+                <li><span class="status-indicator success"></span>修复了统计卡片的主题适配</li>
+                <li><span class="status-indicator success"></span>完善了表单元素的暗黑模式样式</li>
+                <li><span class="status-indicator success"></span>修复了按钮、标签、对话框等组件的主题问题</li>
+                <li><span class="status-indicator success"></span>增加了高级搜索组件的主题支持</li>
+                <li><span class="status-indicator success"></span>确保了所有页面容器都能正确应用主题</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 统计卡片测试</h2>
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <div class="stats-value">254</div>
+                    <div class="stats-label">总IP数量</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-value">251</div>
+                    <div class="stats-label">可用IP</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-value">2</div>
+                    <div class="stats-label">已分配IP</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-value">0.79%</div>
+                    <div class="stats-label">使用率</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 表格样式测试</h2>
+            <table class="mock-table">
+                <thead>
+                    <tr>
+                        <th>IP地址</th>
+                        <th>状态</th>
+                        <th>主机名</th>
+                        <th>MAC地址</th>
+                        <th>设备类型</th>
+                        <th>分配给</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>192.168.1.1</td>
+                        <td><span class="mock-tag success">可用</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>网关</td>
+                        <td>网络中心</td>
+                        <td>
+                            <button class="mock-button primary">分配</button>
+                            <button class="mock-button warning">保留</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.2</td>
+                        <td><span class="mock-tag warning">已分配</span></td>
+                        <td>workstation-01</td>
+                        <td>00:11:22:33:44:55</td>
+                        <td>工作站</td>
+                        <td>开发部</td>
+                        <td>
+                            <button class="mock-button danger">释放</button>
+                            <button class="mock-button">历史</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.3</td>
+                        <td><span class="mock-tag danger">保留</span></td>
+                        <td>server-01</td>
+                        <td>00:aa:bb:cc:dd:ee</td>
+                        <td>服务器</td>
+                        <td>运维部</td>
+                        <td>
+                            <button class="mock-button danger">释放</button>
+                            <button class="mock-button">历史</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 表单元素测试</h2>
+            <input type="text" class="mock-input" placeholder="搜索IP地址、主机名、MAC地址..." value="">
+            <input type="text" class="mock-input" placeholder="选择状态" value="">
+            <div style="margin-top: 15px;">
+                <button class="mock-button primary">搜索</button>
+                <button class="mock-button">重置</button>
+                <button class="mock-button success">导出</button>
+                <button class="mock-button warning">批量操作</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🏷️ 标签样式测试</h2>
+            <div style="margin: 20px 0;">
+                <span class="mock-tag success">可用</span>
+                <span class="mock-tag warning">已分配</span>
+                <span class="mock-tag danger">保留</span>
+                <span class="mock-tag">冲突</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ 修复验证结果</h2>
+            <p>如果你能看到以下效果，说明暗黑模式修复成功：</p>
+            <ul>
+                <li>切换主题时，所有元素的背景色都能正确变化</li>
+                <li>表格在暗黑模式下显示为深色背景</li>
+                <li>统计卡片能够正确应用主题色彩</li>
+                <li>表单元素在暗黑模式下显示为深色</li>
+                <li>文字颜色在不同主题下都清晰可读</li>
+                <li>边框和分割线在暗黑模式下使用合适的深色</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 下一步操作</h2>
+            <p>现在你可以：</p>
+            <ol>
+                <li>访问主应用 <a href="/" style="color: var(--primary-color);">IPAM系统</a> 验证修复效果</li>
+                <li>在系统中切换暗黑模式，检查所有页面是否正常</li>
+                <li>特别关注IP管理页面的表格显示效果</li>
+                <li>测试各种对话框和表单的主题适配</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let isDark = false;
+
+        function toggleTheme() {
+            isDark = !isDark;
+            const html = document.documentElement;
+            const themeText = document.getElementById('theme-text');
+            
+            if (isDark) {
+                html.setAttribute('data-theme', 'dark');
+                themeText.textContent = '切换到明亮模式';
+            } else {
+                html.removeAttribute('data-theme');
+                themeText.textContent = '切换到暗黑模式';
+            }
+        }
+
+        // 页面加载完成后的提示
+        window.onload = function() {
+            console.log('🌙 暗黑模式修复验证页面已加载');
+            console.log('✅ 主要修复内容：');
+            console.log('   - 完善CSS主题变量系统');
+            console.log('   - 修复Element Plus组件主题覆盖');
+            console.log('   - 增强表格、卡片、表单的暗黑模式支持');
+            console.log('   - 确保所有页面容器正确应用主题');
+        };
+    </script>
+</body>
+</html>

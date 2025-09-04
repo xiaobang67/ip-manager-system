@@ -865,6 +865,8 @@ export default {
 <style scoped>
 .ip-management {
   padding: 20px;
+  background-color: var(--bg-color-page);
+  color: var(--text-color-primary);
 }
 
 .header-section {
@@ -872,6 +874,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-section h1 {
+  color: var(--text-color-primary);
+  margin: 0;
 }
 
 .header-actions {
@@ -882,8 +889,10 @@ export default {
 .filter-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: #f5f5f5;
+  background: var(--fill-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  color: var(--text-color-primary);
 }
 
 .stats-section {
@@ -892,6 +901,14 @@ export default {
 
 .stats-card {
   text-align: center;
+  background: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  transition: all 0.3s ease !important;
+}
+
+.stats-card:hover {
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--box-shadow-light) !important;
 }
 
 .stats-item {
@@ -901,19 +918,21 @@ export default {
 .stats-value {
   font-size: 24px;
   font-weight: bold;
-  color: #409eff;
+  color: var(--primary-color) !important;
   margin-bottom: 5px;
 }
 
 .stats-label {
   font-size: 14px;
-  color: #666;
+  color: var(--text-color-secondary) !important;
 }
 
 .table-section {
-  background: white;
+  background: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 8px;
   padding: 20px;
+  color: var(--text-color-primary) !important;
 }
 
 .pagination-section {

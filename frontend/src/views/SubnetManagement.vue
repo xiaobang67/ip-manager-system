@@ -411,6 +411,8 @@ export default {
 <style scoped>
 .subnet-management {
   padding: 20px;
+  background-color: var(--bg-color-page);
+  color: var(--text-color-primary);
 }
 
 .page-header {
@@ -422,21 +424,23 @@ export default {
 
 .page-header h1 {
   margin: 0;
-  color: #303133;
+  color: var(--text-color-primary);
 }
 
 .search-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
 }
 
 .subnet-list {
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
   padding: 20px;
 }
 
