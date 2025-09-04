@@ -202,7 +202,20 @@
           <el-input v-model="allocationForm.location" placeholder="设备位置" />
         </el-form-item>
         <el-form-item label="分配给" prop="assigned_to">
-          <el-input v-model="allocationForm.assigned_to" placeholder="负责人或部门" />
+          <el-select 
+            v-model="allocationForm.assigned_to" 
+            placeholder="选择部门" 
+            filterable
+            allow-create
+            style="width: 100%"
+          >
+            <el-option
+              v-for="dept in departments"
+              :key="dept"
+              :label="dept"
+              :value="dept"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input
@@ -401,6 +414,7 @@ export default {
     
     const ipList = ref([])
     const subnets = ref([])
+    const departments = ref([])
     const selectedIPs = ref([])
     const historyData = ref([])
     
@@ -525,6 +539,54 @@ export default {
         subnets.value = response.subnets || response.data || []
       } catch (error) {
         ElMessage.error('加载网段列表失败：' + error.message)
+      }
+    }
+    
+    const loadDepartments = async () => {
+      try {
+        // 从已分配的IP中获取部门列表
+        const response = await ipAPI.searchIPs({ 
+          status: 'allocated', 
+          limit: 1000 
+        })
+        const ips = response.data || response || []
+        
+        // 提取所有非空的assigned_to值并去重
+        const assignedTos = ips
+          .map(ip => ip.assigned_to)
+          .filter(assigned => assigned && assigned.trim())
+          .filter((value, index, self) => self.indexOf(value) === index)
+          .sort()
+        
+        // 合并静态部门列表和动态获取的部门
+        const staticDepartments = [
+          '技术部',
+          '运维部', 
+          '产品部',
+          '市场部',
+          '人事部',
+          '财务部',
+          '客服部'
+        ]
+        
+        // 合并并去重
+        const allDepartments = [...staticDepartments, ...assignedTos]
+          .filter((value, index, self) => self.indexOf(value) === index)
+          .sort()
+        
+        departments.value = allDepartments
+      } catch (error) {
+        console.error('加载部门列表失败：', error)
+        // 如果获取失败，使用静态列表
+        departments.value = [
+          '技术部',
+          '运维部', 
+          '产品部',
+          '市场部',
+          '人事部',
+          '财务部',
+          '客服部'
+        ]
       }
     }
     
@@ -846,6 +908,7 @@ export default {
     // 生命周期
     onMounted(() => {
       loadSubnets()
+      loadDepartments()
       loadIPList()
       loadStatistics()
     })
@@ -857,6 +920,7 @@ export default {
       historyLoading,
       ipList,
       subnets,
+      departments,
       selectedIPs,
       historyData,
       searchQuery,
