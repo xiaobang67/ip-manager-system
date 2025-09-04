@@ -813,6 +813,8 @@ export default {
 <style scoped>
 .advanced-search {
   margin-bottom: 20px;
+  background-color: var(--bg-color-page);
+  color: var(--text-color-primary);
 }
 
 .search-bar {
@@ -832,7 +834,7 @@ export default {
 }
 
 .search-actions .el-button.active {
-  color: #409eff;
+  color: var(--primary-color) !important;
 }
 
 .quick-search-tags {
@@ -844,28 +846,39 @@ export default {
 }
 
 .tags-label {
-  color: #666;
+  color: var(--text-color-secondary);
   font-size: 14px;
 }
 
 .quick-tag {
   cursor: pointer;
   transition: all 0.3s;
+  background-color: var(--fill-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-regular) !important;
 }
 
 .quick-tag:hover {
-  background-color: #409eff;
-  color: white;
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
 }
 
 .advanced-filters {
   margin-bottom: 15px;
 }
 
+.advanced-filters .el-card {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
 .filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-color-primary);
 }
 
 .filter-form .el-form-item {
@@ -876,10 +889,17 @@ export default {
   margin-bottom: 15px;
 }
 
+.search-history .el-card {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--text-color-primary);
 }
 
 .history-list {
@@ -892,21 +912,23 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--border-color-lighter);
   border-radius: 6px;
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  background-color: var(--bg-color);
+  color: var(--text-color-primary);
 }
 
 .history-item:hover {
-  background-color: #f5f7fa;
-  border-color: #409eff;
+  background-color: var(--fill-color) !important;
+  border-color: var(--primary-color) !important;
 }
 
 .favorite-item {
-  border-color: #f56c6c;
-  background-color: #fef0f0;
+  border-color: var(--danger-color) !important;
+  background-color: var(--fill-color-light) !important;
 }
 
 .history-content {
@@ -919,17 +941,18 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
+  color: var(--text-color-primary);
 }
 
 .history-params {
   font-size: 12px;
-  color: #666;
+  color: var(--text-color-secondary);
   margin-bottom: 4px;
 }
 
 .history-meta {
   font-size: 11px;
-  color: #999;
+  color: var(--text-color-placeholder);
   display: flex;
   gap: 15px;
 }
@@ -940,23 +963,30 @@ export default {
 }
 
 .history-actions .el-button.favorite {
-  color: #f56c6c;
+  color: var(--danger-color) !important;
 }
 
 .history-actions .el-button.unfavorite-btn {
-  color: #f56c6c;
+  color: var(--danger-color) !important;
 }
 
 .history-actions .el-button.delete-btn {
-  color: #f56c6c;
+  color: var(--danger-color) !important;
 }
 
 .empty-history {
   text-align: center;
   padding: 40px 0;
+  color: var(--text-color-secondary);
 }
 
 .history-tabs .el-tabs__content {
   padding-top: 15px;
+}
+
+.number-range {
+  display: flex;
+  align-items: center;
+  gap: 2%;
 }
 </style>
