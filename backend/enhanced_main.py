@@ -5,6 +5,7 @@ import logging
 import os
 import pymysql
 import redis
+import ipaddress
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -127,6 +128,86 @@ def get_redis_connection():
         logger.error(f"Redis connection failed: {e}")
         raise HTTPException(status_code=500, detail="Redis connection failed")
 
+def generate_ips_for_subnet_simple(connection, subnet_id: int, network: str) -> int:
+    """为网段生成IP地址列表（简化版本）"""
+    try:
+        # 如果network不包含CIDR前缀，需要从数据库获取子网掩码
+        if '/' not in network:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT netmask FROM subnets WHERE id = %s", (subnet_id,))
+                result = cursor.fetchone()
+                if result and result['netmask']:
+                    netmask = result['netmask']
+                    # 将点分十进制子网掩码转换为CIDR前缀长度
+                    if '.' in netmask:
+                        # 点分十进制格式，如 255.255.255.0
+                        prefix_length = sum([bin(int(x)).count('1') for x in netmask.split('.')])
+                        network = f"{network}/{prefix_length}"
+                    else:
+                        # 已经是前缀长度格式，如 24
+                        network = f"{network}/{netmask}"
+        
+        net = ipaddress.ip_network(network, strict=False)
+        print(f"解析网段 {network}，包含 {net.num_addresses} 个地址")
+    except ValueError as e:
+        print(f"网段格式错误: {network}, 错误: {e}")
+        raise ValueError(f"无效的网段格式: {network}")
+
+    # 检查网段大小，避免生成过多IP地址
+    if net.num_addresses > 65536:  # /16网段
+        print(f"网段过大: {network} 包含 {net.num_addresses} 个地址")
+        raise ValueError("网段过大，无法自动生成所有IP地址。建议使用/17或更小的网段")
+
+    # 批量创建IP地址数据
+    ip_data_list = []
+    host_count = 0
+    existing_count = 0
+    
+    print(f"开始遍历网段 {network} 中的主机地址...")
+    
+    try:
+        with connection.cursor() as cursor:
+            for ip in net.hosts():
+                host_count += 1
+                ip_str = str(ip)
+                
+                # 检查IP是否已存在
+                cursor.execute("SELECT id, subnet_id FROM ip_addresses WHERE ip_address = %s", (ip_str,))
+                existing_ip = cursor.fetchone()
+                
+                if existing_ip and existing_ip['subnet_id'] != subnet_id:
+                    # 如果IP已存在于其他网段，跳过
+                    existing_count += 1
+                    continue
+                
+                if not existing_ip:
+                    ip_data_list.append((ip_str, subnet_id, 'available'))
+
+            print(f"网段分析完成: 总主机数={host_count}, 已存在={existing_count}, 待创建={len(ip_data_list)}")
+
+            # 批量插入IP地址
+            if ip_data_list:
+                print(f"开始批量创建 {len(ip_data_list)} 个IP地址...")
+                
+                # 使用批量插入提高性能
+                sql = """
+                INSERT INTO ip_addresses (ip_address, subnet_id, status, created_at)
+                VALUES (%s, %s, %s, NOW())
+                """
+                cursor.executemany(sql, ip_data_list)
+                connection.commit()
+                
+                print(f"成功创建 {len(ip_data_list)} 个IP地址")
+                return len(ip_data_list)
+            else:
+                print("没有需要创建的IP地址")
+                return 0
+                
+    except Exception as e:
+        print(f"生成IP地址时发生错误: {str(e)}")
+        connection.rollback()
+        raise e
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -234,6 +315,7 @@ async def create_subnet(subnet: SubnetCreate):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # 创建网段
             sql = """
             INSERT INTO subnets (network, netmask, gateway, description, vlan_id, location, created_by)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -248,6 +330,16 @@ async def create_subnet(subnet: SubnetCreate):
             subnet_id = cursor.lastrowid
             cursor.execute("SELECT * FROM subnets WHERE id = %s", (subnet_id,))
             result = cursor.fetchone()
+            
+            # 自动生成IP地址
+            try:
+                print(f"开始为网段 {subnet.network} (ID: {subnet_id}) 生成IP地址...")
+                generated_count = generate_ips_for_subnet_simple(connection, subnet_id, subnet.network)
+                print(f"成功生成 {generated_count} 个IP地址")
+            except Exception as e:
+                print(f"生成IP地址失败: {str(e)}")
+                # 如果IP生成失败，不回滚网段创建，只记录错误
+                logger.warning(f"网段 {subnet.network} 创建成功，但IP地址生成失败: {str(e)}")
             
             return SubnetResponse(
                 id=result['id'],

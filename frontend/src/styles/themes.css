@@ -189,8 +189,8 @@ body {
     background-color: var(--fill-color-light) !important;
 }
 
-.el-table__body tr:hover > td.el-table__cell,
-.el-table tr:hover > td.el-table__cell {
+.el-table__body tr:hover>td.el-table__cell,
+.el-table tr:hover>td.el-table__cell {
     background-color: var(--fill-color) !important;
 }
 
@@ -765,16 +765,16 @@ body {
 }
 
 /* 表格行选择样式 */
-.el-table__row.current-row > td.el-table__cell {
+.el-table__row.current-row>td.el-table__cell {
     background-color: var(--fill-color) !important;
 }
 
-.el-table__row.hover-row > td.el-table__cell {
+.el-table__row.hover-row>td.el-table__cell {
     background-color: var(--fill-color) !important;
 }
 
 /* 表格排序图标 */
-.el-table th.el-table__cell > .cell .caret-wrapper {
+.el-table th.el-table__cell>.cell .caret-wrapper {
     color: var(--text-color-secondary) !important;
 }
 
