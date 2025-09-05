@@ -321,7 +321,7 @@ export default {
   opacity: 0;
 }
 
-/* 菜单样式 */
+/* 菜单样式 - 左对齐 */
 .sidebar-menu {
   flex: 1;
   border: none;
@@ -335,9 +335,15 @@ export default {
   border-radius: 8px;
   transition: all 0.3s ease;
   height: 48px;
-  line-height: 48px;
   font-size: 14px;
   font-weight: 500;
+  
+  /* 强制左对齐 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 16px !important;
+  text-align: left !important;
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
@@ -368,10 +374,15 @@ export default {
   border-radius: 8px;
   transition: all 0.3s ease;
   height: 48px;
-  line-height: 48px;
   font-size: 14px;
   font-weight: 500;
-  padding: 0 16px;
+  
+  /* 子菜单标题左对齐 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 16px !important;
+  text-align: left !important;
 }
 
 .sidebar-menu :deep(.el-sub-menu__title:hover) {
@@ -393,10 +404,15 @@ export default {
 .sidebar-menu :deep(.el-sub-menu .el-menu-item) {
   background-color: var(--bg-color-soft);
   margin: 2px 8px;
-  padding-left: 48px;
   height: 40px;
-  line-height: 40px;
   font-size: 13px;
+  
+  /* 子菜单项左对齐 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 0 20px !important;
+  text-align: left !important;
 }
 
 .sidebar-menu :deep(.el-sub-menu .el-menu-item:hover) {
