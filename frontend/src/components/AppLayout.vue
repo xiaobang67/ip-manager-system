@@ -88,13 +88,23 @@
               <template #title>网段管理</template>
             </el-menu-item>
             
-            <el-menu-item 
+            <el-sub-menu 
               v-if="userRole === 'admin'"
-              index="/user-management"
+              index="system-management"
             >
-              <el-icon><User /></el-icon>
-              <template #title>用户管理</template>
-            </el-menu-item>
+              <template #title>
+                <el-icon><Setting /></el-icon>
+                <span>系统管理</span>
+              </template>
+              <el-menu-item index="/user-management">
+                <el-icon><User /></el-icon>
+                <template #title>用户管理</template>
+              </el-menu-item>
+              <el-menu-item index="/department-management">
+                <el-icon><OfficeBuilding /></el-icon>
+                <template #title>部门管理</template>
+              </el-menu-item>
+            </el-sub-menu>
             
             <el-menu-item 
               v-if="userRole === 'admin'"
@@ -344,6 +354,64 @@ export default {
 .sidebar-menu :deep(.el-menu-item .el-icon) {
   margin-right: 12px;
   font-size: 18px;
+}
+
+/* 子菜单样式 */
+.sidebar-menu :deep(.el-sub-menu) {
+  margin: 4px 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title) {
+  color: var(--text-color-regular);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  height: 48px;
+  line-height: 48px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 16px;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title:hover) {
+  background-color: var(--fill-color);
+  color: var(--primary-color);
+}
+
+.sidebar-menu :deep(.el-sub-menu.is-active .el-sub-menu__title) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title .el-icon) {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* 子菜单项样式 */
+.sidebar-menu :deep(.el-sub-menu .el-menu-item) {
+  background-color: var(--bg-color-soft);
+  margin: 2px 8px;
+  padding-left: 48px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 13px;
+}
+
+.sidebar-menu :deep(.el-sub-menu .el-menu-item:hover) {
+  background-color: var(--fill-color-light);
+}
+
+.sidebar-menu :deep(.el-sub-menu .el-menu-item.is-active) {
+  background-color: var(--primary-color-light-7);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.sidebar-menu :deep(.el-sub-menu .el-menu-item .el-icon) {
+  margin-right: 8px;
+  font-size: 16px;
 }
 
 /* 折叠状态下的菜单样式 */

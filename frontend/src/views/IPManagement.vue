@@ -447,6 +447,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
+import { getDepartmentOptions } from '@/api/departments'
 import AppLayout from '@/components/AppLayout.vue'
 import SimpleIPFilter from '@/components/SimpleIPFilter.vue'
 
@@ -610,37 +611,24 @@ export default {
     
     const loadDepartments = async () => {
       try {
-        // 从已分配的IP中获取部门列表
-        const response = await ipAPI.searchIPs({ 
-          status: 'allocated', 
-          limit: 1000 
-        })
-        const ips = response.data || response || []
+        // 从部门管理API获取部门列表
+        const response = await getDepartmentOptions()
         
-        // 提取所有非空的assigned_to值并去重
-        const assignedTos = ips
-          .map(ip => ip.assigned_to)
-          .filter(assigned => assigned && assigned.trim())
-          .filter((value, index, self) => self.indexOf(value) === index)
-          .sort()
+        if (response && response.departments) {
+          departments.value = response.departments.map(dept => dept.name).sort()
+        } else {
+          // 如果获取失败，使用静态列表作为备选
+          departments.value = [
+            '技术部',
+            '运维部', 
+            '产品部',
+            '市场部',
+            '人事部',
+            '财务部',
+            '客服部'
+          ]
+        }
         
-        // 合并静态部门列表和动态获取的部门
-        const staticDepartments = [
-          '技术部',
-          '运维部', 
-          '产品部',
-          '市场部',
-          '人事部',
-          '财务部',
-          '客服部'
-        ]
-        
-        // 合并并去重
-        const allDepartments = [...staticDepartments, ...assignedTos]
-          .filter((value, index, self) => self.indexOf(value) === index)
-          .sort()
-        
-        departments.value = allDepartments
       } catch (error) {
         console.error('加载部门列表失败：', error)
         // 如果获取失败，使用静态列表

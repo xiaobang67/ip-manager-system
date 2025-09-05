@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .endpoints import auth, users, subnets, ips, custom_fields, tags, monitoring, audit_logs, security
+from .endpoints import auth, users, subnets, ips, custom_fields, tags, monitoring, audit_logs, security, departments
 from . import performance
 
 api_router = APIRouter()
@@ -7,6 +7,7 @@ api_router = APIRouter()
 # Include endpoint routers
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["user-management"])
+api_router.include_router(departments.router, prefix="/departments", tags=["department-management"])
 api_router.include_router(subnets.router, prefix="/subnets", tags=["subnet-management"])
 api_router.include_router(ips.router, prefix="/ips", tags=["ip-management"])
 api_router.include_router(custom_fields.router, prefix="/custom-fields", tags=["custom-fields"])

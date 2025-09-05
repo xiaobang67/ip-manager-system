@@ -37,6 +37,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/department-management',
+    name: 'DepartmentManagement',
+    component: () => import('@/views/DepartmentManagement.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/audit-logs',
     name: 'AuditLogs',
     component: () => import('@/views/AuditLogs.vue'),
