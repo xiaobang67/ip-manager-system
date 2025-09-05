@@ -187,6 +187,85 @@ def add_missing_endpoints(app, get_db_connection):
         finally:
             connection.close()
     
+    @app.post("/api/subnets/{subnet_id}/sync-ips")
+    async def sync_subnet_ips_api(subnet_id: int):
+        """同步网段的IP地址列表 - 根据CIDR重新生成正确的IP地址范围"""
+        connection = get_db_connection()
+        try:
+            import ipaddress
+            
+            with connection.cursor() as cursor:
+                # 检查网段是否存在
+                cursor.execute("SELECT network FROM subnets WHERE id = %s", (subnet_id,))
+                subnet_result = cursor.fetchone()
+                if not subnet_result:
+                    raise HTTPException(status_code=404, detail="网段不存在")
+                
+                network = subnet_result['network']
+                
+                # 解析网段
+                try:
+                    net = ipaddress.ip_network(network, strict=False)
+                except ValueError:
+                    raise HTTPException(status_code=400, detail=f"无效的网段格式: {network}")
+                
+                # 获取当前网段中的所有IP地址
+                cursor.execute(
+                    "SELECT ip_address, status FROM ip_addresses WHERE subnet_id = %s",
+                    (subnet_id,)
+                )
+                existing_ips = cursor.fetchall()
+                existing_ip_dict = {ip['ip_address']: ip['status'] for ip in existing_ips}
+                
+                # 生成网段中应该存在的所有IP地址
+                expected_ips = {str(ip) for ip in net.hosts()}
+                
+                # 找出需要添加和删除的IP地址
+                existing_ip_set = set(existing_ip_dict.keys())
+                ips_to_add = expected_ips - existing_ip_set
+                ips_to_remove = existing_ip_set - expected_ips
+                
+                stats = {
+                    'added': 0,
+                    'removed': 0,
+                    'kept': len(existing_ip_set & expected_ips)
+                }
+                
+                # 删除不再属于网段的IP地址（只删除未分配的）
+                if ips_to_remove:
+                    for ip_to_remove in ips_to_remove:
+                        if existing_ip_dict[ip_to_remove] == 'available':
+                            cursor.execute(
+                                "DELETE FROM ip_addresses WHERE subnet_id = %s AND ip_address = %s",
+                                (subnet_id, ip_to_remove)
+                            )
+                            stats['removed'] += 1
+                
+                # 添加新的IP地址
+                if ips_to_add:
+                    for ip_str in ips_to_add:
+                        cursor.execute(
+                            "INSERT INTO ip_addresses (ip_address, subnet_id, status) VALUES (%s, %s, 'available')",
+                            (ip_str, subnet_id)
+                        )
+                    stats['added'] = len(ips_to_add)
+                
+                connection.commit()
+                
+                return {
+                    "message": "IP地址同步完成",
+                    "subnet_id": subnet_id,
+                    "network": network,
+                    "stats": stats
+                }
+        except Exception as e:
+            connection.rollback()
+            if isinstance(e, HTTPException):
+                raise e
+            raise HTTPException(status_code=500, detail=f"同步失败: {str(e)}")
+        finally:
+            connection.close()
+    
     # IP地址相关API端点
     @app.get("/api/ips")
     async def get_ips_api(skip: int = 0, limit: int = 50, subnet_id: Optional[int] = None):

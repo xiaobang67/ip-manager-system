@@ -76,13 +76,21 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="scope">
             <el-button size="small" @click="viewSubnet(scope.row)">
               查看
             </el-button>
             <el-button size="small" type="primary" @click="editSubnet(scope.row)">
               编辑
+            </el-button>
+            <el-button 
+              size="small" 
+              type="warning" 
+              @click="syncSubnetIPs(scope.row)"
+              :loading="scope.row.syncing"
+            >
+              同步IP
             </el-button>
             <el-button
               size="small"
@@ -340,6 +348,42 @@ export default {
       }
     }
 
+    // 同步网段IP地址
+    const syncSubnetIPs = async (subnet) => {
+      try {
+        await ElMessageBox.confirm(
+          `确定要同步网段 ${subnet.network} 的IP地址吗？\n\n此操作将：\n• 根据CIDR格式重新生成正确的IP地址范围\n• 添加缺失的IP地址\n• 删除不属于该网段的未分配IP地址\n• 保留已分配的IP地址`,
+          '确认同步IP地址',
+          {
+            confirmButtonText: '确定同步',
+            cancelButtonText: '取消',
+            type: 'warning',
+            dangerouslyUseHTMLString: false
+          }
+        )
+
+        // 设置同步状态
+        subnet.syncing = true
+        
+        const response = await subnetApi.syncSubnetIPs(subnet.id)
+        
+        ElMessage.success({
+          message: `IP地址同步完成！新增 ${response.stats.added} 个，删除 ${response.stats.removed} 个，保持 ${response.stats.kept} 个`,
+          duration: 5000
+        })
+        
+        // 刷新网段列表以显示最新的IP统计
+        fetchSubnets()
+      } catch (error) {
+        if (error !== 'cancel') {
+          ElMessage.error('同步IP地址失败: ' + (error.response?.data?.detail || error.message))
+        }
+      } finally {
+        // 清除同步状态
+        subnet.syncing = false
+      }
+    }
+
     // 对话框成功回调
     const handleDialogSuccess = () => {
       fetchSubnets()
@@ -399,6 +443,7 @@ export default {
       viewSubnet,
       editSubnet,
       deleteSubnet,
+      syncSubnetIPs,
       handleDialogSuccess,
       formatDate,
       getUsagePercentage,

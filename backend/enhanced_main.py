@@ -251,12 +251,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 包含API v1路由（如果可用）
+# 包含API路由（如果可用）
 if API_V1_AVAILABLE:
-    app.include_router(api_router, prefix="/api/v1")
-    logger.info("API v1 router included successfully")
+    app.include_router(api_router, prefix="/api")
+    logger.info("API router included successfully with /api prefix")
 else:
-    logger.warning("API v1 router not available, using fallback endpoints")
+    logger.warning("API router not available, using fallback endpoints")
 
 # 添加缺失的API端点
 add_missing_endpoints(app, get_db_connection)
