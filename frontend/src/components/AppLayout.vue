@@ -80,7 +80,7 @@
             
             <el-menu-item index="/ip-management">
               <el-icon><Connection /></el-icon>
-              <template #title>IP管理</template>
+              <template #title>IP地址管理</template>
             </el-menu-item>
             
             <el-menu-item index="/subnet-management">

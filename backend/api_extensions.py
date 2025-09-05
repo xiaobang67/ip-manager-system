@@ -27,24 +27,8 @@ def add_missing_endpoints(app, get_db_connection):
                 cursor.execute("""
                     SELECT 
                         s.*,
-                        COUNT(ip.id) as allocated_count,
-                        CASE 
-                            WHEN s.netmask REGEXP '^[0-9]+$' THEN 
-                                POWER(2, 32 - CAST(s.netmask AS UNSIGNED)) - 2
-                            ELSE 
-                                CASE s.netmask
-                                    WHEN '255.255.255.0' THEN 254
-                                    WHEN '255.255.254.0' THEN 510
-                                    WHEN '255.255.252.0' THEN 1022
-                                    WHEN '255.255.248.0' THEN 2046
-                                    WHEN '255.255.240.0' THEN 4094
-                                    WHEN '255.255.224.0' THEN 8190
-                                    WHEN '255.255.192.0' THEN 16382
-                                    WHEN '255.255.128.0' THEN 32766
-                                    WHEN '255.255.0.0' THEN 65534
-                                    ELSE 254
-                                END
-                        END as ip_count
+                        COUNT(CASE WHEN ip.status = 'allocated' THEN 1 END) as allocated_count,
+                        COUNT(CASE WHEN ip.status = 'available' THEN 1 END) as available_count
                     FROM subnets s
                     LEFT JOIN ip_addresses ip ON s.id = ip.subnet_id
                     GROUP BY s.id
@@ -55,6 +39,15 @@ def add_missing_endpoints(app, get_db_connection):
                 
                 subnets = []
                 for row in results:
+                    # 使用Python的ipaddress库计算正确的IP总数
+                    import ipaddress
+                    try:
+                        network = ipaddress.ip_network(row['network'], strict=False)
+                        total_ips = network.num_addresses - 2  # 排除网络地址和广播地址
+                    except ValueError:
+                        # 如果网段格式错误，使用数据库中的IP数量作为备选
+                        total_ips = (row['allocated_count'] or 0) + (row['available_count'] or 0)
+                    
                     subnet_data = {
                         "id": row['id'],
                         "network": row['network'],
@@ -65,7 +58,8 @@ def add_missing_endpoints(app, get_db_connection):
                         "location": row['location'],
                         "created_at": str(row['created_at']),
                         "allocated_count": int(row['allocated_count'] or 0),
-                        "ip_count": int(row['ip_count'] or 0)
+                        "available_count": int(row['available_count'] or 0),
+                        "ip_count": total_ips
                     }
                     subnets.append(subnet_data)
                 
