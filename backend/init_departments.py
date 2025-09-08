@@ -42,22 +42,15 @@ def create_departments_table():
             if not table_exists:
                 logger.info("创建部门表...")
                 
-                # 创建部门表
+                # 创建部门表（简化版）
                 cursor.execute("""
                     CREATE TABLE departments (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         name VARCHAR(100) NOT NULL UNIQUE,
                         code VARCHAR(50) UNIQUE,
-                        description TEXT,
-                        manager VARCHAR(100),
-                        contact_email VARCHAR(100),
-                        contact_phone VARCHAR(50),
-                        is_active BOOLEAN DEFAULT TRUE,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         INDEX idx_name (name),
-                        INDEX idx_code (code),
-                        INDEX idx_is_active (is_active)
+                        INDEX idx_code (code)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """)
                 
@@ -72,20 +65,20 @@ def create_departments_table():
             if data_count == 0:
                 logger.info("插入初始部门数据...")
                 
-                # 插入初始数据
+                # 插入初始数据（简化版）
                 departments_data = [
-                    ('技术部', 'TECH', '负责系统开发和技术支持', '技术总监', 'tech@company.com', '010-12345678'),
-                    ('运维部', 'OPS', '负责系统运维和基础设施管理', '运维经理', 'ops@company.com', '010-12345679'),
-                    ('产品部', 'PRODUCT', '负责产品规划和设计', '产品经理', 'product@company.com', '010-12345680'),
-                    ('市场部', 'MARKETING', '负责市场推广和品牌建设', '市场总监', 'marketing@company.com', '010-12345681'),
-                    ('人事部', 'HR', '负责人力资源管理', '人事经理', 'hr@company.com', '010-12345682'),
-                    ('财务部', 'FINANCE', '负责财务管理和会计核算', '财务经理', 'finance@company.com', '010-12345683'),
-                    ('客服部', 'SERVICE', '负责客户服务和支持', '客服经理', 'service@company.com', '010-12345684')
+                    ('技术部', 'TECH'),
+                    ('运维部', 'OPS'),
+                    ('产品部', 'PRODUCT'),
+                    ('市场部', 'MARKETING'),
+                    ('人事部', 'HR'),
+                    ('财务部', 'FINANCE'),
+                    ('客服部', 'SERVICE')
                 ]
                 
                 cursor.executemany("""
-                    INSERT INTO departments (name, code, description, manager, contact_email, contact_phone, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+                    INSERT INTO departments (name, code)
+                    VALUES (%s, %s)
                 """, departments_data)
                 
                 connection.commit()
@@ -94,13 +87,12 @@ def create_departments_table():
                 logger.info(f"部门表已有 {data_count} 条数据")
             
             # 显示当前部门列表
-            cursor.execute("SELECT id, name, code, manager, is_active FROM departments ORDER BY name")
+            cursor.execute("SELECT id, name, code, created_at FROM departments ORDER BY name")
             departments = cursor.fetchall()
             
             logger.info("当前部门列表:")
             for dept in departments:
-                status = "活跃" if dept['is_active'] else "停用"
-                logger.info(f"  ID: {dept['id']}, 名称: {dept['name']}, 编码: {dept['code']}, 负责人: {dept['manager']}, 状态: {status}")
+                logger.info(f"  ID: {dept['id']}, 名称: {dept['name']}, 编码: {dept['code']}, 创建时间: {dept['created_at']}")
                 
     except Exception as e:
         logger.error(f"初始化部门表失败: {e}")
@@ -122,10 +114,7 @@ def test_departments_api():
             cursor.execute("SELECT COUNT(*) as total FROM departments")
             total = cursor.fetchone()['total']
             
-            cursor.execute("SELECT COUNT(*) as active FROM departments WHERE is_active = TRUE")
-            active = cursor.fetchone()['active']
-            
-            logger.info(f"API测试结果: 总部门数={total}, 活跃部门数={active}")
+            logger.info(f"API测试结果: 总部门数={total}")
             
             # 测试搜索
             cursor.execute("SELECT * FROM departments WHERE name LIKE %s", ('%技术%',))

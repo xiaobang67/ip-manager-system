@@ -613,10 +613,16 @@ export default {
       try {
         // 从部门管理API获取部门列表
         const response = await getDepartmentOptions()
+        console.log('部门API响应:', response) // 调试信息
         
-        if (response && response.departments) {
+        if (response && response.data && response.data.departments) {
+          // 处理API响应格式：response.data.departments
+          departments.value = response.data.departments.map(dept => dept.name).sort()
+        } else if (response && response.departments) {
+          // 处理直接响应格式：response.departments
           departments.value = response.departments.map(dept => dept.name).sort()
         } else {
+          console.warn('部门API响应格式异常，使用备用列表')
           // 如果获取失败，使用静态列表作为备选
           departments.value = [
             '技术部',
@@ -628,6 +634,8 @@ export default {
             '客服部'
           ]
         }
+        
+        console.log('最终部门列表:', departments.value) // 调试信息
         
       } catch (error) {
         console.error('加载部门列表失败：', error)

@@ -177,12 +177,31 @@ export default {
     
     const loadDepartments = async () => {
       try {
-        // 暂时使用搜索API获取已分配IP的部门列表，避免404错误
-        const response = await ipAPI.searchIPs({ 
+        // 首先尝试从部门管理API获取部门列表
+        const { getDepartmentOptions } = await import('@/api/departments')
+        const response = await getDepartmentOptions()
+        
+        if (response && response.data && response.data.departments) {
+          // 处理API响应格式：response.data.departments
+          const apiDepartments = response.data.departments.map(dept => dept.name).sort()
+          departments.value = apiDepartments
+          console.log('从部门API获取到部门列表:', apiDepartments)
+          return
+        } else if (response && response.departments) {
+          // 处理直接响应格式：response.departments
+          const apiDepartments = response.departments.map(dept => dept.name).sort()
+          departments.value = apiDepartments
+          console.log('从部门API获取到部门列表:', apiDepartments)
+          return
+        }
+        
+        // 如果部门API没有返回数据，尝试从已分配IP中获取
+        console.log('部门API无数据，尝试从IP数据中获取部门信息')
+        const ipResponse = await ipAPI.searchIPs({ 
           status: 'allocated', 
           limit: 1000 
         })
-        const ips = response.data || response || []
+        const ips = ipResponse.data || ipResponse || []
         
         // 提取所有非空的assigned_to值并去重
         const assignedTos = ips
@@ -208,6 +227,8 @@ export default {
           .sort()
         
         departments.value = allDepartments
+        console.log('合并后的部门列表:', allDepartments)
+        
       } catch (error) {
         console.error('加载部门列表失败：', error)
         // 如果获取失败，使用静态列表

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部门管理修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-left: 4px solid #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-left: 4px solid #dc3545;
+            background-color: #f8d7da;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .department-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .department-item {
+            background: #e9ecef;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>部门管理修复测试</h1>
+        <p>测试IP地址管理中的部门关联功能是否正常工作</p>
+
+        <div class="test-section">
+            <h3>1. 测试部门API连接</h3>
+            <button onclick="testDepartmentAPI()">测试部门API</button>
+            <div id="api-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 部门列表显示</h3>
+            <button onclick="loadDepartments()">加载部门列表</button>
+            <div id="departments-result" class="result"></div>
+            <div id="departments-list" class="department-list"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 模拟IP分配中的部门选择</h3>
+            <button onclick="simulateIPAllocation()">模拟IP分配</button>
+            <div id="allocation-result" class="result"></div>
+            <select id="department-select" style="width: 100%; padding: 8px; margin-top: 10px;">
+                <option value="">选择部门...</option>
+            </select>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 测试结果总结</h3>
+            <div id="summary-result" class="result">点击上面的测试按钮开始测试...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        let testResults = {
+            apiConnection: false,
+            departmentLoad: false,
+            ipAllocation: false
+        };
+
+        async function testDepartmentAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.textContent = '正在测试API连接...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/departments/options`);
+                const data = await response.json();
+                
+                if (response.ok && data.departments) {
+                    resultDiv.textContent = `✅ API连接成功！\n返回 ${data.departments.length} 个部门\n\n响应数据:\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                    testResults.apiConnection = true;
+                } else {
+                    throw new Error(`API返回错误: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ API连接失败: ${error.message}`;
+                resultDiv.className = 'result error';
+                testResults.apiConnection = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function loadDepartments() {
+            const resultDiv = document.getElementById('departments-result');
+            const listDiv = document.getElementById('departments-list');
+            
+            resultDiv.textContent = '正在加载部门列表...';
+            listDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/departments/options`);
+                const data = await response.json();
+                
+                if (response.ok && data.departments) {
+                    resultDiv.textContent = `✅ 成功加载 ${data.departments.length} 个部门`;
+                    resultDiv.className = 'result success';
+                    
+                    // 显示部门列表
+                    data.departments.forEach(dept => {
+                        const deptDiv = document.createElement('div');
+                        deptDiv.className = 'department-item';
+                        deptDiv.textContent = `${dept.name} (${dept.code})`;
+                        listDiv.appendChild(deptDiv);
+                    });
+                    
+                    testResults.departmentLoad = true;
+                } else {
+                    throw new Error(`加载失败: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 加载部门列表失败: ${error.message}`;
+                resultDiv.className = 'result error';
+                testResults.departmentLoad = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function simulateIPAllocation() {
+            const resultDiv = document.getElementById('allocation-result');
+            const selectElement = document.getElementById('department-select');
+            
+            resultDiv.textContent = '正在模拟IP分配场景...';
+            selectElement.innerHTML = '<option value="">选择部门...</option>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/departments/options`);
+                const data = await response.json();
+                
+                if (response.ok && data.departments) {
+                    // 填充下拉菜单
+                    data.departments.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept.name;
+                        option.textContent = dept.name;
+                        selectElement.appendChild(option);
+                    });
+                    
+                    resultDiv.textContent = `✅ IP分配场景模拟成功！\n下拉菜单已填充 ${data.departments.length} 个部门选项\n请在下方选择部门测试功能`;
+                    resultDiv.className = 'result success';
+                    testResults.ipAllocation = true;
+                } else {
+                    throw new Error(`模拟失败: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ IP分配场景模拟失败: ${error.message}`;
+                resultDiv.className = 'result error';
+                testResults.ipAllocation = false;
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary-result');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            
+            let summary = `测试进度: ${passedTests}/${totalTests}\n\n`;
+            summary += `API连接测试: ${testResults.apiConnection ? '✅ 通过' : '❌ 失败'}\n`;
+            summary += `部门列表加载: ${testResults.departmentLoad ? '✅ 通过' : '❌ 失败'}\n`;
+            summary += `IP分配模拟: ${testResults.ipAllocation ? '✅ 通过' : '❌ 失败'}\n\n`;
+            
+            if (passedTests === totalTests) {
+                summary += '🎉 所有测试通过！IP地址管理中的部门关联功能已修复。';
+                summaryDiv.className = 'result success';
+            } else {
+                summary += '⚠️ 部分测试失败，需要进一步检查。';
+                summaryDiv.className = 'result error';
+            }
+            
+            summaryDiv.textContent = summary;
+        }
+
+        // 监听部门选择变化
+        document.getElementById('department-select').addEventListener('change', function(e) {
+            if (e.target.value) {
+                const resultDiv = document.getElementById('allocation-result');
+                resultDiv.textContent += `\n\n✅ 用户选择了部门: ${e.target.value}`;
+            }
+        });
+    </script>
+</body>
+</html>
