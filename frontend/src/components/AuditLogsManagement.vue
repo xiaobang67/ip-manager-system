@@ -494,7 +494,7 @@ export default {
     
     // 计算属性
     const isAdmin = computed(() => {
-      return store.getters['auth/userRole'] === 'admin'
+      return store.getters['auth/userRole'] === 'ADMIN'
     })
     
     // 方法

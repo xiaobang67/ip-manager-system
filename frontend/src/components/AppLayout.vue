@@ -89,7 +89,7 @@
             </el-menu-item>
             
             <el-sub-menu 
-              v-if="userRole === 'admin'"
+              v-if="userRole === 'ADMIN'"
               index="system-management"
             >
               <template #title>
@@ -107,7 +107,7 @@
             </el-sub-menu>
             
             <el-menu-item 
-              v-if="userRole === 'admin'"
+              v-if="userRole === 'ADMIN'"
               index="/audit-logs"
             >
               <el-icon><Document /></el-icon>

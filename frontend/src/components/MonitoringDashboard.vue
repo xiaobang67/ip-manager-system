@@ -244,7 +244,7 @@ export default {
     
     // 计算属性
     const currentUser = computed(() => store.getters['auth/currentUser'])
-    const isAdmin = computed(() => store.getters['auth/userRole'] === 'admin')
+    const isAdmin = computed(() => store.getters['auth/userRole'] === 'ADMIN')
 
     // 图表实例
     const ipUtilizationChart = ref(null)

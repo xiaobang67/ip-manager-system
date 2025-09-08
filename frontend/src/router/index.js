@@ -85,7 +85,7 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // 如果需要管理员权限但不是管理员
-  if (to.meta.requiresAdmin && userRole !== 'admin') {
+  if (to.meta.requiresAdmin && userRole !== 'ADMIN') {
     next('/dashboard')
     return
   }

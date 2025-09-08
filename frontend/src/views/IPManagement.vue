@@ -498,7 +498,7 @@ export default {
     // 用户权限相关
     const currentUser = computed(() => store.getters['auth/currentUser'])
     const userRole = computed(() => store.getters['auth/userRole'])
-    const isAdmin = computed(() => userRole.value === 'admin')
+    const isAdmin = computed(() => userRole.value === 'ADMIN')
     
     // 响应式数据
     const loading = ref(false)

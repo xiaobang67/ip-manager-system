@@ -624,7 +624,7 @@ const loadUsers = async () => {
 
 const loadStatistics = async () => {
   try {
-    if (userRole.value === 'admin') {
+    if (userRole.value === 'ADMIN') {
       statistics.value = await getUserStatistics()
     }
   } catch (error) {
