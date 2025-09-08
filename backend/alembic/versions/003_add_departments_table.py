@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '003_add_departments_table'
-down_revision = '002_add_custom_fields_and_tags'
+revision = '003'
+down_revision = '002'
 branch_labels = None
 depends_on = None
 

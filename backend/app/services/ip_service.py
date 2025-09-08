@@ -87,6 +87,10 @@ class IPService:
 
     def allocate_ip(self, request: IPAllocationRequest, allocated_by: int) -> IPAddressResponse:
         """分配IP地址"""
+        print(f"[DEBUG] 开始分配IP，请求数据: {request}")
+        print(f"[DEBUG] 分配时间: {request.allocated_at}")
+        print(f"[DEBUG] 分配人ID: {allocated_by}")
+        
         # 如果指定了首选IP，尝试分配
         if request.preferred_ip:
             preferred_ip = self.ip_repo.get_by_ip_address(request.preferred_ip)
@@ -97,22 +101,27 @@ class IPService:
                     raise ConflictError(f"IP地址 {request.preferred_ip} 不可用，当前状态: {preferred_ip.status}")
                 
                 # 分配指定IP
+                allocated_time = request.allocated_at if request.allocated_at else datetime.utcnow()
+                
                 update_data = IPAddressUpdate(
                     mac_address=request.mac_address,
-                    hostname=request.hostname,
+                    user_name=request.user_name,
                     device_type=request.device_type,
                     location=request.location,
                     assigned_to=request.assigned_to,
                     description=request.description,
-                    status=IPStatus.ALLOCATED
+                    status=IPStatus.ALLOCATED,
+                    allocated_at=allocated_time,
+                    allocated_by=allocated_by
                 )
                 
-                # 更新分配信息
-                preferred_ip.allocated_at = datetime.utcnow()
-                preferred_ip.allocated_by = allocated_by
-                
+                print(f"[DEBUG] 更新数据: {update_data}")
                 updated_ip = self.ip_repo.update(preferred_ip.id, update_data)
-                return self._ip_to_response(updated_ip)
+                print(f"[DEBUG] 更新后的IP对象: {updated_ip}")
+                print(f"[DEBUG] 更新后的分配时间: {updated_ip.allocated_at}")
+                result = self._ip_to_response(updated_ip)
+                print(f"[DEBUG] 响应数据: {result}")
+                return result
         
         # 自动分配可用IP
         available_ips = self.ip_repo.get_available_ips(request.subnet_id, limit=1)
@@ -121,19 +130,20 @@ class IPService:
         
         ip_to_allocate = available_ips[0]
         
+        # 更新分配信息
+        allocated_time = request.allocated_at if request.allocated_at else datetime.utcnow()
+        
         update_data = IPAddressUpdate(
             mac_address=request.mac_address,
-            hostname=request.hostname,
+            user_name=request.user_name,
             device_type=request.device_type,
             location=request.location,
             assigned_to=request.assigned_to,
             description=request.description,
-            status=IPStatus.ALLOCATED
+            status=IPStatus.ALLOCATED,
+            allocated_at=allocated_time,
+            allocated_by=allocated_by
         )
-        
-        # 更新分配信息
-        ip_to_allocate.allocated_at = datetime.utcnow()
-        ip_to_allocate.allocated_by = allocated_by
         
         updated_ip = self.ip_repo.update(ip_to_allocate.id, update_data)
         return self._ip_to_response(updated_ip)
@@ -175,7 +185,7 @@ class IPService:
         update_data = IPAddressUpdate(
             status=IPStatus.AVAILABLE,
             mac_address=None,
-            hostname=None,
+            user_name=None,
             device_type=None,
             assigned_to=None,
             description=request.reason
@@ -298,7 +308,7 @@ class IPService:
         
         # 保存搜索历史（如果有搜索条件）
         if any([request.query, request.subnet_id, request.status, request.device_type, 
-                request.location, request.assigned_to, request.mac_address, request.hostname,
+                request.location, request.assigned_to, request.mac_address, request.user_name,
                 request.ip_range_start, request.tags]):
             search_history_service = SearchHistoryService(self.db)
             search_params = request.model_dump(exclude_unset=True, exclude={'skip', 'limit'})
@@ -323,7 +333,7 @@ class IPService:
             IPRangeStatusResponse(
                 ip_address=item['ip_address'],
                 status=item['status'],
-                hostname=item['hostname'],
+                user_name=item['hostname'],
                 mac_address=item['mac_address'],
                 assigned_to=item['assigned_to']
             )
@@ -440,7 +450,7 @@ class IPService:
             subnet_id=ip.subnet_id,
             status=ip.status,
             mac_address=ip.mac_address,
-            hostname=ip.hostname,
+            user_name=ip.user_name,
             device_type=ip.device_type,
             location=ip.location,
             assigned_to=ip.assigned_to,

@@ -1,7 +1,7 @@
 """Add custom fields and tags tables
 
 Revision ID: 002_add_custom_fields_and_tags
-Revises: add_search_history_and_indexes
+Revises: 001_initial_database_schema
 Create Date: 2025-01-02 10:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '002_add_custom_fields_and_tags'
-down_revision = 'add_search_history_and_indexes'
+revision = '002'
+down_revision = '001'
 branch_labels = None
 depends_on = None
 

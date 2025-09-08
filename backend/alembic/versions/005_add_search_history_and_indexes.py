@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'search_history_001'
-down_revision = None
+revision = '005'
+down_revision = '003'
 depends_on = None
 
 
@@ -43,7 +43,7 @@ def upgrade():
     op.create_index('ix_ip_addresses_assigned_to', 'ip_addresses', ['assigned_to'])
     
     # Add full-text search indexes (MySQL specific)
-    op.execute("CREATE FULLTEXT INDEX ix_ip_addresses_fulltext ON ip_addresses(hostname, description)")
+    op.execute("CREATE FULLTEXT INDEX ix_ip_addresses_fulltext ON ip_addresses(user_name, description)")
     op.execute("CREATE FULLTEXT INDEX ix_subnets_fulltext ON subnets(description)")
     
     # Add composite indexes for common query patterns

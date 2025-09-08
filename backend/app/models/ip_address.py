@@ -20,7 +20,7 @@ class IPAddress(Base):
     subnet_id = Column(Integer, ForeignKey("subnets.id", ondelete="CASCADE"), nullable=False, index=True)
     status = Column(Enum(IPStatus), default=IPStatus.AVAILABLE, index=True)
     mac_address = Column(String(17), index=True)
-    hostname = Column(String(255), index=True)
+    user_name = Column(String(255), index=True)
     device_type = Column(String(50))
     location = Column(String(100))
     assigned_to = Column(String(100))

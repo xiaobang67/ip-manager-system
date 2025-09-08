@@ -69,7 +69,7 @@ class SubnetResponse(BaseModel):
 class IPAddressCreate(BaseModel):
     ip_address: str
     subnet_id: int
-    hostname: Optional[str] = None
+    user_name: Optional[str] = None
     mac_address: Optional[str] = None
     device_type: Optional[str] = None
     location: Optional[str] = None
@@ -81,12 +81,13 @@ class IPAddressResponse(BaseModel):
     ip_address: str
     subnet_id: int
     status: str
-    hostname: Optional[str]
+    user_name: Optional[str]
     mac_address: Optional[str]
     device_type: Optional[str]
     location: Optional[str]
     assigned_to: Optional[str]
     description: Optional[str]
+    allocated_at: Optional[str]
     created_at: str
 
 class UserCreate(BaseModel):
@@ -445,13 +446,13 @@ async def create_ip_address(ip: IPAddressCreate):
                 raise HTTPException(status_code=400, detail="Subnet not found")
             
             sql = """
-            INSERT INTO ip_addresses (ip_address, subnet_id, hostname, mac_address, 
+            INSERT INTO ip_addresses (ip_address, subnet_id, user_name, mac_address, 
                                     device_type, location, assigned_to, description, 
                                     status, allocated_by)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (
-                ip.ip_address, ip.subnet_id, ip.hostname, ip.mac_address,
+                ip.ip_address, ip.subnet_id, ip.user_name, ip.mac_address,
                 ip.device_type, ip.location, ip.assigned_to, ip.description,
                 'allocated', 1  # 默认状态为allocated，用户ID为1
             ))
@@ -467,12 +468,13 @@ async def create_ip_address(ip: IPAddressCreate):
                 ip_address=result['ip_address'],
                 subnet_id=result['subnet_id'],
                 status=result['status'],
-                hostname=result['hostname'],
+                user_name=result['user_name'],
                 mac_address=result['mac_address'],
                 device_type=result['device_type'],
                 location=result['location'],
                 assigned_to=result['assigned_to'],
                 description=result['description'],
+                allocated_at=str(result['allocated_at']) if result['allocated_at'] else None,
                 created_at=str(result['created_at'])
             )
     except pymysql.IntegrityError as e:
@@ -506,12 +508,13 @@ async def list_ip_addresses(skip: int = 0, limit: int = 50, subnet_id: Optional[
                     ip_address=row['ip_address'],
                     subnet_id=row['subnet_id'],
                     status=row['status'],
-                    hostname=row['hostname'],
+                    user_name=row['user_name'],
                     mac_address=row['mac_address'],
                     device_type=row['device_type'],
                     location=row['location'],
                     assigned_to=row['assigned_to'],
                     description=row['description'],
+                    allocated_at=str(row['allocated_at']) if row['allocated_at'] else None,
                     created_at=str(row['created_at'])
                 ) for row in results
             ]

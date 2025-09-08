@@ -564,7 +564,7 @@ def add_missing_endpoints(app, get_db_connection):
                         # 其他情况：进行模糊匹配，但对assigned_to优先精确匹配
                         where_conditions.append("""(
                             ip_address LIKE %s OR 
-                            hostname LIKE %s OR 
+                            user_name LIKE %s OR 
                             assigned_to = %s OR
                             assigned_to LIKE %s OR
                             mac_address LIKE %s OR
@@ -604,12 +604,13 @@ def add_missing_endpoints(app, get_db_connection):
                         "ip_address": row['ip_address'],
                         "subnet_id": row['subnet_id'],
                         "status": row['status'],
-                        "hostname": row['hostname'],
+                        "user_name": row['user_name'],
                         "mac_address": row['mac_address'],
                         "device_type": row['device_type'],
                         "location": row['location'],
                         "assigned_to": row['assigned_to'],
                         "description": row['description'],
+                        "allocated_at": str(row['allocated_at']) if row['allocated_at'] else None,
                         "created_at": str(row['created_at'])
                     } for row in results
                 ]
@@ -725,7 +726,7 @@ def add_missing_endpoints(app, get_db_connection):
                     UPDATE ip_addresses SET 
                         status = 'allocated',
                         mac_address = %s,
-                        hostname = %s,
+                        user_name = %s,
                         device_type = %s,
                         location = %s,
                         assigned_to = %s,
@@ -736,7 +737,7 @@ def add_missing_endpoints(app, get_db_connection):
                     WHERE id = %s
                 """, (
                     data.get('mac_address'),
-                    data.get('hostname'),
+                    data.get('user_name'),  # 改为user_name
                     data.get('device_type'),
                     data.get('location'),
                     data.get('assigned_to'),
@@ -755,7 +756,7 @@ def add_missing_endpoints(app, get_db_connection):
                     "ip_address": result['ip_address'],
                     "subnet_id": result['subnet_id'],
                     "status": result['status'],
-                    "hostname": result['hostname'],
+                    "user_name": result['user_name'],
                     "mac_address": result['mac_address'],
                     "device_type": result['device_type'],
                     "location": result['location'],
@@ -822,7 +823,7 @@ def add_missing_endpoints(app, get_db_connection):
                     "ip_address": result['ip_address'],
                     "subnet_id": result['subnet_id'],
                     "status": result['status'],
-                    "hostname": result['hostname'],
+                    "user_name": result['user_name'],
                     "mac_address": result['mac_address'],
                     "device_type": result['device_type'],
                     "location": result['location'],
@@ -869,7 +870,7 @@ def add_missing_endpoints(app, get_db_connection):
                     UPDATE ip_addresses SET 
                         status = 'available',
                         mac_address = NULL,
-                        hostname = NULL,
+                        user_name = NULL,
                         device_type = NULL,
                         location = NULL,
                         assigned_to = NULL,
@@ -891,7 +892,7 @@ def add_missing_endpoints(app, get_db_connection):
                     "ip_address": result['ip_address'],
                     "subnet_id": result['subnet_id'],
                     "status": result['status'],
-                    "hostname": result['hostname'],
+                    "user_name": result['user_name'],
                     "mac_address": result['mac_address'],
                     "device_type": result['device_type'],
                     "location": result['location'],
@@ -965,7 +966,7 @@ def add_missing_endpoints(app, get_db_connection):
                                 UPDATE ip_addresses SET 
                                     status = 'available',
                                     mac_address = NULL,
-                                    hostname = NULL,
+                                    user_name = NULL,
                                     device_type = NULL,
                                     location = NULL,
                                     assigned_to = NULL,
@@ -1108,7 +1109,7 @@ def add_missing_endpoints(app, get_db_connection):
                 
                 # 基本搜索
                 if data.get('query'):
-                    where_conditions.append("(ip_address LIKE %s OR hostname LIKE %s OR assigned_to LIKE %s)")
+                    where_conditions.append("(ip_address LIKE %s OR user_name LIKE %s OR assigned_to LIKE %s)")
                     query_param = f"%{data['query']}%"
                     params.extend([query_param, query_param, query_param])
                 
@@ -1142,10 +1143,10 @@ def add_missing_endpoints(app, get_db_connection):
                     where_conditions.append("mac_address LIKE %s")
                     params.append(f"%{data['mac_address']}%")
                 
-                # 主机名过滤
-                if data.get('hostname'):
-                    where_conditions.append("hostname LIKE %s")
-                    params.append(f"%{data['hostname']}%")
+                # 使用人过滤
+                if data.get('user_name'):
+                    where_conditions.append("user_name LIKE %s")
+                    params.append(f"%{data['user_name']}%")
                 
                 # IP范围过滤
                 if data.get('ip_range_start') and data.get('ip_range_end'):

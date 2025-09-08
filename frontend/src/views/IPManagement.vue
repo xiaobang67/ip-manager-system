@@ -95,7 +95,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="hostname" label="主机名" width="150" />
+        <el-table-column prop="user_name" label="使用人" width="150" />
         <el-table-column prop="mac_address" label="MAC地址" width="150" />
         <el-table-column prop="device_type" label="设备类型" width="120" />
         <el-table-column prop="assigned_to" label="所属部门" width="120" />
@@ -194,8 +194,8 @@
         <el-form-item label="MAC地址" prop="mac_address">
           <el-input v-model="allocationForm.mac_address" placeholder="如：00:11:22:33:44:55" />
         </el-form-item>
-        <el-form-item label="主机名" prop="hostname">
-          <el-input v-model="allocationForm.hostname" placeholder="主机名" />
+        <el-form-item label="使用人" prop="user_name">
+          <el-input v-model="allocationForm.user_name" placeholder="使用人" />
         </el-form-item>
         <el-form-item label="设备类型" prop="device_type">
           <el-select v-model="allocationForm.device_type" placeholder="选择设备类型" style="width: 100%">
@@ -221,6 +221,17 @@
               :value="dept"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item label="分配时间" prop="allocated_at">
+          <el-date-picker
+            v-model="allocationForm.allocated_at"
+            type="datetime"
+            placeholder="选择分配时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+          <div class="form-tip">默认为当前时间，可手动修改</div>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input
@@ -498,11 +509,12 @@ export default {
       subnet_id: '',
       preferred_ip: '',
       mac_address: '',
-      hostname: '',
+      user_name: '',
       device_type: '',
       location: '',
       assigned_to: '',
-      description: ''
+      description: '',
+      allocated_at: null
     })
     
     const reservationForm = reactive({
@@ -801,6 +813,15 @@ export default {
         allocationForm.subnet_id = row.subnet_id
         allocationForm.preferred_ip = row.ip_address
       }
+      // 默认设置当前时间为分配时间，格式化为字符串以匹配日期选择器的格式
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const seconds = String(now.getSeconds()).padStart(2, '0')
+      allocationForm.allocated_at = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
       showAllocationDialog.value = true
     }
     
@@ -836,11 +857,22 @@ export default {
     const submitAllocation = async () => {
       submitting.value = true
       try {
-        await ipAPI.allocateIP(allocationForm)
+        // 准备提交数据，确保时间格式正确
+        const submitData = { ...allocationForm }
+        if (submitData.allocated_at) {
+          // 确保时间格式为ISO格式
+          const date = new Date(submitData.allocated_at)
+          submitData.allocated_at = date.toISOString()
+        }
+        
+        console.log('提交分配数据:', submitData) // 调试日志
+        
+        await ipAPI.allocateIP(submitData)
         ElMessage.success('IP地址分配成功')
         showAllocationDialog.value = false
         refreshData()
       } catch (error) {
+        console.error('分配失败:', error) // 调试日志
         ElMessage.error('分配失败：' + error.message)
       } finally {
         submitting.value = false
@@ -910,11 +942,12 @@ export default {
         subnet_id: '',
         preferred_ip: '',
         mac_address: '',
-        hostname: '',
+        user_name: '',
         device_type: '',
         location: '',
         assigned_to: '',
-        description: ''
+        description: '',
+        allocated_at: null
       })
     }
     
@@ -1166,5 +1199,140 @@ pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-all;
+}
+</style>
+<style sc
+oped>
+/* 表单提示样式 */
+.form-tip {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* 页面布局样式 */
+.ip-management {
+  padding: 0;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow-base);
+}
+
+.header-section h1 {
+  margin: 0;
+  color: var(--text-color-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-section {
+  margin-bottom: 20px;
+}
+
+.stats-card {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: var(--box-shadow-base);
+}
+
+.stats-item {
+  padding: 20px;
+}
+
+.stats-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.table-section {
+  background: var(--bg-color);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--box-shadow-base);
+}
+
+.search-status {
+  margin-bottom: 16px;
+}
+
+.pagination-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.selected-ips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  align-items: center;
+}
+
+.no-selection {
+  color: var(--text-color-placeholder);
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .stats-section .el-col {
+    margin-bottom: 16px;
+  }
+  
+  .table-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-section {
+    padding: 16px;
+  }
+  
+  .header-section h1 {
+    font-size: 20px;
+  }
+  
+  .stats-value {
+    font-size: 24px;
+  }
+  
+  .table-section {
+    padding: 12px;
+  }
 }
 </style>

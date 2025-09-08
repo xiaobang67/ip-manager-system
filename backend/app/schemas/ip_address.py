@@ -8,7 +8,7 @@ import ipaddress
 class IPAddressBase(BaseModel):
     ip_address: str = Field(..., description="IP地址")
     mac_address: Optional[str] = Field(None, description="MAC地址")
-    hostname: Optional[str] = Field(None, description="主机名")
+    user_name: Optional[str] = Field(None, description="使用人")
     device_type: Optional[str] = Field(None, description="设备类型")
     location: Optional[str] = Field(None, description="位置")
     assigned_to: Optional[str] = Field(None, description="分配给")
@@ -39,12 +39,14 @@ class IPAddressCreate(IPAddressBase):
 
 class IPAddressUpdate(BaseModel):
     mac_address: Optional[str] = Field(None, description="MAC地址")
-    hostname: Optional[str] = Field(None, description="主机名")
+    user_name: Optional[str] = Field(None, description="使用人")
     device_type: Optional[str] = Field(None, description="设备类型")
     location: Optional[str] = Field(None, description="位置")
     assigned_to: Optional[str] = Field(None, description="分配给")
     description: Optional[str] = Field(None, description="描述")
     status: Optional[IPStatus] = Field(None, description="IP状态")
+    allocated_at: Optional[datetime] = Field(None, description="分配时间")
+    allocated_by: Optional[int] = Field(None, description="分配人ID")
 
     @validator('mac_address')
     def validate_mac_address(cls, v):
@@ -76,12 +78,13 @@ class IPAddressWithSubnet(IPAddressResponse):
 class IPAllocationRequest(BaseModel):
     subnet_id: int = Field(..., description="网段ID")
     mac_address: Optional[str] = Field(None, description="MAC地址")
-    hostname: Optional[str] = Field(None, description="主机名")
+    user_name: Optional[str] = Field(None, description="使用人")
     device_type: Optional[str] = Field(None, description="设备类型")
     location: Optional[str] = Field(None, description="位置")
     assigned_to: Optional[str] = Field(None, description="分配给")
     description: Optional[str] = Field(None, description="描述")
     preferred_ip: Optional[str] = Field(None, description="首选IP地址")
+    allocated_at: Optional[datetime] = Field(None, description="分配时间")
 
     @validator('preferred_ip')
     def validate_preferred_ip(cls, v):
@@ -92,6 +95,28 @@ class IPAllocationRequest(BaseModel):
             return v
         except ValueError:
             raise ValueError('无效的IP地址格式')
+    
+    @validator('allocated_at')
+    def validate_allocated_at(cls, v):
+        if v is None:
+            return v
+        
+        # 如果是字符串，尝试解析为datetime
+        if isinstance(v, str):
+            try:
+                # 尝试解析ISO格式
+                v = datetime.fromisoformat(v.replace('Z', '+00:00'))
+            except ValueError:
+                try:
+                    # 尝试解析常见格式
+                    v = datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    raise ValueError('无效的时间格式')
+        
+        # 如果提供了分配时间，确保不是未来时间
+        if v > datetime.now():
+            raise ValueError('分配时间不能是未来时间')
+        return v
 
 
 class IPReservationRequest(BaseModel):
@@ -129,7 +154,7 @@ class IPSearchRequest(BaseModel):
     location: Optional[str] = Field(None, description="位置")
     assigned_to: Optional[str] = Field(None, description="分配给")
     mac_address: Optional[str] = Field(None, description="MAC地址")
-    hostname: Optional[str] = Field(None, description="主机名")
+    user_name: Optional[str] = Field(None, description="使用人")
     ip_range_start: Optional[str] = Field(None, description="IP范围起始")
     ip_range_end: Optional[str] = Field(None, description="IP范围结束")
     allocated_date_start: Optional[str] = Field(None, description="分配日期起始")
@@ -153,7 +178,7 @@ class IPSearchRequest(BaseModel):
     @validator('sort_by')
     def validate_sort_by(cls, v):
         allowed_fields = [
-            'ip_address', 'status', 'hostname', 'mac_address', 
+            'ip_address', 'status', 'user_name', 'mac_address', 
             'device_type', 'location', 'assigned_to', 'allocated_at', 'created_at'
         ]
         if v not in allowed_fields:
@@ -230,7 +255,7 @@ class IPRangeStatusRequest(BaseModel):
 class IPRangeStatusResponse(BaseModel):
     ip_address: str
     status: str
-    hostname: Optional[str] = None
+    user_name: Optional[str] = None
     mac_address: Optional[str] = None
     assigned_to: Optional[str] = None
 

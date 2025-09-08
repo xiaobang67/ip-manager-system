@@ -4,7 +4,7 @@
     <div class="search-bar">
       <el-input
         v-model="searchForm.query"
-        placeholder="搜索IP地址、主机名、MAC地址、设备类型..."
+        placeholder="搜索IP地址、使用人、MAC地址、设备类型..."
         @input="handleRealTimeSearch"
         @keyup.enter="handleSearch"
         clearable
@@ -124,8 +124,8 @@
               </el-col>
               
               <el-col :span="8">
-                <el-form-item label="主机名">
-                  <el-input v-model="searchForm.hostname" placeholder="主机名" clearable />
+                <el-form-item label="使用人">
+                  <el-input v-model="searchForm.user_name" placeholder="使用人" clearable />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -274,7 +274,7 @@
                   <el-select v-model="searchForm.sort_by" placeholder="排序字段">
                     <el-option label="IP地址" value="ip_address" />
                     <el-option label="状态" value="status" />
-                    <el-option label="主机名" value="hostname" />
+                    <el-option label="使用人" value="user_name" />
                     <el-option label="分配时间" value="allocated_at" />
                     <el-option label="创建时间" value="created_at" />
                   </el-select>
@@ -496,7 +496,7 @@ export default {
       device_type: null,
       location: '',
       assigned_to: '',
-      hostname: '',
+      user_name: '',
       mac_address: '',
       ip_range_start: '',
       ip_range_end: '',

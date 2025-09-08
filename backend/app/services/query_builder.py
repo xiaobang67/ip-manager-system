@@ -70,9 +70,9 @@ class IPQueryBuilder:
         if search_request.mac_address:
             filters.append(IPAddress.mac_address.ilike(f"%{search_request.mac_address}%"))
         
-        # 主机名过滤
-        if search_request.hostname:
-            filters.append(IPAddress.hostname.ilike(f"%{search_request.hostname}%"))
+        # 使用人过滤
+        if search_request.user_name:
+            filters.append(IPAddress.user_name.ilike(f"%{search_request.user_name}%"))
         
         # IP地址范围过滤
         if search_request.ip_range_start and search_request.ip_range_end:
@@ -108,7 +108,7 @@ class IPQueryBuilder:
         for term in search_terms:
             term_filters = [
                 IPAddress.ip_address.ilike(f"%{term}%"),
-                IPAddress.hostname.ilike(f"%{term}%"),
+                IPAddress.user_name.ilike(f"%{term}%"),
                 IPAddress.mac_address.ilike(f"%{term}%"),
                 IPAddress.device_type.ilike(f"%{term}%"),
                 # 对于部门字段，优先精确匹配，然后模糊匹配

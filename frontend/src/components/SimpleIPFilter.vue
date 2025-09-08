@@ -82,7 +82,7 @@
     <div class="search-bar">
       <el-input
         v-model="searchQuery"
-        placeholder="搜索IP地址、主机名、MAC地址..."
+        placeholder="搜索IP地址、使用人、MAC地址..."
         @input="handleQuickSearch"
         @keyup.enter="handleSearch"
         clearable
