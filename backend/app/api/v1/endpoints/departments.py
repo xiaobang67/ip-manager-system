@@ -34,7 +34,6 @@ def get_department_service(db: Session = Depends(get_db)) -> DepartmentService:
 async def get_departments(
     skip: int = Query(0, ge=0, description="跳过的记录数"),
     limit: int = Query(50, ge=1, le=100, description="返回的记录数"),
-    active_only: bool = Query(True, description="是否只返回活跃部门"),
     search: Optional[str] = Query(None, description="搜索关键词"),
     current_user: User = Depends(get_current_active_user),
     department_service: DepartmentService = Depends(get_department_service)
@@ -48,7 +47,6 @@ async def get_departments(
         result = department_service.get_departments(
             skip=skip,
             limit=limit,
-            active_only=active_only,
             search=search
         )
         
@@ -88,28 +86,7 @@ async def get_department_options(
         )
 
 
-@router.get("/statistics")
-async def get_department_statistics(
-    current_user: User = Depends(require_manager_or_admin),
-    department_service: DepartmentService = Depends(get_department_service)
-):
-    """
-    获取部门统计信息
-    
-    需要管理员或经理权限
-    """
-    try:
-        stats = department_service.get_department_statistics()
-        return stats
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error in get_department_statistics: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取部门统计信息失败"
-        )
+# 移除统计功能
 
 
 @router.get("/{department_id}", response_model=DepartmentResponse)
@@ -151,11 +128,7 @@ async def create_department(
     try:
         department_data = department_service.create_department(
             name=request.name,
-            code=request.code,
-            description=request.description,
-            manager=request.manager,
-            contact_email=request.contact_email,
-            contact_phone=request.contact_phone
+            code=request.code
         )
         
         return DepartmentResponse(**department_data)
@@ -186,12 +159,7 @@ async def update_department(
         department_data = department_service.update_department(
             department_id=department_id,
             name=request.name,
-            code=request.code,
-            description=request.description,
-            manager=request.manager,
-            contact_email=request.contact_email,
-            contact_phone=request.contact_phone,
-            is_active=request.is_active
+            code=request.code
         )
         
         return DepartmentResponse(**department_data)

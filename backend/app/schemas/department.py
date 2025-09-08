@@ -1,5 +1,5 @@
 """
-部门管理相关的Pydantic模型
+部门管理相关的Pydantic模型（简化版）
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -10,10 +10,6 @@ class DepartmentBase(BaseModel):
     """部门基础模型"""
     name: str = Field(..., min_length=1, max_length=100, description="部门名称")
     code: Optional[str] = Field(None, max_length=50, description="部门编码")
-    description: Optional[str] = Field(None, description="部门描述")
-    manager: Optional[str] = Field(None, max_length=100, description="部门负责人")
-    contact_email: Optional[str] = Field(None, max_length=100, description="联系邮箱")
-    contact_phone: Optional[str] = Field(None, max_length=50, description="联系电话")
 
 
 class DepartmentCreate(DepartmentBase):
@@ -25,19 +21,12 @@ class DepartmentUpdate(BaseModel):
     """更新部门请求模型"""
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="部门名称")
     code: Optional[str] = Field(None, max_length=50, description="部门编码")
-    description: Optional[str] = Field(None, description="部门描述")
-    manager: Optional[str] = Field(None, max_length=100, description="部门负责人")
-    contact_email: Optional[str] = Field(None, max_length=100, description="联系邮箱")
-    contact_phone: Optional[str] = Field(None, max_length=50, description="联系电话")
-    is_active: Optional[bool] = Field(None, description="是否激活")
 
 
 class DepartmentResponse(DepartmentBase):
     """部门响应模型"""
     id: int
-    is_active: bool
     created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -56,4 +45,3 @@ class DepartmentOption(BaseModel):
     id: int
     name: str
     code: Optional[str]
-    is_active: bool

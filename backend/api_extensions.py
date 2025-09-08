@@ -11,6 +11,272 @@ logger = logging.getLogger(__name__)
 def add_missing_endpoints(app, get_db_connection):
     """添加缺失的API端点"""
     
+    # 部门管理API端点
+    @app.get("/api/departments/")
+    async def get_departments_fallback(skip: int = 0, limit: int = 50, search: str = None):
+        """获取部门列表 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                where_conditions = []
+                params = []
+                
+                if search:
+                    where_conditions.append("(name LIKE %s OR code LIKE %s)")
+                    params.extend([f"%{search}%", f"%{search}%"])
+                
+                where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+                
+                # 获取总数
+                cursor.execute(f"SELECT COUNT(*) as total FROM departments WHERE {where_clause}", params)
+                total_result = cursor.fetchone()
+                total = total_result['total'] if total_result else 0
+                
+                # 获取分页数据
+                cursor.execute(f"""
+                    SELECT * FROM departments 
+                    WHERE {where_clause} 
+                    ORDER BY name 
+                    LIMIT %s OFFSET %s
+                """, params + [limit, skip])
+                results = cursor.fetchall()
+                
+                departments = []
+                for row in results:
+                    departments.append({
+                        "id": row['id'],
+                        "name": row['name'],
+                        "code": row['code'],
+                        "created_at": str(row['created_at']) if row['created_at'] else None
+                    })
+                
+                return {
+                    "departments": departments,
+                    "total": total,
+                    "skip": skip,
+                    "limit": limit
+                }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch departments: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/departments/statistics")
+    async def get_department_statistics_fallback():
+        """获取部门统计信息 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) as total FROM departments")
+                total_result = cursor.fetchone()
+                total = total_result['total'] if total_result else 0
+                
+                return {
+                    "total_departments": total
+                }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch department statistics: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/departments/options")
+    async def get_department_options_fallback():
+        """获取部门选项列表 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT id, name, code FROM departments ORDER BY name")
+                results = cursor.fetchall()
+                
+                departments = []
+                for row in results:
+                    departments.append({
+                        "id": row['id'],
+                        "name": row['name'],
+                        "code": row['code']
+                    })
+                
+                return {"departments": departments}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch department options: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.get("/api/departments/{department_id}")
+    async def get_department_fallback(department_id: int):
+        """获取部门详情 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM departments WHERE id = %s", (department_id,))
+                result = cursor.fetchone()
+                
+                if not result:
+                    raise HTTPException(status_code=404, detail="部门不存在")
+                
+                return {
+                    "id": result['id'],
+                    "name": result['name'],
+                    "code": result['code'],
+                    "created_at": str(result['created_at']) if result['created_at'] else None
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch department: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.post("/api/departments/")
+    async def create_department_fallback(data: dict):
+        """创建部门 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 验证必填字段
+                name = data.get('name')
+                if not name or not name.strip():
+                    raise HTTPException(status_code=400, detail="部门名称不能为空")
+                
+                # 检查名称是否已存在
+                cursor.execute("SELECT id FROM departments WHERE name = %s", (name.strip(),))
+                if cursor.fetchone():
+                    raise HTTPException(status_code=409, detail=f"部门名称 '{name}' 已存在")
+                
+                # 检查编码是否已存在（如果提供了编码）
+                code = data.get('code')
+                if code and code.strip():
+                    cursor.execute("SELECT id FROM departments WHERE code = %s", (code.strip(),))
+                    if cursor.fetchone():
+                        raise HTTPException(status_code=409, detail=f"部门编码 '{code}' 已存在")
+                
+                # 插入新部门
+                cursor.execute("""
+                    INSERT INTO departments (name, code, created_at)
+                    VALUES (%s, %s, NOW())
+                """, (
+                    name.strip(),
+                    code.strip() if code else None
+                ))
+                
+                department_id = cursor.lastrowid
+                connection.commit()
+                
+                # 返回创建的部门信息
+                cursor.execute("SELECT * FROM departments WHERE id = %s", (department_id,))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "name": result['name'],
+                    "code": result['code'],
+                    "created_at": str(result['created_at']) if result['created_at'] else None
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to create department: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.put("/api/departments/{department_id}")
+    async def update_department_fallback(department_id: int, data: dict):
+        """更新部门 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 检查部门是否存在
+                cursor.execute("SELECT * FROM departments WHERE id = %s", (department_id,))
+                existing = cursor.fetchone()
+                if not existing:
+                    raise HTTPException(status_code=404, detail="部门不存在")
+                
+                # 构建更新字段
+                update_fields = []
+                update_values = []
+                
+                if 'name' in data:
+                    name = data['name'].strip() if data['name'] else None
+                    if not name:
+                        raise HTTPException(status_code=400, detail="部门名称不能为空")
+                    
+                    # 检查名称冲突
+                    if name != existing['name']:
+                        cursor.execute("SELECT id FROM departments WHERE name = %s AND id != %s", (name, department_id))
+                        if cursor.fetchone():
+                            raise HTTPException(status_code=409, detail=f"部门名称 '{name}' 已存在")
+                    
+                    update_fields.append("name = %s")
+                    update_values.append(name)
+                
+                if 'code' in data:
+                    code = data['code'].strip() if data['code'] else None
+                    
+                    # 检查编码冲突
+                    if code and code != existing['code']:
+                        cursor.execute("SELECT id FROM departments WHERE code = %s AND id != %s", (code, department_id))
+                        if cursor.fetchone():
+                            raise HTTPException(status_code=409, detail=f"部门编码 '{code}' 已存在")
+                    
+                    update_fields.append("code = %s")
+                    update_values.append(code)
+                
+                if not update_fields:
+                    raise HTTPException(status_code=400, detail="没有提供要更新的字段")
+                
+                update_values.append(department_id)
+                
+                # 执行更新
+                sql = f"UPDATE departments SET {', '.join(update_fields)} WHERE id = %s"
+                cursor.execute(sql, update_values)
+                connection.commit()
+                
+                # 返回更新后的部门信息
+                cursor.execute("SELECT * FROM departments WHERE id = %s", (department_id,))
+                result = cursor.fetchone()
+                
+                return {
+                    "id": result['id'],
+                    "name": result['name'],
+                    "code": result['code'],
+                    "created_at": str(result['created_at']) if result['created_at'] else None
+                }
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to update department: {str(e)}")
+        finally:
+            connection.close()
+    
+    @app.delete("/api/departments/{department_id}")
+    async def delete_department_fallback(department_id: int):
+        """删除部门 - 备用端点"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 检查部门是否存在
+                cursor.execute("SELECT name FROM departments WHERE id = %s", (department_id,))
+                existing = cursor.fetchone()
+                if not existing:
+                    raise HTTPException(status_code=404, detail="部门不存在")
+                
+                # 这里可以添加检查是否有关联的用户等
+                # 暂时直接删除
+                
+                cursor.execute("DELETE FROM departments WHERE id = %s", (department_id,))
+                connection.commit()
+                
+                return {"message": "部门删除成功"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to delete department: {str(e)}")
+        finally:
+            connection.close()
+    
     # 网段相关API端点
     @app.get("/api/subnets")
     async def get_subnets_api(skip: int = 0, limit: int = 50):

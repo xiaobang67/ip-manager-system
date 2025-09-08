@@ -35,15 +35,10 @@ class DepartmentRepository:
         self,
         skip: int = 0,
         limit: int = 100,
-        active_only: bool = True,
         search: Optional[str] = None
     ) -> Dict[str, Any]:
         """获取部门列表"""
         query = self.db.query(Department)
-        
-        # 活跃状态过滤
-        if active_only:
-            query = query.filter(Department.is_active == True)
         
         # 搜索过滤
         if search:
@@ -51,8 +46,7 @@ class DepartmentRepository:
             query = query.filter(
                 or_(
                     Department.name.ilike(search_pattern),
-                    Department.code.ilike(search_pattern),
-                    Department.manager.ilike(search_pattern)
+                    Department.code.ilike(search_pattern)
                 )
             )
         
@@ -132,20 +126,6 @@ class DepartmentRepository:
         logger.info(f"Deleted department: {department.name} (ID: {department.id})")
         return True
     
-    def get_active_departments_for_options(self) -> List[Department]:
-        """获取活跃部门列表（用于下拉选项）"""
-        return self.db.query(Department).filter(
-            Department.is_active == True
-        ).order_by(Department.name).all()
-    
-    def get_statistics(self) -> Dict[str, Any]:
-        """获取部门统计信息"""
-        total = self.db.query(Department).count()
-        active = self.db.query(Department).filter(Department.is_active == True).count()
-        inactive = total - active
-        
-        return {
-            "total_departments": total,
-            "active_departments": active,
-            "inactive_departments": inactive
-        }
+    def get_all_for_options(self) -> List[Department]:
+        """获取所有部门列表（用于下拉选项）"""
+        return self.db.query(Department).order_by(Department.name).all()

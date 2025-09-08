@@ -3,196 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>部门管理功能测试</title>
+    <title>部门管理API测试</title>
     <style>
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #409EFF;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #e4e7ed;
-            border-radius: 6px;
-        }
-        .section h2 {
-            color: #303133;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-        .feature-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            align-items: center;
-        }
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-        .check-icon {
-            color: #67C23A;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        .api-endpoint {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            margin: 5px 0;
-            border-left: 4px solid #409EFF;
-        }
-        .note {
-            background: #fff6f7;
-            border: 1px solid #fbc4c4;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        .note-title {
-            font-weight: bold;
-            color: #f56c6c;
-            margin-bottom: 8px;
-        }
-        .integration-flow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        .flow-item {
-            background: #409EFF;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 6px;
-            text-align: center;
-            flex: 1;
-            margin: 5px;
-            min-width: 150px;
-        }
-        .flow-arrow {
-            font-size: 24px;
-            color: #909399;
-            margin: 0 10px;
-        }
-        @media (max-width: 768px) {
-            .integration-flow {
-                flex-direction: column;
-            }
-            .flow-arrow {
-                transform: rotate(90deg);
-                margin: 10px 0;
-            }
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏢 部门管理功能实现完成</h1>
+        <h1>部门管理API测试</h1>
         
-        <div class="section">
-            <h2>📋 功能概述</h2>
-            <p>已成功将用户管理模块拆分为<strong>用户管理</strong>和<strong>部门管理</strong>两个独立模块，并实现了部门与IP地址分配的关联功能。</p>
+        <div class="test-section">
+            <h3>1. 获取部门列表</h3>
+            <button onclick="testGetDepartments()">测试获取部门列表</button>
+            <div id="departments-result" class="result"></div>
         </div>
-
-        <div class="section">
-            <h2>✅ 已实现功能</h2>
-            <ul class="feature-list">
-                <li><span class="check-icon">✓</span> 部门管理后端API（增删改查）</li>
-                <li><span class="check-icon">✓</span> 部门管理前端页面</li>
-                <li><span class="check-icon">✓</span> 部门数据库模型和迁移</li>
-                <li><span class="check-icon">✓</span> 侧边栏菜单拆分（用户管理 + 部门管理）</li>
-                <li><span class="check-icon">✓</span> IP地址分配关联部门选项</li>
-                <li><span class="check-icon">✓</span> 部门统计信息展示</li>
-                <li><span class="check-icon">✓</span> 部门搜索和过滤功能</li>
-            </ul>
+        
+        <div class="test-section">
+            <h3>2. 获取部门统计</h3>
+            <button onclick="testGetStatistics()">测试获取统计信息</button>
+            <div id="statistics-result" class="result"></div>
         </div>
-
-        <div class="section">
-            <h2>🔗 API端点</h2>
-            <div class="api-endpoint">GET /api/v1/departments/ - 获取部门列表</div>
-            <div class="api-endpoint">GET /api/v1/departments/options - 获取部门选项（用于下拉菜单）</div>
-            <div class="api-endpoint">GET /api/v1/departments/statistics - 获取部门统计信息</div>
-            <div class="api-endpoint">POST /api/v1/departments/ - 创建新部门</div>
-            <div class="api-endpoint">PUT /api/v1/departments/{id} - 更新部门信息</div>
-            <div class="api-endpoint">DELETE /api/v1/departments/{id} - 删除部门</div>
-        </div>
-
-        <div class="section">
-            <h2>🔄 集成流程</h2>
-            <div class="integration-flow">
-                <div class="flow-item">部门管理<br>创建/维护部门</div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-item">IP地址管理<br>选择分配部门</div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-item">关联完成<br>IP分配给部门</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>📁 新增文件</h2>
-            <ul class="feature-list">
-                <li><span class="check-icon">📄</span> backend/app/models/department.py - 部门数据模型</li>
-                <li><span class="check-icon">📄</span> backend/app/schemas/department.py - 部门API模式</li>
-                <li><span class="check-icon">📄</span> backend/app/repositories/department_repository.py - 部门数据访问层</li>
-                <li><span class="check-icon">📄</span> backend/app/services/department_service.py - 部门业务逻辑层</li>
-                <li><span class="check-icon">📄</span> backend/app/api/v1/endpoints/departments.py - 部门API端点</li>
-                <li><span class="check-icon">📄</span> frontend/src/api/departments.js - 前端部门API</li>
-                <li><span class="check-icon">📄</span> frontend/src/views/DepartmentManagement.vue - 部门管理页面</li>
-                <li><span class="check-icon">📄</span> backend/alembic/versions/003_add_departments_table.py - 数据库迁移</li>
-            </ul>
-        </div>
-
-        <div class="note">
-            <div class="note-title">⚠️ 部署说明</div>
-            <p><strong>1. 运行数据库迁移：</strong></p>
-            <p>执行 <code>run-migration.bat</code> 来创建部门表并插入默认数据</p>
-            <p><strong>2. 重启后端服务：</strong></p>
-            <p>重启后端服务以加载新的API端点</p>
-            <p><strong>3. 访问功能：</strong></p>
-            <p>登录系统后，在侧边栏可以看到独立的"用户管理"和"部门管理"菜单项</p>
-        </div>
-
-        <div class="section">
-            <h2>🎯 使用流程</h2>
-            <ol>
-                <li><strong>部门管理：</strong>在部门管理页面创建和维护部门信息</li>
-                <li><strong>IP分配：</strong>在IP地址管理页面分配IP时，"分配给"下拉菜单会显示所有活跃部门</li>
-                <li><strong>关联查看：</strong>可以通过部门名称查看该部门分配的所有IP地址</li>
-            </ol>
-        </div>
-
-        <div class="section">
-            <h2>🔧 技术特性</h2>
-            <ul class="feature-list">
-                <li><span class="check-icon">🛡️</span> 权限控制：管理员和经理可管理部门</li>
-                <li><span class="check-icon">🔍</span> 搜索功能：支持部门名称、编码、负责人搜索</li>
-                <li><span class="check-icon">📊</span> 统计信息：显示部门总数、活跃数量等</li>
-                <li><span class="check-icon">📱</span> 响应式设计：支持移动端访问</li>
-                <li><span class="check-icon">🎨</span> 主题适配：支持明亮/暗黑主题</li>
-                <li><span class="check-icon">⚡</span> 性能优化：分页加载、防抖搜索</li>
-            </ul>
+        
+        <div class="test-section">
+            <h3>3. 创建部门</h3>
+            <button onclick="testCreateDepartment()">测试创建部门</button>
+            <div id="create-result" class="result"></div>
         </div>
     </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        
+        async function testGetDepartments() {
+            const resultDiv = document.getElementById('departments-result');
+            try {
+                const response = await fetch(`${API_BASE}/departments/`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h4>成功获取部门列表</h4>
+                        <p>总数: ${data.total || data.departments?.length || 0}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.detail || '未知错误'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h4>请求失败</h4><p>${error.message}</p>`;
+            }
+        }
+        
+        async function testGetStatistics() {
+            const resultDiv = document.getElementById('statistics-result');
+            try {
+                const response = await fetch(`${API_BASE}/departments/statistics`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h4>成功获取统计信息</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.detail || '未知错误'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h4>请求失败</h4><p>${error.message}</p>`;
+            }
+        }
+    </script>
 </body>
 </html>

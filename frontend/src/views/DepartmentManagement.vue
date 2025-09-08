@@ -19,62 +19,17 @@
         </div>
       </div>
 
-      <!-- 统计卡片 -->
-      <div class="stats-cards" v-if="statistics">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <div class="stat-number">{{ statistics.total_departments }}</div>
-                <div class="stat-label">总部门数</div>
-              </div>
-              <el-icon class="stat-icon"><OfficeBuilding /></el-icon>
-            </el-card>
-          </el-col>
-          <el-col :span="8">
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <div class="stat-number">{{ statistics.active_departments }}</div>
-                <div class="stat-label">活跃部门</div>
-              </div>
-              <el-icon class="stat-icon active"><Checked /></el-icon>
-            </el-card>
-          </el-col>
-          <el-col :span="8">
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <div class="stat-number">{{ statistics.inactive_departments }}</div>
-                <div class="stat-label">停用部门</div>
-              </div>
-              <el-icon class="stat-icon inactive"><Close /></el-icon>
-            </el-card>
-          </el-col>
-        </el-row>
-      </div>
-
-      <!-- 搜索和过滤 -->
+      <!-- 搜索 -->
       <el-card class="filter-card">
         <el-row :gutter="20">
-          <el-col :span="8">
+          <el-col :span="12">
             <el-input
               v-model="searchQuery"
-              placeholder="搜索部门名称、编码或负责人"
+              placeholder="搜索部门名称或编码"
               :prefix-icon="Search"
               clearable
               @input="handleSearch"
             />
-          </el-col>
-          <el-col :span="6">
-            <el-select
-              v-model="statusFilter"
-              placeholder="选择状态"
-              clearable
-              @change="loadDepartments"
-            >
-              <el-option label="全部部门" value="" />
-              <el-option label="活跃部门" value="active" />
-              <el-option label="停用部门" value="inactive" />
-            </el-select>
           </el-col>
           <el-col :span="4">
             <el-button @click="resetFilters" :icon="Refresh">重置</el-button>
@@ -92,27 +47,14 @@
           @sort-change="handleSortChange"
         >
           <el-table-column prop="id" label="ID" width="80" sortable />
-          <el-table-column prop="name" label="部门名称" min-width="150" sortable />
-          <el-table-column prop="code" label="部门编码" width="120" />
-          <el-table-column prop="manager" label="负责人" width="120" />
-          <el-table-column prop="contact_email" label="联系邮箱" min-width="180" />
-          <el-table-column prop="contact_phone" label="联系电话" width="130" />
-          <el-table-column prop="is_active" label="状态" width="100">
-            <template #default="{ row }">
-              <el-tag
-                :type="row.is_active ? 'success' : 'danger'"
-                size="small"
-              >
-                {{ row.is_active ? '活跃' : '停用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+          <el-table-column prop="name" label="部门名称" min-width="200" sortable />
+          <el-table-column prop="code" label="部门编码" width="150" />
           <el-table-column prop="created_at" label="创建时间" width="180" sortable>
             <template #default="{ row }">
               {{ formatDateTime(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column label="操作" width="150" fixed="right">
             <template #default="{ row }">
               <el-button
                 size="small"
@@ -120,14 +62,6 @@
                 v-if="canManageDepartments"
               >
                 编辑
-              </el-button>
-              <el-button
-                size="small"
-                :type="row.is_active ? 'warning' : 'success'"
-                @click="handleToggleDepartmentStatus(row)"
-                v-if="canManageDepartments"
-              >
-                {{ row.is_active ? '停用' : '启用' }}
               </el-button>
               <el-button
                 size="small"
@@ -183,35 +117,6 @@
               maxlength="50"
             />
           </el-form-item>
-          <el-form-item label="负责人" prop="manager">
-            <el-input
-              v-model="createForm.manager"
-              placeholder="请输入负责人姓名"
-              maxlength="100"
-            />
-          </el-form-item>
-          <el-form-item label="联系邮箱" prop="contact_email">
-            <el-input
-              v-model="createForm.contact_email"
-              placeholder="请输入联系邮箱"
-              maxlength="100"
-            />
-          </el-form-item>
-          <el-form-item label="联系电话" prop="contact_phone">
-            <el-input
-              v-model="createForm.contact_phone"
-              placeholder="请输入联系电话"
-              maxlength="50"
-            />
-          </el-form-item>
-          <el-form-item label="部门描述" prop="description">
-            <el-input
-              v-model="createForm.description"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入部门描述"
-            />
-          </el-form-item>
         </el-form>
         <template #footer>
           <span class="dialog-footer">
@@ -251,42 +156,6 @@
               maxlength="50"
             />
           </el-form-item>
-          <el-form-item label="负责人" prop="manager">
-            <el-input
-              v-model="editForm.manager"
-              placeholder="请输入负责人姓名"
-              maxlength="100"
-            />
-          </el-form-item>
-          <el-form-item label="联系邮箱" prop="contact_email">
-            <el-input
-              v-model="editForm.contact_email"
-              placeholder="请输入联系邮箱"
-              maxlength="100"
-            />
-          </el-form-item>
-          <el-form-item label="联系电话" prop="contact_phone">
-            <el-input
-              v-model="editForm.contact_phone"
-              placeholder="请输入联系电话"
-              maxlength="50"
-            />
-          </el-form-item>
-          <el-form-item label="部门描述" prop="description">
-            <el-input
-              v-model="editForm.description"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入部门描述"
-            />
-          </el-form-item>
-          <el-form-item label="状态" prop="is_active">
-            <el-switch
-              v-model="editForm.is_active"
-              active-text="启用"
-              inactive-text="停用"
-            />
-          </el-form-item>
         </el-form>
         <template #footer>
           <span class="dialog-footer">
@@ -316,7 +185,6 @@ import {
 import AppLayout from '@/components/AppLayout.vue'
 import {
   getDepartments,
-  getDepartmentStatistics,
   createDepartment,
   updateDepartment,
   deleteDepartment
@@ -329,9 +197,8 @@ const loading = ref(false)
 const departments = ref([])
 const statistics = ref(null)
 
-// 搜索和过滤
+// 搜索
 const searchQuery = ref('')
-const statusFilter = ref('')
 
 // 分页
 const currentPage = ref(1)
@@ -356,27 +223,22 @@ const currentEditDepartment = ref(null)
 // 创建部门表单
 const createForm = reactive({
   name: '',
-  code: '',
-  manager: '',
-  contact_email: '',
-  contact_phone: '',
-  description: ''
+  code: ''
 })
 
 // 编辑部门表单
 const editForm = reactive({
   name: '',
-  code: '',
-  manager: '',
-  contact_email: '',
-  contact_phone: '',
-  description: '',
-  is_active: true
+  code: ''
 })
 
 // 计算属性
 const userRole = computed(() => store.getters['auth/userRole'])
-const canManageDepartments = computed(() => ['admin', 'manager'].includes(userRole.value))
+const canManageDepartments = computed(() => {
+  const role = userRole.value
+  console.log('当前用户角色:', role)
+  return ['admin', 'manager'].includes(role)
+})
 
 // 表单验证规则
 const createRules = {
@@ -386,15 +248,6 @@ const createRules = {
   ],
   code: [
     { max: 50, message: '部门编码长度不能超过 50 个字符', trigger: 'blur' }
-  ],
-  manager: [
-    { max: 100, message: '负责人姓名长度不能超过 100 个字符', trigger: 'blur' }
-  ],
-  contact_email: [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
-  contact_phone: [
-    { max: 50, message: '联系电话长度不能超过 50 个字符', trigger: 'blur' }
   ]
 }
 
@@ -405,15 +258,6 @@ const editRules = {
   ],
   code: [
     { max: 50, message: '部门编码长度不能超过 50 个字符', trigger: 'blur' }
-  ],
-  manager: [
-    { max: 100, message: '负责人姓名长度不能超过 100 个字符', trigger: 'blur' }
-  ],
-  contact_email: [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
-  contact_phone: [
-    { max: 50, message: '联系电话长度不能超过 50 个字符', trigger: 'blur' }
   ]
 }
 
@@ -424,19 +268,20 @@ const loadDepartments = async () => {
     const params = {
       skip: (currentPage.value - 1) * pageSize.value,
       limit: pageSize.value,
-      active_only: statusFilter.value === 'active',
       search: searchQuery.value || undefined
     }
 
-    if (statusFilter.value === 'inactive') {
-      params.active_only = false
-    }
-
+    console.log('请求参数:', params)
     const response = await getDepartments(params)
+    console.log('API响应:', response)
     
     if (response && response.departments) {
       departments.value = response.departments
       totalDepartments.value = response.total || 0
+    } else if (Array.isArray(response)) {
+      // 处理直接返回数组的情况
+      departments.value = response
+      totalDepartments.value = response.length
     } else {
       departments.value = []
       totalDepartments.value = 0
@@ -447,21 +292,32 @@ const loadDepartments = async () => {
     console.error('加载部门列表失败:', error)
     departments.value = []
     totalDepartments.value = 0
-    ElMessage.error('加载部门列表失败: ' + (error.response?.data?.detail || error.message))
+    
+    // 更详细的错误信息
+    let errorMessage = '加载部门列表失败'
+    if (error.response) {
+      if (error.response.status === 404) {
+        errorMessage = 'API端点不存在，请检查后端服务'
+      } else if (error.response.status === 401) {
+        errorMessage = '认证失败，请重新登录'
+      } else if (error.response.status === 403) {
+        errorMessage = '权限不足，无法访问部门管理'
+      } else if (error.response.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error.response.data?.error?.message) {
+        errorMessage = error.response.data.error.message
+      }
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
 }
 
-const loadStatistics = async () => {
-  try {
-    if (['admin', 'manager'].includes(userRole.value)) {
-      statistics.value = await getDepartmentStatistics()
-    }
-  } catch (error) {
-    console.error('加载统计信息失败:', error)
-  }
-}
+// 移除统计功能
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -470,7 +326,6 @@ const handleSearch = () => {
 
 const resetFilters = () => {
   searchQuery.value = ''
-  statusFilter.value = ''
   currentPage.value = 1
   loadDepartments()
 }
@@ -494,11 +349,6 @@ const editDepartment = (department) => {
   currentEditDepartment.value = department
   editForm.name = department.name
   editForm.code = department.code || ''
-  editForm.manager = department.manager || ''
-  editForm.contact_email = department.contact_email || ''
-  editForm.contact_phone = department.contact_phone || ''
-  editForm.description = department.description || ''
-  editForm.is_active = department.is_active
   showEditDialog.value = true
 }
 
@@ -510,18 +360,13 @@ const handleCreateDepartment = async () => {
     createLoading.value = true
     await createDepartment({
       name: createForm.name,
-      code: createForm.code || undefined,
-      manager: createForm.manager || undefined,
-      contact_email: createForm.contact_email || undefined,
-      contact_phone: createForm.contact_phone || undefined,
-      description: createForm.description || undefined
+      code: createForm.code || undefined
     })
 
     ElMessage.success('部门创建成功')
     showCreateDialog.value = false
     resetCreateForm()
     loadDepartments()
-    loadStatistics()
   } catch (error) {
     console.error('创建部门失败:', error)
     ElMessage.error(error.response?.data?.detail || '创建部门失败')
@@ -538,18 +383,12 @@ const handleUpdateDepartment = async () => {
     updateLoading.value = true
     await updateDepartment(currentEditDepartment.value.id, {
       name: editForm.name,
-      code: editForm.code || undefined,
-      manager: editForm.manager || undefined,
-      contact_email: editForm.contact_email || undefined,
-      contact_phone: editForm.contact_phone || undefined,
-      description: editForm.description || undefined,
-      is_active: editForm.is_active
+      code: editForm.code || undefined
     })
 
     ElMessage.success('部门更新成功')
     showEditDialog.value = false
     loadDepartments()
-    loadStatistics()
   } catch (error) {
     console.error('更新部门失败:', error)
     ElMessage.error(error.response?.data?.detail || '更新部门失败')
@@ -558,33 +397,7 @@ const handleUpdateDepartment = async () => {
   }
 }
 
-const handleToggleDepartmentStatus = async (department) => {
-  try {
-    const action = department.is_active ? '停用' : '启用'
-    await ElMessageBox.confirm(
-      `确定要${action}部门 "${department.name}" 吗？`,
-      '确认操作',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-
-    await updateDepartment(department.id, {
-      is_active: !department.is_active
-    })
-    
-    ElMessage.success(`部门${action}成功`)
-    loadDepartments()
-    loadStatistics()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('切换部门状态失败:', error)
-      ElMessage.error(error.response?.data?.detail || '操作失败')
-    }
-  }
-}
+// 移除状态切换功能
 
 const confirmDeleteDepartment = async (department) => {
   try {
@@ -601,7 +414,6 @@ const confirmDeleteDepartment = async (department) => {
     await deleteDepartment(department.id)
     ElMessage.success('部门删除成功')
     loadDepartments()
-    loadStatistics()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除部门失败:', error)
@@ -613,10 +425,6 @@ const confirmDeleteDepartment = async (department) => {
 const resetCreateForm = () => {
   createForm.name = ''
   createForm.code = ''
-  createForm.manager = ''
-  createForm.contact_email = ''
-  createForm.contact_phone = ''
-  createForm.description = ''
   createFormRef.value?.resetFields()
 }
 
@@ -626,17 +434,14 @@ const formatDateTime = (dateString) => {
 }
 
 // 监听器
-watch([statusFilter], () => {
+watch([searchQuery], () => {
   currentPage.value = 1
   loadDepartments()
 })
 
 // 生命周期
 onMounted(async () => {
-  await Promise.all([
-    loadDepartments(),
-    loadStatistics()
-  ])
+  await loadDepartments()
 })
 
 // 监听对话框关闭，重置表单

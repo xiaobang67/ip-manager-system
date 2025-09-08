@@ -7,10 +7,17 @@ import request from './request'
  * 获取部门列表
  */
 export const getDepartments = (params = {}) => {
+  console.log('发送部门列表请求:', params)
   return request({
     url: '/departments/',
     method: 'get',
     params
+  }).then(response => {
+    console.log('部门列表响应:', response)
+    return response
+  }).catch(error => {
+    console.error('部门列表请求失败:', error)
+    throw error
   })
 }
 
