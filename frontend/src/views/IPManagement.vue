@@ -87,66 +87,88 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="ip_address" label="IP地址" width="140" sortable />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
+        <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusTagType(row.status)">
+            <el-tag :type="getStatusTagType(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="150" />
-        <el-table-column prop="mac_address" label="MAC地址" width="150" />
-        <el-table-column prop="device_type" label="设备类型" width="120" />
-        <el-table-column prop="assigned_to" label="所属部门" width="120" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="allocated_at" label="分配时间" width="160">
+        <el-table-column prop="user_name" label="使用人" width="120" align="center">
           <template #default="{ row }">
-            {{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}
+            <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column prop="mac_address" label="MAC地址" width="140" align="center">
           <template #default="{ row }">
-            <el-button
-              v-if="row.status === 'available'"
-              type="primary"
-              size="small"
-              @click="allocateIP(row)"
-            >
-              分配
-            </el-button>
-            <el-button
-              v-if="row.status === 'available'"
-              type="warning"
-              size="small"
-              @click="reserveIP(row)"
-            >
-              保留
-            </el-button>
-            <el-button
-              v-if="row.status === 'allocated' || row.status === 'reserved'"
-              type="danger"
-              size="small"
-              @click="releaseIP(row)"
-            >
-              释放
-            </el-button>
-            <el-button
-              v-if="row.status === 'available' || row.status === 'reserved'"
-              type="danger"
-              size="small"
-              plain
-              @click="deleteIP(row)"
-            >
-              删除
-            </el-button>
-            <el-button
-              type="info"
-              size="small"
-              @click="viewHistory(row)"
-            >
-              历史
-            </el-button>
+            <span>{{ row.mac_address || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="device_type" label="设备类型" width="100" align="center">
+          <template #default="{ row }">
+            <span>{{ row.device_type || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="assigned_to" label="所属部门" width="110" align="center">
+          <template #default="{ row }">
+            <span>{{ row.assigned_to || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="描述" min-width="120" show-overflow-tooltip align="center">
+          <template #default="{ row }">
+            <span>{{ row.description || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="allocated_at" label="分配时间" width="150" align="center">
+          <template #default="{ row }">
+            <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right" align="center">
+          <template #default="{ row }">
+            <div class="action-buttons">
+              <el-button
+                v-if="row.status === 'available'"
+                type="primary"
+                size="small"
+                @click="allocateIP(row)"
+              >
+                分配
+              </el-button>
+              <el-button
+                v-if="row.status === 'available'"
+                type="warning"
+                size="small"
+                @click="reserveIP(row)"
+              >
+                保留
+              </el-button>
+              <el-button
+                v-if="row.status === 'allocated' || row.status === 'reserved'"
+                type="danger"
+                size="small"
+                @click="releaseIP(row)"
+              >
+                释放
+              </el-button>
+              <el-button
+                v-if="row.status === 'available' || row.status === 'reserved'"
+                type="danger"
+                size="small"
+                plain
+                @click="deleteIP(row)"
+              >
+                删除
+              </el-button>
+              <el-button
+                type="info"
+                size="small"
+                @click="viewHistory(row)"
+              >
+                历史
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -541,6 +563,18 @@ export default {
     const allocationRules = {
       subnet_id: [
         { required: true, message: '请选择网段', trigger: 'change' }
+      ],
+      user_name: [
+        { required: true, message: '请填写使用人', trigger: 'blur' }
+      ],
+      device_type: [
+        { required: true, message: '请选择设备类型', trigger: 'change' }
+      ],
+      assigned_to: [
+        { required: true, message: '请选择使用部门', trigger: 'change' }
+      ],
+      allocated_at: [
+        { required: true, message: '请选择分配时间', trigger: 'change' }
       ],
       mac_address: [
         { pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, message: 'MAC地址格式不正确', trigger: 'blur' }
@@ -1293,6 +1327,33 @@ oped>
 .no-selection {
   color: var(--text-color-placeholder);
   font-size: 14px;
+}
+
+/* 操作按钮样式 */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.action-buttons .el-button {
+  margin: 0;
+  min-width: 50px;
+  height: 28px;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* 表格单元格对齐 */
+.el-table .cell {
+  text-align: center;
+}
+
+/* 状态标签样式 */
+.el-tag {
+  font-weight: 500;
 }
 
 /* 响应式设计 */
