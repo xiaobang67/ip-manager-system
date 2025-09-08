@@ -9,7 +9,7 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button type="warning" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="warning" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
@@ -153,7 +153,7 @@
                 释放
               </el-button>
               <el-button
-                v-if="row.status === 'available' || row.status === 'reserved'"
+                v-if="(row.status === 'available' || row.status === 'reserved') && isAdmin"
                 type="danger"
                 size="small"
                 plain
@@ -355,7 +355,7 @@
           <el-radio-group v-model="bulkForm.operation">
             <el-radio label="reserve">批量保留</el-radio>
             <el-radio label="release">批量释放</el-radio>
-            <el-radio label="delete">批量删除</el-radio>
+            <el-radio v-if="isAdmin" label="delete">批量删除</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="选中IP">
@@ -479,6 +479,7 @@ import { ipAPI, subnetApi } from '@/api'
 import { getDepartmentOptions } from '@/api/departments'
 import AppLayout from '@/components/AppLayout.vue'
 import SimpleIPFilter from '@/components/SimpleIPFilter.vue'
+import { useStore } from 'vuex'
 
 export default {
   name: 'IPManagement',
@@ -491,6 +492,14 @@ export default {
     SimpleIPFilter
   },
   setup() {
+    // Vuex store
+    const store = useStore()
+    
+    // 用户权限相关
+    const currentUser = computed(() => store.getters['auth/currentUser'])
+    const userRole = computed(() => store.getters['auth/userRole'])
+    const isAdmin = computed(() => userRole.value === 'admin')
+    
     // 响应式数据
     const loading = ref(false)
     const submitting = ref(false)
@@ -1064,6 +1073,11 @@ export default {
     }
 
     return {
+      // 用户权限
+      currentUser,
+      userRole,
+      isAdmin,
+      
       // 响应式数据
       loading,
       submitting,

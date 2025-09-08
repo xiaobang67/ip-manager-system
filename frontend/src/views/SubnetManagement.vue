@@ -93,6 +93,7 @@
               同步IP
             </el-button>
             <el-button
+              v-if="isAdmin"
               size="small"
               type="danger"
               @click="deleteSubnet(scope.row)"
@@ -144,6 +145,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import SubnetDialog from '@/components/subnet/SubnetDialog.vue'
 import SubnetDetailDialog from '@/components/subnet/SubnetDetailDialog.vue'
 import { debounce } from '@/utils/debounce'
+import { useStore } from 'vuex'
 
 export default {
   name: 'SubnetManagement',
@@ -153,6 +155,14 @@ export default {
     SubnetDetailDialog
   },
   setup() {
+    // Vuex store
+    const store = useStore()
+    
+    // 用户权限相关
+    const currentUser = computed(() => store.getters['auth/currentUser'])
+    const userRole = computed(() => store.getters['auth/userRole'])
+    const isAdmin = computed(() => userRole.value === 'admin')
+    
     // 响应式数据
     const loading = ref(false)
     const subnets = ref([])
@@ -415,6 +425,11 @@ export default {
       // 图标
       Plus,
       Search,
+      
+      // 用户权限
+      currentUser,
+      userRole,
+      isAdmin,
       
       // 数据
       loading,

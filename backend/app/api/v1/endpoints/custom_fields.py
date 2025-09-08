@@ -1,7 +1,7 @@
 from typing import List, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.core.dependencies import get_db, get_current_user
+from app.core.dependencies import get_db, get_current_user, require_admin
 from app.services.custom_field_service import CustomFieldService
 from app.schemas.custom_field import (
     CustomFieldCreate, CustomFieldUpdate, CustomFieldResponse,
@@ -18,9 +18,9 @@ router = APIRouter()
 def create_custom_field(
     field_data: CustomFieldCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """创建自定义字段"""
+    """创建自定义字段 - 仅管理员可操作"""
     try:
         service = CustomFieldService(db)
         return service.create_field(field_data)
@@ -60,9 +60,9 @@ def update_custom_field(
     field_id: int,
     field_data: CustomFieldUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """更新自定义字段"""
+    """更新自定义字段 - 仅管理员可操作"""
     try:
         service = CustomFieldService(db)
         return service.update_field(field_id, field_data)
@@ -76,9 +76,9 @@ def update_custom_field(
 def delete_custom_field(
     field_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """删除自定义字段"""
+    """删除自定义字段 - 仅管理员可操作"""
     try:
         service = CustomFieldService(db)
         service.delete_field(field_id)

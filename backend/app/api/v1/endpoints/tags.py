@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from app.core.dependencies import get_db, get_current_user
+from app.core.dependencies import get_db, get_current_user, require_admin
 from app.services.tag_service import TagService
 from app.schemas.tag import TagCreate, TagUpdate, TagResponse, TagAssignment, EntityTags
 from app.models.user import User
@@ -14,9 +14,9 @@ router = APIRouter()
 def create_tag(
     tag_data: TagCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """创建标签"""
+    """创建标签 - 仅管理员可操作"""
     try:
         service = TagService(db)
         return service.create_tag(tag_data)
@@ -58,9 +58,9 @@ def update_tag(
     tag_id: int,
     tag_data: TagUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """更新标签"""
+    """更新标签 - 仅管理员可操作"""
     try:
         service = TagService(db)
         return service.update_tag(tag_id, tag_data)
@@ -74,9 +74,9 @@ def update_tag(
 def delete_tag(
     tag_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """删除标签"""
+    """删除标签 - 仅管理员可操作"""
     try:
         service = TagService(db)
         service.delete_tag(tag_id)

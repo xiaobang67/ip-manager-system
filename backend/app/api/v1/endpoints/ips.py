@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 from app.models.user import User
 from app.services.ip_service import IPService
 from app.services.audit_service import AuditService
@@ -393,10 +393,10 @@ async def get_ip_range_status(
 async def bulk_ip_operation(
     request: BulkIPOperationRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
     http_request: Request = None
 ):
-    """批量IP地址操作"""
+    """批量IP地址操作 - 仅管理员可操作"""
     try:
         ip_service = IPService(db)
         audit_service = AuditService(db)

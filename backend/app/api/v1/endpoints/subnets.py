@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 from app.models.user import User
 from app.services.subnet_service import SubnetService
 from app.schemas.subnet import (
@@ -22,9 +22,9 @@ router = APIRouter()
 async def create_subnet(
     subnet_data: SubnetCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """创建新网段"""
+    """创建新网段 - 仅管理员可操作"""
     try:
         subnet_service = SubnetService(db)
         return subnet_service.create_subnet(subnet_data, current_user.id)
@@ -101,9 +101,9 @@ async def update_subnet(
     subnet_id: int,
     subnet_data: SubnetUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """更新网段"""
+    """更新网段 - 仅管理员可操作"""
     try:
         subnet_service = SubnetService(db)
         return subnet_service.update_subnet(subnet_id, subnet_data)
@@ -128,9 +128,9 @@ async def update_subnet(
 async def delete_subnet(
     subnet_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
-    """删除网段"""
+    """删除网段 - 仅管理员可操作"""
     try:
         subnet_service = SubnetService(db)
         subnet_service.delete_subnet(subnet_id)
