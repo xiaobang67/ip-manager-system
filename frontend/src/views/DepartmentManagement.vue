@@ -4,7 +4,7 @@
       <!-- 页面头部 -->
       <div class="page-header">
         <div class="header-left">
-          <h1>部门管理</h1>
+          <h1>组织管理</h1>
           <p class="page-description">管理系统部门信息和组织架构</p>
         </div>
         <div class="header-right">
@@ -301,7 +301,7 @@ const loadDepartments = async () => {
       } else if (error.response.status === 401) {
         errorMessage = '认证失败，请重新登录'
       } else if (error.response.status === 403) {
-        errorMessage = '权限不足，无法访问部门管理'
+        errorMessage = '权限不足，无法访问组织管理'
       } else if (error.response.data?.detail) {
         errorMessage = error.response.data.detail
       } else if (error.response.data?.error?.message) {

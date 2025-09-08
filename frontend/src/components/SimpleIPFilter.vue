@@ -34,7 +34,7 @@
               style="width: 100%"
             >
               <el-option label="可用" value="available" />
-              <el-option label="已分配" value="allocated" />
+              <el-option label="使用中" value="allocated" />
               <el-option label="保留" value="reserved" />
               <el-option label="冲突" value="conflict" />
             </el-select>
@@ -43,7 +43,7 @@
         
         <el-col :span="6">
           <div class="filter-item">
-            <label class="filter-label">分配部门：</label>
+            <label class="filter-label">所属部门：</label>
             <el-select 
               v-model="filters.assigned_to" 
               placeholder="选择部门" 
@@ -177,7 +177,7 @@ export default {
     
     const loadDepartments = async () => {
       try {
-        // 首先尝试从部门管理API获取部门列表
+        // 首先尝试从组织管理API获取部门列表
         const { getDepartmentOptions } = await import('@/api/departments')
         const response = await getDepartmentOptions()
         
@@ -193,7 +193,7 @@ export default {
           return
         }
         
-        // 如果部门API没有返回数据，尝试从已分配IP中获取
+        // 如果部门API没有返回数据，尝试从使用中IP中获取
         const ipResponse = await ipAPI.searchIPs({ 
           status: 'allocated', 
           limit: 1000 
@@ -309,7 +309,7 @@ export default {
     const getStatusText = (status) => {
       const statusMap = {
         available: '可用',
-        allocated: '已分配',
+        allocated: '使用中',
         reserved: '保留',
         conflict: '冲突'
       }

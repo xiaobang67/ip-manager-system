@@ -123,7 +123,7 @@
               </template>
             </el-table-column>
             <el-table-column prop="total_ips" label="总IP数" width="100"></el-table-column>
-            <el-table-column prop="allocated_ips" label="已分配" width="100"></el-table-column>
+            <el-table-column prop="allocated_ips" label="使用中" width="100"></el-table-column>
             <el-table-column prop="utilization_rate" label="使用率" width="120">
               <template #default="scope">
                 <el-progress 
@@ -339,7 +339,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              { value: stats.allocated_ips, name: '已分配', itemStyle: { color: '#409EFF' } },
+              { value: stats.allocated_ips, name: '使用中', itemStyle: { color: '#409EFF' } },
               { value: stats.reserved_ips, name: '保留', itemStyle: { color: '#E6A23C' } },
               { value: stats.available_ips, name: '可用', itemStyle: { color: '#67C23A' } },
               { value: stats.conflict_ips, name: '冲突', itemStyle: { color: '#F56C6C' } }
@@ -474,7 +474,6 @@ export default {
     // 处理报告生成
     const handleReportGenerated = (reportInfo) => {
       ElMessage.success('报告生成请求已提交')
-
     }
 
     // 导航功能

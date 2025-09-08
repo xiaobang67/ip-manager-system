@@ -12,7 +12,7 @@
         >
           <el-icon><Expand v-if="sidebarCollapsed" /><Fold v-else /></el-icon>
         </el-button>
-        <h1 class="app-title">IP地址管理系统</h1>
+        <h1 class="app-title">网络资源管理系统</h1>
       </div>
       
       <div class="header-right">
@@ -60,7 +60,7 @@
           <!-- 系统标题区域 -->
           <div class="sidebar-header">
             <div class="system-info">
-              <div class="system-title" v-show="!sidebarCollapsed">IP地址管理系统</div>
+              <div class="system-title" v-show="!sidebarCollapsed">网络资源管理系统</div>
               <div class="system-subtitle" v-show="!sidebarCollapsed">企业网络资源管理平台</div>
             </div>
           </div>
@@ -80,7 +80,7 @@
             
             <el-menu-item index="/ip-management">
               <el-icon><Connection /></el-icon>
-              <template #title>IP地址管理</template>
+              <template #title>网络资源管理</template>
             </el-menu-item>
             
             <el-menu-item index="/subnet-management">
@@ -102,7 +102,7 @@
               </el-menu-item>
               <el-menu-item index="/department-management">
                 <el-icon><OfficeBuilding /></el-icon>
-                <template #title>部门管理</template>
+                <template #title>组织管理</template>
               </el-menu-item>
             </el-sub-menu>
             

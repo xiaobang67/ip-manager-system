@@ -323,7 +323,7 @@ export default {
     // 删除网段
     const deleteSubnet = async (subnet) => {
       if (subnet.allocated_count > 0) {
-        ElMessage.warning('该网段存在已分配的IP地址，无法删除')
+        ElMessage.warning('该网段存在使用中的IP地址，无法删除')
         return
       }
 
@@ -352,7 +352,7 @@ export default {
     const syncSubnetIPs = async (subnet) => {
       try {
         await ElMessageBox.confirm(
-          `确定要同步网段 ${subnet.network} 的IP地址吗？\n\n此操作将：\n• 根据CIDR格式重新生成正确的IP地址范围\n• 添加缺失的IP地址\n• 删除不属于该网段的未分配IP地址\n• 保留已分配的IP地址`,
+          `确定要同步网段 ${subnet.network} 的IP地址吗？\n\n此操作将：\n• 根据CIDR格式重新生成正确的IP地址范围\n• 添加缺失的IP地址\n• 删除不属于该网段的未分配IP地址\n• 保留使用中的IP地址`,
           '确认同步IP地址',
           {
             confirmButtonText: '确定同步',

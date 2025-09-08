@@ -3,11 +3,11 @@
     <div class="ip-management">
     <!-- 页面标题和操作栏 -->
     <div class="header-section">
-      <h1>IP地址管理</h1>
+      <h1>网络资源管理</h1>
       <div class="header-actions">
         <el-button type="primary" @click="showAllocationDialog = true">
           <el-icon><Plus /></el-icon>
-          分配IP地址
+          分配地址
         </el-button>
         <el-button type="warning" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
@@ -49,7 +49,7 @@
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.allocated }}</div>
-              <div class="stats-label">已分配IP</div>
+              <div class="stats-label">使用中</div>
             </div>
           </el-card>
         </el-col>
@@ -98,8 +98,7 @@
         <el-table-column prop="hostname" label="主机名" width="150" />
         <el-table-column prop="mac_address" label="MAC地址" width="150" />
         <el-table-column prop="device_type" label="设备类型" width="120" />
-        <el-table-column prop="assigned_to" label="分配部门" width="120" />
-        <el-table-column prop="location" label="位置" width="120" />
+        <el-table-column prop="assigned_to" label="所属部门" width="120" />
         <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
         <el-table-column prop="allocated_at" label="分配时间" width="160">
           <template #default="{ row }">
@@ -169,7 +168,7 @@
     <!-- IP分配对话框 -->
     <el-dialog
       v-model="showAllocationDialog"
-      title="分配IP地址"
+      title="分配地址"
       width="600px"
       @close="resetAllocationForm"
     >
@@ -207,10 +206,7 @@
             <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="位置" prop="location">
-          <el-input v-model="allocationForm.location" placeholder="设备位置" />
-        </el-form-item>
-        <el-form-item label="分配部门" prop="assigned_to">
+        <el-form-item label="使用部门" prop="assigned_to">
           <el-select 
             v-model="allocationForm.assigned_to" 
             placeholder="选择部门" 
@@ -611,7 +607,7 @@ export default {
     
     const loadDepartments = async () => {
       try {
-        // 从部门管理API获取部门列表
+        // 从组织管理API获取部门列表
         const response = await getDepartmentOptions()
 
         
@@ -957,7 +953,7 @@ export default {
     const getStatusText = (status) => {
       const textMap = {
         available: '可用',
-        allocated: '已分配',
+        allocated: '使用中',
         reserved: '保留',
         conflict: '冲突'
       }

@@ -92,7 +92,7 @@
                 <el-form-item label="状态">
                   <el-select v-model="searchForm.status" placeholder="选择状态" clearable>
                     <el-option label="可用" value="available" />
-                    <el-option label="已分配" value="allocated" />
+                    <el-option label="使用中" value="allocated" />
                     <el-option label="保留" value="reserved" />
                     <el-option label="冲突" value="conflict" />
                   </el-select>
@@ -114,14 +114,12 @@
             
             <el-row :gutter="20">
               <el-col :span="8">
-                <el-form-item label="位置">
-                  <el-input v-model="searchForm.location" placeholder="设备位置" clearable />
-                </el-form-item>
+
               </el-col>
               
               <el-col :span="8">
-                <el-form-item label="分配给">
-                  <el-input v-model="searchForm.assigned_to" placeholder="负责人或部门" clearable />
+                <el-form-item label="所属部门">
+                  <el-input v-model="searchForm.assigned_to" placeholder="所属部门" clearable />
                 </el-form-item>
               </el-col>
               
@@ -747,7 +745,7 @@ export default {
       if (params.query) conditions.push(`关键词: ${params.query}`)
       if (params.status) conditions.push(`状态: ${params.status}`)
       if (params.device_type) conditions.push(`设备类型: ${params.device_type}`)
-      if (params.location) conditions.push(`位置: ${params.location}`)
+
       
       return conditions.length > 0 ? conditions.join(', ') : '无特定条件'
     }

@@ -8,7 +8,7 @@
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <h2>IP地址管理系统</h2>
+          <h2>网络资源管理系统</h2>
           <p>请登录您的账户</p>
         </div>
       </template>
