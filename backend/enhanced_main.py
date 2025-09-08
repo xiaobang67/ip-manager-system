@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
@@ -534,52 +534,47 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     user: dict
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+# 导入统一认证服务
+from auth_service import authenticate_user
+
 # 认证端点
 @app.post("/api/auth/login", response_model=LoginResponse)
 async def login(request: LoginRequest):
     """用户登录"""
-    connection = get_db_connection()
     try:
-        with connection.cursor() as cursor:
-            # 查询用户
-            cursor.execute(
-                "SELECT id, username, password_hash, email, role, is_active FROM users WHERE username = %s AND is_active = TRUE",
-                (request.username,)
+        # 使用统一认证服务进行用户认证
+        user = authenticate_user(request.username, request.password)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="用户名或密码错误"
             )
-            user = cursor.fetchone()
-            
-            if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="用户名或密码错误"
-                )
-            
-            # 简单的密码验证（在生产环境中应该使用bcrypt等安全的哈希方法）
-            # 这里为了测试，我们检查几种可能的密码
-            valid_passwords = ["admin", "password123", request.password]
-            password_valid = False
-            
-            for pwd in valid_passwords:
-                if pwd == request.password:
-                    password_valid = True
-                    break
-            
-            if not password_valid:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="用户名或密码错误"
-                )
-            
-            return LoginResponse(
-                access_token=f"token-{user['id']}-{user['username']}",
-                refresh_token=f"refresh-{user['id']}-{user['username']}",
-                user={
-                    "id": user['id'],
-                    "username": user['username'],
-                    "email": user['email'],
-                    "role": user['role']
-                }
-            )
+        
+        # 生成JWT token
+        from app.core.security import create_access_token, create_refresh_token
+        
+        access_token = create_access_token(
+            data={"sub": str(user['id']), "username": user['username'], "role": user['role']}
+        )
+        refresh_token = create_refresh_token(
+            data={"sub": str(user['id']), "username": user['username']}
+        )
+        
+        return LoginResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user={
+                "id": user['id'],
+                "username": user['username'],
+                "email": user['email'],
+                "role": user['role']
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -588,8 +583,6 @@ async def login(request: LoginRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="登录服务异常"
         )
-    finally:
-        connection.close()
 
 @app.post("/api/auth/logout")
 async def logout():
@@ -726,6 +719,56 @@ async def update_profile(request: dict):
         )
     finally:
         connection.close()
+
+@app.put("/api/auth/password")
+async def change_password(request: ChangePasswordRequest, authorization: str = Header(None)):
+    """修改用户密码"""
+    # 从Authorization header中获取当前用户ID
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="需要认证令牌"
+        )
+    
+    token = authorization.split(" ")[1]
+    
+    # 解析JWT token获取用户ID
+    from app.core.security import verify_token
+    payload = verify_token(token, "access")
+    
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的认证令牌"
+        )
+    
+    user_id = int(payload.get("sub"))
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的用户信息"
+        )
+    
+    try:
+        # 使用统一认证服务修改密码
+        from auth_service import change_user_password
+        
+        if change_user_password(user_id, request.old_password, request.new_password):
+            return {"message": "密码修改成功"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="旧密码不正确或密码修改失败"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Change password error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="修改密码过程中发生错误"
+        )
 
 # 统计端点
 @app.get("/api/v1/stats")
