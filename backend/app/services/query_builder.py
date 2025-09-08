@@ -62,9 +62,9 @@ class IPQueryBuilder:
         if search_request.location:
             filters.append(IPAddress.location.ilike(f"%{search_request.location}%"))
         
-        # 分配给过滤
+        # 分配部门过滤（精确匹配）
         if search_request.assigned_to:
-            filters.append(IPAddress.assigned_to.ilike(f"%{search_request.assigned_to}%"))
+            filters.append(IPAddress.assigned_to == search_request.assigned_to)
         
         # MAC地址过滤
         if search_request.mac_address:
@@ -111,7 +111,11 @@ class IPQueryBuilder:
                 IPAddress.hostname.ilike(f"%{term}%"),
                 IPAddress.mac_address.ilike(f"%{term}%"),
                 IPAddress.device_type.ilike(f"%{term}%"),
-                IPAddress.assigned_to.ilike(f"%{term}%"),
+                # 对于部门字段，优先精确匹配，然后模糊匹配
+                or_(
+                    IPAddress.assigned_to == term,  # 精确匹配
+                    IPAddress.assigned_to.ilike(f"%{term}%")  # 模糊匹配作为备选
+                ),
                 IPAddress.location.ilike(f"%{term}%"),
                 IPAddress.description.ilike(f"%{term}%"),
                 # 支持网段搜索

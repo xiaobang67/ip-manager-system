@@ -284,12 +284,12 @@ export default {
     // 加载分配趋势
     const loadAllocationTrends = async () => {
       try {
-        console.log('Loading allocation trends for days:', trendDays.value)
+
         const response = await getAllocationTrends(trendDays.value)
-        console.log('Allocation trends response:', response)
+
         await nextTick()
         if (response && Array.isArray(response)) {
-          console.log('Updating chart with data:', response)
+
           updateAllocationTrendChart(response)
         } else {
           console.error('Invalid response data:', response)
@@ -474,7 +474,7 @@ export default {
     // 处理报告生成
     const handleReportGenerated = (reportInfo) => {
       ElMessage.success('报告生成请求已提交')
-      console.log('Report generated:', reportInfo)
+
     }
 
     // 导航功能

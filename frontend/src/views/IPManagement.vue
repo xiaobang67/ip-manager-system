@@ -98,7 +98,7 @@
         <el-table-column prop="hostname" label="主机名" width="150" />
         <el-table-column prop="mac_address" label="MAC地址" width="150" />
         <el-table-column prop="device_type" label="设备类型" width="120" />
-        <el-table-column prop="assigned_to" label="分配给" width="120" />
+        <el-table-column prop="assigned_to" label="分配部门" width="120" />
         <el-table-column prop="location" label="位置" width="120" />
         <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
         <el-table-column prop="allocated_at" label="分配时间" width="160">
@@ -210,7 +210,7 @@
         <el-form-item label="位置" prop="location">
           <el-input v-model="allocationForm.location" placeholder="设备位置" />
         </el-form-item>
-        <el-form-item label="分配给" prop="assigned_to">
+        <el-form-item label="分配部门" prop="assigned_to">
           <el-select 
             v-model="allocationForm.assigned_to" 
             placeholder="选择部门" 
@@ -613,7 +613,7 @@ export default {
       try {
         // 从部门管理API获取部门列表
         const response = await getDepartmentOptions()
-        console.log('部门API响应:', response) // 调试信息
+
         
         if (response && response.data && response.data.departments) {
           // 处理API响应格式：response.data.departments
@@ -622,7 +622,7 @@ export default {
           // 处理直接响应格式：response.departments
           departments.value = response.departments.map(dept => dept.name).sort()
         } else {
-          console.warn('部门API响应格式异常，使用备用列表')
+
           // 如果获取失败，使用静态列表作为备选
           departments.value = [
             '技术部',
@@ -635,7 +635,7 @@ export default {
           ]
         }
         
-        console.log('最终部门列表:', departments.value) // 调试信息
+
         
       } catch (error) {
         console.error('加载部门列表失败：', error)
@@ -706,49 +706,46 @@ export default {
           limit: pageSize.value
         }
         
-        console.log('搜索参数:', params) // 调试信息
+
         
         // 使用简单搜索API
         const response = await ipAPI.searchIPs(params)
-        const results = response.data || response || []
+
         
-        console.log('搜索结果:', results) // 调试信息
+        // 处理新的响应格式
+        if (response.data && Array.isArray(response.data)) {
+          // 新格式：{data: [...], total: number}
+          ipList.value = response.data
+          total.value = response.total || response.data.length
+        } else if (Array.isArray(response.data)) {
+          // 备用格式：response.data是数组
+          ipList.value = response.data
+          total.value = response.data.length
+        } else if (Array.isArray(response)) {
+          // 旧格式：response直接是数组
+          ipList.value = response
+          total.value = response.length
+        } else {
+          // 未知格式
+
+          ipList.value = []
+          total.value = 0
+        }
         
-        ipList.value = results
-        
-        // 更准确的总数计算
-        total.value = results.length
+
         
         // 显示搜索结果提示
         if (Object.keys(searchParams).length > 0) {
           const hasQuery = searchParams.query
           const hasFilters = searchParams.subnet_id || searchParams.status || searchParams.assigned_to
           
-          if (results.length === 0) {
-            ElMessage.warning('未找到匹配的IP地址')
-          } else {
-            let message = ''
-            if (hasQuery && hasFilters) {
-              message = `找到 ${results.length} 个匹配条件的IP地址`
-            } else if (hasQuery) {
-              message = `找到 ${results.length} 个匹配 "${searchParams.query}" 的IP地址`
-            } else {
-              message = `筛选结果：${results.length} 个IP地址`
-            }
-            
-            // 使用info类型的消息，避免过于频繁的成功提示
-            ElMessage({
-              message: message,
-              type: 'info',
-              duration: 2000
-            })
-          }
+          // 搜索结果提示已禁用
         }
         
         // 更新统计信息
         loadStatistics()
       } catch (error) {
-        console.error('搜索错误:', error) // 调试信息
+
         ElMessage.error('搜索失败：' + error.message)
       } finally {
         loading.value = false

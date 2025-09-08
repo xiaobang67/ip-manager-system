@@ -534,15 +534,21 @@ def add_missing_endpoints(app, get_db_connection):
     
     @app.get("/api/ips/search")
     async def search_ips_api(skip: int = 0, limit: int = 50, query: Optional[str] = None, 
-                            status: Optional[str] = None, subnet_id: Optional[int] = None):
+                            status: Optional[str] = None, subnet_id: Optional[int] = None,
+                            assigned_to: Optional[str] = None):
         """搜索IP地址"""
-        print(f"搜索参数: query={query}, status={status}, subnet_id={subnet_id}, skip={skip}, limit={limit}")  # 调试信息
+        print(f"搜索参数: query={query}, status={status}, subnet_id={subnet_id}, assigned_to={assigned_to}, skip={skip}, limit={limit}")  # 调试信息
         
         connection = get_db_connection()
         try:
             with connection.cursor() as cursor:
                 where_conditions = []
                 params = []
+                
+                # 处理assigned_to参数（精确匹配）
+                if assigned_to:
+                    where_conditions.append("assigned_to = %s")
+                    params.append(assigned_to)
                 
                 if query:
                     # 智能搜索：检测查询类型
@@ -555,15 +561,16 @@ def add_missing_endpoints(app, get_db_connection):
                         where_conditions.append("ip_address = %s")
                         params.append(query)
                     else:
-                        # 其他情况：进行模糊匹配，但对IP地址使用更智能的匹配
+                        # 其他情况：进行模糊匹配，但对assigned_to优先精确匹配
                         where_conditions.append("""(
                             ip_address LIKE %s OR 
                             hostname LIKE %s OR 
-                            assigned_to LIKE %s OR 
+                            assigned_to = %s OR
+                            assigned_to LIKE %s OR
                             mac_address LIKE %s OR
                             description LIKE %s
                         )""")
-                        params.extend([f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"])
+                        params.extend([f"%{query}%", f"%{query}%", query, f"%{query}%", f"%{query}%", f"%{query}%"])
                 
                 if status:
                     where_conditions.append("status = %s")
@@ -575,6 +582,14 @@ def add_missing_endpoints(app, get_db_connection):
                 
                 where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
                 
+                # 首先获取总数
+                cursor.execute(f"""
+                    SELECT COUNT(*) as total FROM ip_addresses 
+                    WHERE {where_clause}
+                """, params)
+                total_count = cursor.fetchone()['total']
+                
+                # 然后获取分页数据
                 cursor.execute(f"""
                     SELECT * FROM ip_addresses 
                     WHERE {where_clause} 
@@ -583,7 +598,7 @@ def add_missing_endpoints(app, get_db_connection):
                 """, params + [limit, skip])
                 results = cursor.fetchall()
                 
-                return [
+                data = [
                     {
                         "id": row['id'],
                         "ip_address": row['ip_address'],
@@ -598,6 +613,13 @@ def add_missing_endpoints(app, get_db_connection):
                         "created_at": str(row['created_at'])
                     } for row in results
                 ]
+                
+                return {
+                    "data": data,
+                    "total": total_count,
+                    "skip": skip,
+                    "limit": limit
+                }
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to search IP addresses: {str(e)}")
         finally:

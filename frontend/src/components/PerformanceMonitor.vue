@@ -199,7 +199,7 @@ export default {
               pageLoadTime.value = entry.loadEventEnd - entry.fetchStart
             } else if (entry.entryType === 'measure') {
               // 自定义性能测量
-              console.log('Performance measure:', entry.name, entry.duration)
+
             }
           }
         })
@@ -207,7 +207,7 @@ export default {
         try {
           performanceObserver.observe({ entryTypes: ['navigation', 'measure'] })
         } catch (e) {
-          console.warn('Performance Observer not supported:', e)
+
         }
       }
       
@@ -331,7 +331,7 @@ export default {
         try {
           cacheStats.value = getCacheStats()
         } catch (error) {
-          console.warn('Failed to get cache stats:', error)
+
         }
       }, 10000) // 每10秒检查一次
     }

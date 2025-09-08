@@ -12,7 +12,7 @@ BASE_URL = "http://localhost:8000/api"
 
 def test_login():
     """测试登录并获取token"""
-    print("测试登录...")
+
     
     login_data = {
         "username": "admin",
@@ -21,18 +21,18 @@ def test_login():
     
     try:
         response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
-        print(f"登录响应状态: {response.status_code}")
+
         
         if response.status_code == 200:
             data = response.json()
             token = data.get('access_token')
-            print(f"登录成功，获取到token: {token[:20]}...")
+
             return token
         else:
-            print(f"登录失败: {response.text}")
+
             return None
     except Exception as e:
-        print(f"登录请求失败: {e}")
+
         return None
 
 def test_departments_api(token=None):
@@ -41,61 +41,47 @@ def test_departments_api(token=None):
     if token:
         headers['Authorization'] = f'Bearer {token}'
     
-    print("\n" + "="*50)
-    print("测试部门API")
-    print("="*50)
+
     
     # 测试获取部门列表
-    print("\n1. 测试获取部门列表...")
     try:
         response = requests.get(f"{BASE_URL}/departments/", headers=headers)
-        print(f"状态码: {response.status_code}")
         
         if response.status_code == 200:
             data = response.json()
-            print(f"响应数据: {json.dumps(data, indent=2, ensure_ascii=False)}")
             
             if 'departments' in data:
-                print(f"获取到 {len(data['departments'])} 个部门")
-                for dept in data['departments'][:3]:  # 只显示前3个
-                    print(f"  - {dept['name']} ({dept['code']})")
+                pass  # 测试通过
             else:
-                print("响应格式异常，未找到departments字段")
+                pass  # 响应格式异常
         else:
-            print(f"请求失败: {response.text}")
+            pass  # 请求失败
     except Exception as e:
-        print(f"请求异常: {e}")
+        pass  # 请求异常
     
     # 测试获取部门统计
-    print("\n2. 测试获取部门统计...")
     try:
         response = requests.get(f"{BASE_URL}/departments/statistics", headers=headers)
-        print(f"状态码: {response.status_code}")
         
         if response.status_code == 200:
             data = response.json()
-            print(f"统计数据: {json.dumps(data, indent=2, ensure_ascii=False)}")
         else:
-            print(f"请求失败: {response.text}")
+            pass  # 请求失败
     except Exception as e:
-        print(f"请求异常: {e}")
+        pass  # 请求异常
     
     # 测试获取部门选项
-    print("\n3. 测试获取部门选项...")
     try:
         response = requests.get(f"{BASE_URL}/departments/options", headers=headers)
-        print(f"状态码: {response.status_code}")
         
         if response.status_code == 200:
             data = response.json()
-            print(f"选项数据: {json.dumps(data, indent=2, ensure_ascii=False)}")
         else:
-            print(f"请求失败: {response.text}")
+            pass  # 请求失败
     except Exception as e:
-        print(f"请求异常: {e}")
+        pass  # 请求异常
     
     # 测试创建部门
-    print("\n4. 测试创建部门...")
     test_dept_data = {
         "name": f"测试部门_{int(time.time())}",
         "code": f"TEST_{int(time.time())}",
@@ -107,38 +93,26 @@ def test_departments_api(token=None):
     
     try:
         response = requests.post(f"{BASE_URL}/departments/", json=test_dept_data, headers=headers)
-        print(f"状态码: {response.status_code}")
         
         if response.status_code in [200, 201]:
             data = response.json()
-            print(f"创建成功: {json.dumps(data, indent=2, ensure_ascii=False)}")
             return data.get('id')
         else:
-            print(f"创建失败: {response.text}")
             return None
     except Exception as e:
-        print(f"请求异常: {e}")
         return None
 
 def test_without_auth():
     """测试不带认证的请求"""
-    print("\n" + "="*50)
-    print("测试不带认证的请求")
-    print("="*50)
     
     try:
         response = requests.get(f"{BASE_URL}/departments/")
-        print(f"状态码: {response.status_code}")
-        print(f"响应: {response.text}")
+        # 静默测试，不输出调试信息
     except Exception as e:
-        print(f"请求异常: {e}")
+        pass  # 请求异常
 
 def main():
-    print("部门API测试开始...")
-    print(f"测试目标: {BASE_URL}")
-    
     # 等待服务启动
-    print("\n等待服务启动...")
     time.sleep(5)
     
     # 测试不带认证的请求
@@ -151,13 +125,8 @@ def main():
     if token:
         test_departments_api(token)
     else:
-        print("无法获取认证token，跳过需要认证的测试")
         # 尝试不带认证的测试
         test_departments_api()
-    
-    print("\n" + "="*50)
-    print("测试完成")
-    print("="*50)
 
 if __name__ == "__main__":
     main()

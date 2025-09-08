@@ -18,7 +18,7 @@ def run_migration():
         
         # 检查配置文件是否存在
         if not os.path.exists(alembic_cfg_path):
-            print(f"错误: 找不到alembic配置文件: {alembic_cfg_path}")
+
             return False
         
         # 创建alembic配置对象
@@ -27,16 +27,16 @@ def run_migration():
         # 设置脚本位置
         alembic_cfg.set_main_option('script_location', os.path.join(current_dir, 'alembic'))
         
-        print("开始运行数据库迁移...")
+
         
         # 运行迁移到最新版本
         command.upgrade(alembic_cfg, "head")
         
-        print("数据库迁移完成!")
+
         return True
         
     except Exception as e:
-        print(f"数据库迁移失败: {e}")
+
         return False
 
 if __name__ == "__main__":

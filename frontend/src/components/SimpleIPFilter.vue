@@ -185,18 +185,15 @@ export default {
           // 处理API响应格式：response.data.departments
           const apiDepartments = response.data.departments.map(dept => dept.name).sort()
           departments.value = apiDepartments
-          console.log('从部门API获取到部门列表:', apiDepartments)
           return
         } else if (response && response.departments) {
           // 处理直接响应格式：response.departments
           const apiDepartments = response.departments.map(dept => dept.name).sort()
           departments.value = apiDepartments
-          console.log('从部门API获取到部门列表:', apiDepartments)
           return
         }
         
         // 如果部门API没有返回数据，尝试从已分配IP中获取
-        console.log('部门API无数据，尝试从IP数据中获取部门信息')
         const ipResponse = await ipAPI.searchIPs({ 
           status: 'allocated', 
           limit: 1000 
@@ -227,7 +224,6 @@ export default {
           .sort()
         
         departments.value = allDepartments
-        console.log('合并后的部门列表:', allDepartments)
         
       } catch (error) {
         console.error('加载部门列表失败：', error)
@@ -267,7 +263,7 @@ export default {
         }
       })
       
-      console.log('SimpleIPFilter - 触发搜索:', searchParams) // 调试信息
+
       
       emit('search', searchParams)
       
@@ -277,7 +273,7 @@ export default {
     }
     
     const handleQuickSearch = () => {
-      console.log('handleQuickSearch 被调用，searchQuery:', searchQuery.value) // 调试信息
+
       if (searchQuery.value && searchQuery.value.length >= 2) {
         handleSearch()
       } else if (!searchQuery.value) {

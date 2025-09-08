@@ -86,7 +86,7 @@ export function cachedRequest(config, options = {}) {
     if (cache && !skipCache && config.method?.toLowerCase() === 'get') {
       const cached = checkCache(cacheKey)
       if (cached) {
-        console.log('Cache hit:', cacheKey)
+
         resolve(cached)
         return
       }
@@ -94,7 +94,7 @@ export function cachedRequest(config, options = {}) {
     
     // 检查是否有相同的请求正在进行
     if (pendingRequests.has(cacheKey)) {
-      console.log('Request deduplication:', cacheKey)
+
       pendingRequests.get(cacheKey).then(resolve).catch(reject)
       return
     }
@@ -158,7 +158,7 @@ export function retryRequest(config, options = {}) {
     return cachedRequest(config).catch(error => {
       if (retryCount < maxRetries && retryCondition(error)) {
         retryCount++
-        console.log(`Request retry ${retryCount}/${maxRetries}:`, config.url)
+
         
         return new Promise(resolve => {
           setTimeout(() => {
@@ -247,11 +247,11 @@ export function setupPerformanceInterceptors(axiosInstance) {
       const duration = endTime - response.config.metadata.startTime
       
       // 记录性能数据
-      console.log(`API Request: ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`)
+
       
       // 慢请求警告
       if (duration > 2000) {
-        console.warn(`Slow API request detected: ${response.config.url} took ${duration}ms`)
+
       }
       
       return response
@@ -260,7 +260,7 @@ export function setupPerformanceInterceptors(axiosInstance) {
       if (error.config?.metadata) {
         const endTime = Date.now()
         const duration = endTime - error.config.metadata.startTime
-        console.error(`API Request Failed: ${error.config.method?.toUpperCase()} ${error.config.url} - ${duration}ms`, error)
+
       }
       return Promise.reject(error)
     }
@@ -274,7 +274,7 @@ export function preloadResources(urls) {
   const promises = urls.map(url => {
     return cachedRequest({ method: 'GET', url })
       .catch(error => {
-        console.warn(`Failed to preload resource: ${url}`, error)
+
         return null
       })
   })
@@ -361,9 +361,9 @@ export class SmartPrefetcher {
       
       try {
         await cachedRequest({ method: 'GET', url })
-        console.log('Prefetched:', url)
+
       } catch (error) {
-        console.warn('Prefetch failed:', url, error)
+
       }
       
       // 避免过于频繁的预取

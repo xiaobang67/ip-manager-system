@@ -236,7 +236,7 @@ const editForm = reactive({
 const userRole = computed(() => store.getters['auth/userRole'])
 const canManageDepartments = computed(() => {
   const role = userRole.value
-  console.log('当前用户角色:', role)
+
   return ['admin', 'manager'].includes(role)
 })
 
@@ -271,9 +271,9 @@ const loadDepartments = async () => {
       search: searchQuery.value || undefined
     }
 
-    console.log('请求参数:', params)
+
     const response = await getDepartments(params)
-    console.log('API响应:', response)
+
     
     if (response && response.departments) {
       departments.value = response.departments
@@ -287,7 +287,7 @@ const loadDepartments = async () => {
       totalDepartments.value = 0
     }
 
-    console.log('获取到部门数据:', { count: departments.value.length, total: totalDepartments.value })
+
   } catch (error) {
     console.error('加载部门列表失败:', error)
     departments.value = []
@@ -331,7 +331,7 @@ const resetFilters = () => {
 }
 
 const handleSortChange = ({ prop, order }) => {
-  console.log('排序变化:', prop, order)
+
 }
 
 const handleSizeChange = (newSize) => {

@@ -576,7 +576,7 @@ const loadUsers = async () => {
     
     // 增加严格的数据验证和多格式支持
     if (!response) {
-      console.warn('用户API响应为空')
+
       users.value = []
       totalUsers.value = 0
       return
@@ -603,7 +603,7 @@ const loadUsers = async () => {
       usersData = response.data
       totalCount = response.data.length
     } else {
-      console.warn('未识别的用户API响应格式:', response)
+
       usersData = []
       totalCount = 0
     }
@@ -611,7 +611,7 @@ const loadUsers = async () => {
     users.value = usersData
     totalUsers.value = totalCount
 
-    console.log('获取到用户数据:', { count: usersData.length, total: totalCount })
+
   } catch (error) {
     console.error('加载用户列表失败:', error)
     users.value = []
@@ -647,7 +647,7 @@ const loadAvailableRoles = async () => {
       // 格式3: { data: [] }
       availableRoles.value = response.data
     } else {
-      console.warn('未识别的角色API响应格式:', response)
+
       availableRoles.value = []
     }
   } catch (error) {
@@ -671,7 +671,7 @@ const loadAvailableThemes = async () => {
       // 格式3: { data: [] }
       availableThemes.value = response.data
     } else {
-      console.warn('未识别的主题API响应格式:', response)
+
       availableThemes.value = []
     }
   } catch (error) {
@@ -695,7 +695,6 @@ const resetFilters = () => {
 
 const handleSortChange = ({ prop, order }) => {
   // 这里可以实现服务端排序
-  console.log('排序变化:', prop, order)
 }
 
 const handleSizeChange = (newSize) => {

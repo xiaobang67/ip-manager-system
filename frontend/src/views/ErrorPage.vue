@@ -312,7 +312,6 @@ export default {
       }
       
       // 这里可以调用API发送错误报告
-      console.log('Error Report:', errorReport)
       this.$message.success('错误报告已发送，感谢您的反馈')
     },
     
