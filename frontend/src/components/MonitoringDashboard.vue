@@ -244,7 +244,7 @@ export default {
     
     // 计算属性
     const currentUser = computed(() => store.getters['auth/currentUser'])
-    const isAdmin = computed(() => store.getters['auth/userRole'] === 'ADMIN')
+    const isAdmin = computed(() => store.getters['auth/userRole']?.toLowerCase() === 'admin')
 
     // 图表实例
     const ipUtilizationChart = ref(null)
@@ -927,6 +927,59 @@ export default {
 .nav-item:nth-child(2) { animation-delay: 0.2s; }
 .nav-item:nth-child(3) { animation-delay: 0.3s; }
 .nav-item:nth-child(4) { animation-delay: 0.4s; }
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+}
+
+/* 暗黑主题适配 */
+.dark .btn-allocation, .dark .btn-edit,
+.dark .btn-reservation, .dark .btn-sync,
+.dark .btn-release, .dark .btn-delete,
+.dark .btn-history, .dark .btn-view {
+  opacity: 0.9;
+}
 
 /* 响应式设计 */
 @media (max-width: 1200px) {

@@ -461,24 +461,14 @@ body {
     box-shadow: var(--box-shadow);
 }
 
-/* 按钮样式增强 */
-.el-button {
-    border-color: var(--border-color) !important;
-    color: var(--text-color-regular) !important;
-}
-
-.el-button:hover {
-    border-color: var(--primary-color) !important;
-    color: var(--primary-color) !important;
-}
-
-.el-button--default {
+/* 只修复默认按钮样式，不覆盖type按钮 */
+.el-button:not([class*="--"]) {
     background-color: var(--bg-color) !important;
     border-color: var(--border-color) !important;
     color: var(--text-color-regular) !important;
 }
 
-.el-button--default:hover {
+.el-button:not([class*="--"]):hover {
     background-color: var(--fill-color) !important;
     border-color: var(--primary-color) !important;
     color: var(--primary-color) !important;
@@ -1162,41 +1152,17 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-color-placeholder) !important;
 }
 
-/* 修复所有按钮样式 */
-.el-button {
+/* 只修复默认按钮样式，保留Element Plus的type颜色 */
+.el-button:not([class*="--"]) {
   background-color: var(--bg-color) !important;
   border-color: var(--border-color) !important;
   color: var(--text-color-regular) !important;
 }
 
-.el-button:hover {
+.el-button:not([class*="--"]):hover {
   background-color: var(--fill-color) !important;
   border-color: var(--primary-color) !important;
   color: var(--primary-color) !important;
-}
-
-.el-button--primary {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: #ffffff !important;
-}
-
-.el-button--primary:hover {
-  background-color: var(--primary-light) !important;
-  border-color: var(--primary-light) !important;
-  color: #ffffff !important;
-}
-
-.el-button--primary.is-plain {
-  background-color: var(--bg-color) !important;
-  border-color: var(--primary-color) !important;
-  color: var(--primary-color) !important;
-}
-
-.el-button--primary.is-plain:hover {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: #ffffff !important;
 }
 
 /* 修复选择器样式 */
@@ -1657,79 +1623,32 @@ html[data-theme="light"] #app {
 }
 
 /* 表格中的所有按钮强制主题适配 */
+/* 表格中的按钮基础样式 - 保留Element Plus的type颜色 */
 .el-table .el-button,
 .el-table .action-buttons .el-button {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: #ffffff !important;
   font-size: 12px !important;
+  padding: 4px 8px !important;
+  min-width: 50px !important;
+  height: 28px !important;
 }
 
-.el-table .el-button:hover,
-.el-table .action-buttons .el-button:hover {
-  background-color: var(--primary-light) !important;
-  border-color: var(--primary-light) !important;
-  color: #ffffff !important;
-}
-
-.el-table .el-button.is-plain,
-.el-table .action-buttons .el-button.is-plain {
+/* 只对默认按钮（无type）应用主题色 */
+.el-table .el-button:not([class*="--"]),
+.el-table .action-buttons .el-button:not([class*="--"]) {
   background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-regular) !important;
+}
+
+.el-table .el-button:not([class*="--"]):hover,
+.el-table .action-buttons .el-button:not([class*="--"]):hover {
+  background-color: var(--fill-color) !important;
   border-color: var(--primary-color) !important;
   color: var(--primary-color) !important;
 }
 
-.el-table .el-button.is-plain:hover,
-.el-table .action-buttons .el-button.is-plain:hover {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: #ffffff !important;
-}
-
-/* 特殊按钮类型的主题适配 */
-.el-table .el-button--success {
-  background-color: var(--success-color) !important;
-  border-color: var(--success-color) !important;
-  color: #ffffff !important;
-}
-
-.el-table .el-button--success:hover {
-  background-color: var(--success-light) !important;
-  border-color: var(--success-light) !important;
-}
-
-.el-table .el-button--warning {
-  background-color: var(--warning-color) !important;
-  border-color: var(--warning-color) !important;
-  color: #ffffff !important;
-}
-
-.el-table .el-button--warning:hover {
-  background-color: var(--warning-light) !important;
-  border-color: var(--warning-light) !important;
-}
-
-.el-table .el-button--danger {
-  background-color: var(--danger-color) !important;
-  border-color: var(--danger-color) !important;
-  color: #ffffff !important;
-}
-
-.el-table .el-button--danger:hover {
-  background-color: var(--danger-light) !important;
-  border-color: var(--danger-light) !important;
-}
-
-.el-table .el-button--info {
-  background-color: var(--info-color) !important;
-  border-color: var(--info-color) !important;
-  color: #ffffff !important;
-}
-
-.el-table .el-button--info:hover {
-  background-color: var(--info-light) !important;
-  border-color: var(--info-light) !important;
-}
+/* 保持Element Plus按钮类型的原生颜色 - 移除强制覆盖 */
+/* 让Element Plus的type属性自然生效，不再强制覆盖颜色 */
 
 /* 修复表格固定列的阴影和边框 */
 .el-table .el-table__fixed-right::before {
@@ -1820,16 +1739,7 @@ html[data-theme="light"] #app {
   color: #ffffff !important;
 }
 
-/* 修复其他页面的操作按钮 */
-.ip-management .el-table .action-buttons .el-button,
-.subnet-management .el-table .action-buttons .el-button,
-.user-management .el-table .action-buttons .el-button,
-.department-management .el-table .action-buttons .el-button,
-.security-dashboard .el-table .action-buttons .el-button {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: #ffffff !important;
-}
+/* 移除强制按钮颜色覆盖 - 让Element Plus的type属性自然生效 */
 
 /* 确保表格内所有元素都正确应用主题 */
 .el-table * {
@@ -1992,4 +1902,72 @@ html[data-theme="light"] #app {
 [data-theme="light"] .el-table .el-table__fixed-right th.el-table__cell {
   background-color: #f0f2f5 !important;
   color: #303133 !important;
+}
+/* ====
+= 统一按钮颜色方案 - 全局应用 ===== */
+/* 🔵 Edit/Enable buttons: #409eff (blue) */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+/* 🟠 Disable/Sync IP buttons: #e6a23c (orange) */
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+/* 🔴 Delete buttons: #f56c6c (red) */
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+/* ⚫ View buttons: #909399 (gray) */
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+}
+
+/* 暗黑主题适配 */
+.dark .btn-allocation, .dark .btn-edit,
+.dark .btn-reservation, .dark .btn-sync,
+.dark .btn-release, .dark .btn-delete,
+.dark .btn-history, .dark .btn-view {
+  opacity: 0.9;
+}
+
+/* 确保按钮在表格中也应用正确的颜色 */
+.el-table .btn-allocation, .el-table .btn-edit,
+.el-table .btn-reservation, .el-table .btn-sync,
+.el-table .btn-release, .el-table .btn-delete,
+.el-table .btn-history, .el-table .btn-view {
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  min-width: 50px !important;
+  height: 28px !important;
 }

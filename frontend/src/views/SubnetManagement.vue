@@ -78,15 +78,23 @@
 
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="scope">
-            <el-button size="small" @click="viewSubnet(scope.row)">
+            <el-button 
+              size="small" 
+              class="btn-view"
+              @click="viewSubnet(scope.row)"
+            >
               查看
             </el-button>
-            <el-button size="small" type="primary" @click="editSubnet(scope.row)">
+            <el-button 
+              size="small" 
+              class="btn-edit"
+              @click="editSubnet(scope.row)"
+            >
               编辑
             </el-button>
             <el-button 
               size="small" 
-              type="warning" 
+              class="btn-sync"
               @click="syncSubnetIPs(scope.row)"
               :loading="scope.row.syncing"
             >
@@ -95,7 +103,7 @@
             <el-button
               v-if="isAdmin"
               size="small"
-              type="danger"
+              class="btn-delete"
               @click="deleteSubnet(scope.row)"
               :disabled="scope.row.allocated_count > 0"
             >
@@ -161,7 +169,7 @@ export default {
     // 用户权限相关
     const currentUser = computed(() => store.getters['auth/currentUser'])
     const userRole = computed(() => store.getters['auth/userRole'])
-    const isAdmin = computed(() => userRole.value === 'ADMIN')
+    const isAdmin = computed(() => userRole.value?.toLowerCase() === 'admin')
     
     // 响应式数据
     const loading = ref(false)
@@ -520,5 +528,58 @@ export default {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+}
+
+/* 暗黑主题适配 */
+.dark .btn-allocation, .dark .btn-edit,
+.dark .btn-reservation, .dark .btn-sync,
+.dark .btn-release, .dark .btn-delete,
+.dark .btn-history, .dark .btn-view {
+  opacity: 0.9;
 }
 </style>

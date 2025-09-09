@@ -125,7 +125,7 @@
                 <span class="rank">{{ index + 1 }}</span>
                 <span class="ip">{{ ip.ip }}</span>
                 <span class="count">{{ ip.threat_count }} 次威胁</span>
-                <el-button size="small" type="danger" @click="blockIP(ip.ip)">
+                <el-button size="small" class="btn-delete" @click="blockIP(ip.ip)">
                   阻止
                 </el-button>
               </div>

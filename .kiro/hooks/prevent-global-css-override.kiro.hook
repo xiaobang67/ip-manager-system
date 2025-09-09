@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Prevent Global CSS Button Override",
+  "description": "Monitors CSS files to prevent global styles from overriding module-specific button colors and functionality",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "frontend/src/**/*.css",
+      "frontend/src/**/*.scss",
+      "frontend/src/**/*.less",
+      "frontend/public/**/*.css"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the CSS changes to ensure that global styles are not overriding module-specific button colors and functionality. Check for overly broad selectors that might affect button styling across different modules. Suggest more specific selectors or scoped styling approaches to maintain module independence."
+  }
+}

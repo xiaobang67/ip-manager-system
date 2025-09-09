@@ -58,6 +58,7 @@
             <template #default="{ row }">
               <el-button
                 size="small"
+                type="primary"
                 @click="editDepartment(row)"
                 v-if="canManageDepartments"
               >
@@ -235,8 +236,7 @@ const editForm = reactive({
 // 计算属性
 const userRole = computed(() => store.getters['auth/userRole'])
 const canManageDepartments = computed(() => {
-  const role = userRole.value
-
+  const role = userRole.value?.toLowerCase()
   return ['admin', 'manager'].includes(role)
 })
 
@@ -573,6 +573,51 @@ watch(showEditDialog, (newVal) => {
   .filter-card .el-row .el-col {
     margin-bottom: 10px;
   }
+}
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
 }
 
 /* 暗黑主题适配 */

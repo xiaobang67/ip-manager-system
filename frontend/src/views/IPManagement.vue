@@ -300,7 +300,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReservationDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitReservation" :loading="submitting">
+        <el-button type="warning" @click="submitReservation" :loading="submitting">
           确认保留
         </el-button>
       </template>
@@ -333,7 +333,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReleaseDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitRelease" :loading="submitting">
+        <el-button type="danger" @click="submitRelease" :loading="submitting">
           确认释放
         </el-button>
       </template>
@@ -386,7 +386,7 @@
       <template #footer>
         <el-button @click="showBulkDialog = false">取消</el-button>
         <el-button
-          type="primary"
+          :type="getBulkOperationButtonType()"
           @click="submitBulkOperation"
           :loading="submitting"
           :disabled="selectedIPs.length === 0"
@@ -500,7 +500,7 @@ export default {
     // 用户权限相关
     const currentUser = computed(() => store.getters['auth/currentUser'])
     const userRole = computed(() => store.getters['auth/userRole'])
-    const isAdmin = computed(() => userRole.value === 'ADMIN')
+    const isAdmin = computed(() => userRole.value?.toLowerCase() === 'admin')
     
     // 响应式数据
     const loading = ref(false)
@@ -1401,6 +1401,67 @@ oped>
   height: 28px;
   font-size: 12px;
   padding: 4px 8px;
+}
+
+/* 强制修复按钮颜色 - 覆盖全局样式 */
+.ip-management .action-buttons .el-button--primary {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--primary:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--warning {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--warning:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger.is-plain {
+  background-color: transparent !important;
+  border-color: #f56c6c !important;
+  color: #f56c6c !important;
+}
+
+.ip-management .action-buttons .el-button--danger.is-plain:hover {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--info {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--info:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+  color: #ffffff !important;
 }
 
 /* 表格单元格对齐 */

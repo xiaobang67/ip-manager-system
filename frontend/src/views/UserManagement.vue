@@ -6,6 +6,7 @@
       <div class="header-left">
         <h1>用户管理</h1>
         <p class="page-description">管理系统用户账号和权限</p>
+
       </div>
       <div class="header-right">
         <el-button 
@@ -157,6 +158,7 @@
           <template #default="{ row }">
             <el-button
               size="small"
+              class="btn-edit"
               @click="editUser(row)"
               v-if="canManageUsers"
             >
@@ -164,7 +166,7 @@
             </el-button>
             <el-button
               size="small"
-              :type="row.is_active ? 'warning' : 'success'"
+              :class="row.is_active ? 'btn-reservation' : 'btn-edit'"
               @click="handleToggleUserStatus(row)"
               v-if="canManageUsers && row.id !== currentUserId"
             >
@@ -172,7 +174,7 @@
             </el-button>
             <el-button
               size="small"
-              type="danger"
+              class="btn-delete"
               @click="confirmDeleteUser(row)"
               v-if="canManageUsers && row.id !== currentUserId"
             >
@@ -322,7 +324,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showEditDialog = false">取消</el-button>
-          <el-button @click="showResetPasswordDialog = true" type="warning">
+          <el-button type="warning" @click="showResetPasswordDialog = true">
             重置密码
           </el-button>
           <el-button type="primary" @click="handleUpdateUser" :loading="updateLoading">
@@ -467,7 +469,10 @@ const resetPasswordForm = reactive({
 // 计算属性
 const currentUserId = computed(() => store.getters['auth/currentUser']?.id)
 const userRole = computed(() => store.getters['auth/userRole'])
-const canManageUsers = computed(() => ['admin', 'manager'].includes(userRole.value))
+const canManageUsers = computed(() => {
+  const role = userRole.value?.toLowerCase()
+  return ['admin', 'manager'].includes(role)
+})
 
 // 过滤后的用户列表
 const filteredUsers = computed(() => {
@@ -624,7 +629,7 @@ const loadUsers = async () => {
 
 const loadStatistics = async () => {
   try {
-    if (userRole.value === 'ADMIN') {
+    if (userRole.value?.toLowerCase() === 'admin') {
       statistics.value = await getUserStatistics()
     }
   } catch (error) {
@@ -1023,6 +1028,51 @@ watch(showResetPasswordDialog, (newVal) => {
   .filter-card .el-row .el-col {
     margin-bottom: 10px;
   }
+}
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
 }
 
 /* 暗黑主题适配 */
