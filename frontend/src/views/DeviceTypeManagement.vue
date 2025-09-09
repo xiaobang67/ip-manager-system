@@ -9,7 +9,7 @@
             <el-icon><Plus /></el-icon>
             添加设备类型
           </el-button>
-          <el-button @click="refreshData">
+          <el-button type="primary" plain @click="refreshData">
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
@@ -204,7 +204,7 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button @click="showAddDialog = false">取消</el-button>
+          <el-button type="primary" plain @click="showAddDialog = false">取消</el-button>
           <el-button type="primary" @click="submitForm" :loading="submitting">
             {{ editingDeviceType ? '更新' : '添加' }}
           </el-button>
@@ -567,7 +567,7 @@ export default {
 .header-section h1 {
   margin: 0;
   color: #303133;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
 }
 
@@ -582,6 +582,7 @@ export default {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  font-size: 15px;
 }
 
 .stats-section {
@@ -606,14 +607,14 @@ export default {
 }
 
 .stats-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: #409eff;
+  color: #52c41a !important;
   margin-bottom: 8px;
 }
 
 .stats-label {
-  font-size: 14px;
+  font-size: 16px;
   color: #909399;
   font-weight: 500;
 }
@@ -623,6 +624,7 @@ export default {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  font-size: 15px;
 }
 
 .action-buttons {
@@ -635,12 +637,73 @@ export default {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+  font-size: 15px;
 }
 
 .form-tip {
-  font-size: 12px;
+  font-size: 14px;
   color: #909399;
   margin-top: 4px;
+}
+
+/* 自定义按钮颜色 - 使用现代绿色系 - 强制优先级 */
+:deep(.el-button--primary) {
+  background-color: #52c41a !important;
+  border-color: #52c41a !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button--primary:hover) {
+  background-color: #73d13d !important;
+  border-color: #73d13d !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button--primary:active) {
+  background-color: #389e0d !important;
+  border-color: #389e0d !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button--primary.is-plain) {
+  background-color: #ffffff !important;
+  border-color: #52c41a !important;
+  color: #52c41a !important;
+}
+
+:deep(.el-button--primary.is-plain:hover) {
+  background-color: #52c41a !important;
+  border-color: #52c41a !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button--primary.is-plain:active) {
+  background-color: #389e0d !important;
+  border-color: #389e0d !important;
+  color: #ffffff !important;
+}
+
+/* 统计数值颜色也改为绿色系 */
+.stats-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #52c41a !important;
+  margin-bottom: 8px;
+}
+
+/* 额外的按钮样式强制覆盖 */
+.device-type-management :deep(.el-button) {
+  font-size: 15px !important;
+}
+
+.device-type-management :deep(.el-button--primary) {
+  background: #52c41a !important;
+  border: 1px solid #52c41a !important;
+}
+
+.device-type-management :deep(.el-button--primary:hover) {
+  background: #73d13d !important;
+  border: 1px solid #73d13d !important;
 }
 
 /* 响应式设计 */
