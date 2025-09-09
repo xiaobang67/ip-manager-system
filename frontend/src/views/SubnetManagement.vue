@@ -80,21 +80,21 @@
           <template #default="scope">
             <el-button 
               size="small" 
-              class="btn-view"
+              type="info"
               @click="viewSubnet(scope.row)"
             >
               查看
             </el-button>
             <el-button 
               size="small" 
-              class="btn-edit"
+              type="primary"
               @click="editSubnet(scope.row)"
             >
               编辑
             </el-button>
             <el-button 
               size="small" 
-              class="btn-sync"
+              type="warning"
               @click="syncSubnetIPs(scope.row)"
               :loading="scope.row.syncing"
             >
@@ -103,7 +103,8 @@
             <el-button
               v-if="isAdmin"
               size="small"
-              class="btn-delete"
+              type="danger"
+              plain
               @click="deleteSubnet(scope.row)"
               :disabled="scope.row.allocated_count > 0"
             >

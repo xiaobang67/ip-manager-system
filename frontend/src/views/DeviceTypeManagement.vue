@@ -84,35 +84,35 @@
           stripe
           @selection-change="handleSelectionChange"
         >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="name" label="设备类型名称" width="150" sortable align="center" />
-          <el-table-column prop="code" label="类型代码" width="120" align="center" />
-          <el-table-column prop="category" label="设备分类" width="120" align="center">
+          <el-table-column type="selection" width="80" />
+          <el-table-column prop="name" label="设备类型名称" width="220" sortable align="center" />
+          <el-table-column prop="code" label="类型代码" width="160" align="center" />
+          <el-table-column prop="category" label="设备分类" width="160" align="center">
             <template #default="{ row }">
               <el-tag :type="getCategoryTagType(row.category)" size="small">
                 {{ getCategoryText(row.category) }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="80" align="center">
+          <el-table-column prop="status" label="状态" width="120" align="center">
             <template #default="{ row }">
               <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
                 {{ row.status === 'active' ? '启用' : '禁用' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="usage_count" label="使用数量" width="100" align="center" />
-          <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip align="center">
+          <el-table-column prop="usage_count" label="使用数量" width="140" align="center" />
+          <el-table-column prop="description" label="描述" width="350" show-overflow-tooltip align="center">
             <template #default="{ row }">
               <span>{{ row.description || '-' }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="创建时间" width="150" align="center">
+          <el-table-column prop="created_at" label="创建时间" width="200" align="center">
             <template #default="{ row }">
               <span>{{ formatDate(row.created_at) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right" align="center">
+          <el-table-column label="操作" width="320" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button

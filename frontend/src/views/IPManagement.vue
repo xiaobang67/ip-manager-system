@@ -105,7 +105,7 @@
             <span>{{ row.mac_address || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="device_type" label="设备类型" width="140" align="center">
+        <el-table-column prop="device_type" label="设备类型" width="160" align="center">
           <template #default="{ row }">
             <span>{{ row.device_type || '-' }}</span>
           </template>
@@ -1095,6 +1095,12 @@ export default {
       return new Date(dateString).toLocaleString('zh-CN')
     }
     
+    const getDeviceTypeName = (deviceTypeCode) => {
+      if (!deviceTypeCode) return '-'
+      const deviceType = deviceTypes.value.find(type => type.code === deviceTypeCode)
+      return deviceType ? deviceType.name : deviceTypeCode
+    }
+    
     // 生命周期
     onMounted(() => {
       loadSubnets()
@@ -1202,7 +1208,8 @@ export default {
       getBulkOperationButtonType,
       getStatusTagType,
       getStatusText,
-      formatDate
+      formatDate,
+      getDeviceTypeName
     }
   }
 }
