@@ -17,7 +17,10 @@ app.use(store)
 app.use(router)
 app.use(ElementPlus)
 
-// 初始化认证状态
-store.dispatch('auth/initAuth').finally(() => {
+// 初始化认证状态和主题
+Promise.all([
+  store.dispatch('auth/initAuth'),
+  store.dispatch('theme/initTheme')
+]).finally(() => {
   app.mount('#app')
 })

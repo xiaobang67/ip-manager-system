@@ -1083,3 +1083,913 @@ blockquote {
     padding: 10px 15px !important;
     margin: 10px 0 !important;
 }
+/* ===== 全
+面修复各个页面的主题问题 ===== */
+
+/* 页面容器通用样式 */
+.device-type-management,
+.ip-management,
+.subnet-management,
+.user-management,
+.department-management,
+.security-dashboard {
+  background-color: var(--bg-color-page) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 页面标题样式 */
+.header-section h1,
+.page-title,
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-color-primary) !important;
+}
+
+/* 搜索区域样式强化 */
+.search-section,
+.filter-section {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 统计卡片样式强化 */
+.stats-section .el-card,
+.stats-card {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.stats-label {
+  color: var(--text-color-secondary) !important;
+}
+
+.stats-value {
+  color: var(--primary-color) !important;
+}
+
+/* 表格区域样式强化 */
+.table-section {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复所有输入框样式 */
+.el-input,
+.el-input__wrapper,
+.el-input__inner,
+.el-textarea,
+.el-textarea__inner {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  border-color: var(--border-color-light) !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 1px var(--primary-color) inset !important;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: var(--text-color-placeholder) !important;
+}
+
+/* 修复所有按钮样式 */
+.el-button {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-regular) !important;
+}
+
+.el-button:hover {
+  background-color: var(--fill-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.el-button--primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.el-button--primary:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+  color: #ffffff !important;
+}
+
+.el-button--primary.is-plain {
+  background-color: var(--bg-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.el-button--primary.is-plain:hover {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* 修复选择器样式 */
+.el-select,
+.el-select__wrapper {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-select .el-input__wrapper {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-select .el-input__inner {
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复下拉选项样式 */
+.el-select-dropdown {
+  background-color: var(--bg-color-overlay) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: var(--box-shadow-light) !important;
+}
+
+.el-select-dropdown__item {
+  color: var(--text-color-regular) !important;
+  background-color: transparent !important;
+}
+
+.el-select-dropdown__item:hover {
+  background-color: var(--fill-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.el-select-dropdown__item.selected {
+  background-color: var(--fill-color-light) !important;
+  color: var(--primary-color) !important;
+}
+
+/* 修复单选框和复选框 */
+.el-radio,
+.el-checkbox {
+  color: var(--text-color-regular) !important;
+}
+
+.el-radio__label,
+.el-checkbox__label {
+  color: var(--text-color-regular) !important;
+}
+
+.el-radio__inner,
+.el-checkbox__inner {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner,
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* 修复分页器样式 */
+.el-pagination {
+  color: var(--text-color-regular) !important;
+}
+
+.el-pagination button {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-regular) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-pagination button:hover {
+  color: var(--primary-color) !important;
+  background-color: var(--fill-color) !important;
+}
+
+.el-pagination button.is-active {
+  color: #ffffff !important;
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.el-pagination .el-select .el-input__wrapper {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 修复特定页面的硬编码颜色 */
+
+/* 设备类型管理页面 */
+.device-type-management {
+  background-color: var(--bg-color-page) !important;
+}
+
+.device-type-management .header-section {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.device-type-management .search-section {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.device-type-management .stats-card {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.device-type-management .table-section {
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.device-type-management .form-tip {
+  color: var(--text-color-secondary) !important;
+}
+
+/* IP管理页面 */
+.no-selection {
+  color: var(--text-color-placeholder) !important;
+}
+
+/* 子网管理页面 */
+.usage-text {
+  color: var(--text-color-secondary) !important;
+}
+
+/* 安全仪表板页面 */
+.dashboard-header h1 {
+  color: var(--text-color-primary) !important;
+}
+
+.card-label {
+  color: var(--text-color-secondary) !important;
+}
+
+.card-value {
+  color: var(--text-color-primary) !important;
+}
+
+/* 错误页面 */
+.error-container {
+  background: var(--bg-color-page) !important;
+}
+
+.error-title {
+  color: var(--text-color-primary) !important;
+}
+
+.error-message {
+  color: var(--text-color-regular) !important;
+}
+
+.error-detail-content {
+  background-color: var(--fill-color-light) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.error-detail-content pre {
+  background-color: var(--fill-color) !important;
+  color: var(--text-color-primary) !important;
+  border: 1px solid var(--border-color-lighter) !important;
+}
+
+.error-suggestions {
+  background-color: var(--fill-color-light) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.error-suggestions h3 {
+  color: var(--text-color-primary) !important;
+}
+
+.error-suggestions li {
+  color: var(--text-color-regular) !important;
+}
+
+/* 修复所有图标颜色 */
+.el-icon {
+  color: inherit !important;
+}
+
+/* 修复所有链接颜色 */
+a {
+  color: var(--primary-color) !important;
+}
+
+a:hover {
+  color: var(--primary-light) !important;
+}
+
+/* 强制覆盖所有可能的硬编码颜色 */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* 确保所有容器都使用主题背景 */
+.el-container,
+.el-main,
+.el-aside,
+.el-header,
+.el-footer {
+  background-color: var(--bg-color-page) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复所有可能的白色背景 */
+[style*="background-color: #ffffff"],
+[style*="background-color: #fff"],
+[style*="background: #ffffff"],
+[style*="background: #fff"] {
+  background-color: var(--bg-color) !important;
+}
+
+/* 修复所有可能的黑色文字 */
+[style*="color: #000000"],
+[style*="color: #000"],
+[style*="color: #303133"],
+[style*="color: #606266"],
+[style*="color: #909399"] {
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复所有可能的边框颜色 */
+[style*="border-color: #dcdfe6"],
+[style*="border-color: #e4e7ed"],
+[style*="border-color: #ebeef5"] {
+  border-color: var(--border-color) !important;
+}
+
+/* 确保所有Element Plus组件都正确应用主题 */
+.el-form,
+.el-form-item,
+.el-form-item__label,
+.el-form-item__content {
+  color: var(--text-color-primary) !important;
+}
+
+.el-descriptions,
+.el-descriptions__header,
+.el-descriptions__body,
+.el-descriptions-item__label,
+.el-descriptions-item__content {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复所有可能遗漏的组件 */
+.el-collapse,
+.el-collapse-item,
+.el-collapse-item__header,
+.el-collapse-item__content {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.el-timeline,
+.el-timeline-item,
+.el-timeline-item__content {
+  color: var(--text-color-primary) !important;
+}
+
+.el-timeline-item__timestamp {
+  color: var(--text-color-secondary) !important;
+}
+
+/* 修复所有可能的阴影 */
+.el-card,
+.el-dialog,
+.el-drawer,
+.el-popover,
+.el-tooltip,
+.el-dropdown-menu {
+  box-shadow: var(--box-shadow-light) !important;
+}
+
+/* 确保所有文本都使用正确的颜色 */
+.el-text,
+.el-link {
+  color: var(--text-color-primary) !important;
+}
+
+.el-text.is-secondary {
+  color: var(--text-color-secondary) !important;
+}
+
+.el-text.is-placeholder {
+  color: var(--text-color-placeholder) !important;
+}
+
+/* 修复可能的滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: var(--fill-color-light) !important;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--fill-color-light) !important;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color) !important;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-color-placeholder) !important;
+}
+
+/* 确保所有可能的组件都应用主题 */
+.el-avatar,
+.el-badge,
+.el-calendar,
+.el-carousel,
+.el-image,
+.el-skeleton,
+.el-result,
+.el-empty,
+.el-affix,
+.el-anchor,
+.el-backtop {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 特殊修复：强制覆盖内联样式 */
+.device-type-management [style*="background"],
+.ip-management [style*="background"],
+.subnet-management [style*="background"],
+.user-management [style*="background"],
+.department-management [style*="background"],
+.security-dashboard [style*="background"] {
+  background-color: var(--bg-color) !important;
+}
+
+.device-type-management [style*="color"],
+.ip-management [style*="color"],
+.subnet-management [style*="color"],
+.user-management [style*="color"],
+.department-management [style*="color"],
+.security-dashboard [style*="color"] {
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复搜索按钮和输入框的特殊样式 */
+.search-section .el-button,
+.filter-section .el-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.search-section .el-button:hover,
+.filter-section .el-button:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+  color: #ffffff !important;
+}
+
+.search-section .el-button.is-plain,
+.filter-section .el-button.is-plain {
+  background-color: var(--bg-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.search-section .el-button.is-plain:hover,
+.filter-section .el-button.is-plain:hover {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* 修复输入框前缀图标 */
+.el-input__prefix,
+.el-input__suffix {
+  color: var(--text-color-secondary) !important;
+}
+
+.el-input__prefix .el-icon,
+.el-input__suffix .el-icon {
+  color: var(--text-color-secondary) !important;
+}
+
+/* 修复表格中的所有元素 */
+.el-table .el-button,
+.table-section .el-button {
+  font-size: 14px !important;
+}
+
+.el-table .el-tag,
+.table-section .el-tag {
+  background-color: var(--fill-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-regular) !important;
+}
+
+/* 修复对话框中的所有元素 */
+.el-dialog .el-form-item__label {
+  color: var(--text-color-primary) !important;
+}
+
+.el-dialog .el-input__wrapper {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-dialog .el-textarea__inner {
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 最终强制修复 - 确保所有元素都应用主题 */
+body * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* 确保页面刷新后主题立即生效 */
+html[data-theme="dark"] body,
+html[data-theme="dark"] #app {
+  background-color: var(--bg-color-page) !important;
+  color: var(--text-color-primary) !important;
+}
+
+html[data-theme="light"] body,
+html[data-theme="light"] #app {
+  background-color: var(--bg-color-page) !important;
+  color: var(--text-color-primary) !important;
+}/* =
+==== 修复表格操作按钮区域的主题问题 ===== */
+
+/* 表格操作列强制主题适配 */
+.el-table .el-table__fixed-right,
+.el-table .el-table__fixed-right-patch {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table .el-table__fixed-right .el-table__cell,
+.el-table .el-table__fixed-right th.el-table__cell,
+.el-table .el-table__fixed-right td.el-table__cell {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 操作按钮容器 */
+.action-buttons {
+  background-color: transparent !important;
+}
+
+/* 表格中的所有按钮强制主题适配 */
+.el-table .el-button,
+.el-table .action-buttons .el-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+}
+
+.el-table .el-button:hover,
+.el-table .action-buttons .el-button:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+  color: #ffffff !important;
+}
+
+.el-table .el-button.is-plain,
+.el-table .action-buttons .el-button.is-plain {
+  background-color: var(--bg-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.el-table .el-button.is-plain:hover,
+.el-table .action-buttons .el-button.is-plain:hover {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* 特殊按钮类型的主题适配 */
+.el-table .el-button--success {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+  color: #ffffff !important;
+}
+
+.el-table .el-button--success:hover {
+  background-color: var(--success-light) !important;
+  border-color: var(--success-light) !important;
+}
+
+.el-table .el-button--warning {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color) !important;
+  color: #ffffff !important;
+}
+
+.el-table .el-button--warning:hover {
+  background-color: var(--warning-light) !important;
+  border-color: var(--warning-light) !important;
+}
+
+.el-table .el-button--danger {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  color: #ffffff !important;
+}
+
+.el-table .el-button--danger:hover {
+  background-color: var(--danger-light) !important;
+  border-color: var(--danger-light) !important;
+}
+
+.el-table .el-button--info {
+  background-color: var(--info-color) !important;
+  border-color: var(--info-color) !important;
+  color: #ffffff !important;
+}
+
+.el-table .el-button--info:hover {
+  background-color: var(--info-light) !important;
+  border-color: var(--info-light) !important;
+}
+
+/* 修复表格固定列的阴影和边框 */
+.el-table .el-table__fixed-right::before {
+  background-color: var(--border-color) !important;
+}
+
+.el-table__fixed-right {
+  box-shadow: -1px 0 8px var(--border-color) !important;
+}
+
+/* 确保表格行悬停时操作按钮区域也正确显示 */
+.el-table__body tr:hover .el-table__cell {
+  background-color: var(--fill-color) !important;
+}
+
+.el-table__body tr:hover .el-table__fixed-right .el-table__cell {
+  background-color: var(--fill-color) !important;
+}
+
+/* 修复表格选中行的操作按钮区域 */
+.el-table__body tr.current-row .el-table__cell,
+.el-table__body tr.current-row .el-table__fixed-right .el-table__cell {
+  background-color: var(--fill-color-light) !important;
+}
+
+/* 强制覆盖可能的内联样式 */
+.el-table [style*="background-color"] {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table .el-table__fixed-right [style*="background-color"] {
+  background-color: var(--bg-color) !important;
+}
+
+/* 修复表格头部操作列 */
+.el-table .el-table__header .el-table__cell {
+  background-color: var(--fill-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.el-table .el-table__fixed-right .el-table__header .el-table__cell {
+  background-color: var(--fill-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 确保所有表格内的文本都使用正确的颜色 */
+.el-table .el-table__cell,
+.el-table .el-table__cell * {
+  color: var(--text-color-regular) !important;
+}
+
+.el-table th.el-table__cell,
+.el-table th.el-table__cell * {
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复可能的表格边框问题 */
+.el-table--border .el-table__cell {
+  border-right: 1px solid var(--border-color-lighter) !important;
+}
+
+.el-table--border .el-table__fixed-right .el-table__cell {
+  border-right: 1px solid var(--border-color-lighter) !important;
+  border-left: 1px solid var(--border-color-lighter) !important;
+}
+
+/* 特别针对设备类型管理页面的操作按钮 */
+.device-type-management .el-table .action-buttons .el-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.device-type-management .el-table .action-buttons .el-button:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+}
+
+.device-type-management .el-table .action-buttons .el-button.is-plain {
+  background-color: var(--bg-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.device-type-management .el-table .action-buttons .el-button.is-plain:hover {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* 修复其他页面的操作按钮 */
+.ip-management .el-table .action-buttons .el-button,
+.subnet-management .el-table .action-buttons .el-button,
+.user-management .el-table .action-buttons .el-button,
+.department-management .el-table .action-buttons .el-button,
+.security-dashboard .el-table .action-buttons .el-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* 确保表格内所有元素都正确应用主题 */
+.el-table * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* 最终强制修复 - 确保表格固定列完全应用主题 */
+[data-theme="dark"] .el-table .el-table__fixed-right,
+[data-theme="dark"] .el-table .el-table__fixed-right .el-table__cell {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+[data-theme="light"] .el-table .el-table__fixed-right,
+[data-theme="light"] .el-table .el-table__fixed-right .el-table__cell {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+}/* =
+==== 额外的表格固定列修复 ===== */
+
+/* 强制覆盖Element Plus的默认样式 */
+.el-table__fixed-right {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table__fixed-right .el-table__fixed-body-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table__fixed-right .el-table__fixed-header-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+/* 修复可能的z-index问题 */
+.el-table__fixed-right {
+  z-index: 10 !important;
+}
+
+/* 确保固定列的边框正确显示 */
+.el-table__fixed-right::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  bottom: 0;
+  background-color: var(--border-color) !important;
+  z-index: 1;
+}
+
+/* 修复表格滚动时的显示问题 */
+.el-table__body-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table__header-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+/* 确保表格内容区域正确应用主题 */
+.el-table__inner-wrapper {
+  background-color: var(--bg-color) !important;
+}
+
+/* 修复可能的表格容器背景问题 */
+.el-table {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 强制修复所有可能的白色背景 */
+.el-table *[style*="background-color: rgb(255, 255, 255)"],
+.el-table *[style*="background-color: #ffffff"],
+.el-table *[style*="background-color: #fff"] {
+  background-color: var(--bg-color) !important;
+}
+
+/* 修复表格行的背景色 */
+.el-table .el-table__row {
+  background-color: var(--bg-color) !important;
+}
+
+.el-table .el-table__row:hover {
+  background-color: var(--fill-color) !important;
+}
+
+.el-table .el-table__row.current-row {
+  background-color: var(--fill-color-light) !important;
+}
+
+/* 确保表格单元格内容正确显示 */
+.el-table .el-table__cell .cell {
+  color: var(--text-color-regular) !important;
+}
+
+.el-table th.el-table__cell .cell {
+  color: var(--text-color-primary) !important;
+}
+
+/* 修复表格排序图标 */
+.el-table .caret-wrapper {
+  color: var(--text-color-secondary) !important;
+}
+
+.el-table .sort-caret.ascending,
+.el-table .sort-caret.descending {
+  color: var(--primary-color) !important;
+}
+
+/* 最终的强制修复 - 针对所有可能的情况 */
+.el-table,
+.el-table *,
+.el-table .el-table__fixed-right,
+.el-table .el-table__fixed-right * {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+.el-table {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+.el-table .el-table__cell {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color-regular) !important;
+  border-color: var(--border-color-lighter) !important;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--fill-color) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 专门针对暗黑主题的修复 */
+[data-theme="dark"] .el-table,
+[data-theme="dark"] .el-table .el-table__cell,
+[data-theme="dark"] .el-table .el-table__fixed-right,
+[data-theme="dark"] .el-table .el-table__fixed-right .el-table__cell {
+  background-color: #1d1e1f !important;
+  color: #e5eaf3 !important;
+}
+
+[data-theme="dark"] .el-table th.el-table__cell,
+[data-theme="dark"] .el-table .el-table__fixed-right th.el-table__cell {
+  background-color: #2d2e2f !important;
+  color: #e5eaf3 !important;
+}
+
+/* 专门针对明亮主题的修复 */
+[data-theme="light"] .el-table,
+[data-theme="light"] .el-table .el-table__cell,
+[data-theme="light"] .el-table .el-table__fixed-right,
+[data-theme="light"] .el-table .el-table__fixed-right .el-table__cell {
+  background-color: #ffffff !important;
+  color: #606266 !important;
+}
+
+[data-theme="light"] .el-table th.el-table__cell,
+[data-theme="light"] .el-table .el-table__fixed-right th.el-table__cell {
+  background-color: #f0f2f5 !important;
+  color: #303133 !important;
+}

@@ -617,7 +617,7 @@ export default {
 
 .dashboard-header h1 {
   margin: 0;
-  color: #303133;
+  color: var(--text-color-primary);
 }
 
 .header-actions {
@@ -687,34 +687,34 @@ export default {
 .card-info h3 {
   margin: 0 0 5px 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--text-color-secondary);
 }
 
 .card-value {
   margin: 0;
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  color: var(--text-color-primary);
 }
 
 .card-value.threat-low {
-  color: #67C23A;
+  color: var(--success-color);
 }
 
 .card-value.threat-medium {
-  color: #E6A23C;
+  color: var(--warning-color);
 }
 
 .card-value.threat-high {
-  color: #F56C6C;
+  color: var(--danger-color);
 }
 
 .card-value.threat-critical {
-  color: #909399;
+  color: var(--info-color);
 }
 
 .card-value.alert-count {
-  color: #F56C6C;
+  color: var(--danger-color);
 }
 
 .charts-section {
@@ -741,18 +741,19 @@ export default {
   width: 30px;
   text-align: center;
   font-weight: bold;
-  color: #409EFF;
+  color: var(--primary-color);
 }
 
 .threat-ip-item .ip {
   flex: 1;
   margin-left: 10px;
   font-family: monospace;
+  color: var(--text-color-primary);
 }
 
 .threat-ip-item .count {
   margin-right: 10px;
-  color: #F56C6C;
+  color: var(--danger-color);
   font-size: 12px;
 }
 
@@ -773,7 +774,7 @@ export default {
 }
 
 .acknowledged {
-  color: #67C23A;
+  color: var(--success-color);
   font-size: 12px;
 }
 

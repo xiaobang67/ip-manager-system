@@ -549,7 +549,7 @@ export default {
 <style scoped>
 .device-type-management {
   padding: 20px;
-  background-color: #f5f7fa;
+  background-color: var(--bg-color-page);
   min-height: 100vh;
 }
 
@@ -559,14 +559,15 @@ export default {
   align-items: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: #ffffff;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
 }
 
 .header-section h1 {
   margin: 0;
-  color: #303133;
+  color: var(--text-color-primary);
   font-size: 28px;
   font-weight: 600;
 }
@@ -579,9 +580,10 @@ export default {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: #ffffff;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   font-size: 15px;
 }
 
@@ -592,9 +594,10 @@ export default {
 .stats-card {
   text-align: center;
   transition: all 0.3s ease;
-  background: #ffffff;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
 }
 
 .stats-card:hover {
@@ -609,21 +612,22 @@ export default {
 .stats-value {
   font-size: 36px;
   font-weight: 700;
-  color: #52c41a !important;
+  color: var(--primary-color) !important;
   margin-bottom: 8px;
 }
 
 .stats-label {
   font-size: 16px;
-  color: #909399;
+  color: var(--text-color-secondary);
   font-weight: 500;
 }
 
 .table-section {
-  background: #ffffff;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   font-size: 15px;
 }
 
@@ -642,52 +646,52 @@ export default {
 
 .form-tip {
   font-size: 14px;
-  color: #909399;
+  color: var(--text-color-secondary);
   margin-top: 4px;
 }
 
-/* 自定义按钮颜色 - 使用现代绿色系 - 强制优先级 */
+/* 自定义按钮颜色 - 使用主题变量 - 强制优先级 */
 :deep(.el-button--primary) {
-  background-color: #52c41a !important;
-  border-color: #52c41a !important;
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary:hover) {
-  background-color: #73d13d !important;
-  border-color: #73d13d !important;
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary:active) {
-  background-color: #389e0d !important;
-  border-color: #389e0d !important;
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary.is-plain) {
-  background-color: #ffffff !important;
-  border-color: #52c41a !important;
-  color: #52c41a !important;
+  background-color: var(--bg-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
 }
 
 :deep(.el-button--primary.is-plain:hover) {
-  background-color: #52c41a !important;
-  border-color: #52c41a !important;
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary.is-plain:active) {
-  background-color: #389e0d !important;
-  border-color: #389e0d !important;
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
   color: #ffffff !important;
 }
 
-/* 统计数值颜色也改为绿色系 */
+/* 统计数值颜色使用主题变量 */
 .stats-value {
   font-size: 36px;
   font-weight: 700;
-  color: #52c41a !important;
+  color: var(--primary-color) !important;
   margin-bottom: 8px;
 }
 
@@ -697,13 +701,13 @@ export default {
 }
 
 .device-type-management :deep(.el-button--primary) {
-  background: #52c41a !important;
-  border: 1px solid #52c41a !important;
+  background: var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
 }
 
 .device-type-management :deep(.el-button--primary:hover) {
-  background: #73d13d !important;
-  border: 1px solid #73d13d !important;
+  background: var(--primary-light) !important;
+  border: 1px solid var(--primary-light) !important;
 }
 
 /* 响应式设计 */

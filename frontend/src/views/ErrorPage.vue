@@ -331,14 +331,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-color-page);
   padding: 20px;
 }
 
 .error-container {
-  background: white;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-light);
   padding: 40px;
   text-align: center;
   max-width: 600px;
@@ -352,13 +353,13 @@ export default {
 .error-title {
   font-size: 32px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-color-primary);
   margin-bottom: 16px;
 }
 
 .error-message {
   font-size: 16px;
-  color: #606266;
+  color: var(--text-color-regular);
   margin-bottom: 30px;
   line-height: 1.6;
 }
@@ -369,14 +370,17 @@ export default {
 }
 
 .error-detail-content {
-  background: #f8f9fa;
+  background: var(--fill-color-light);
+  color: var(--text-color-primary);
   padding: 15px;
   border-radius: 6px;
   font-size: 14px;
 }
 
 .error-detail-content pre {
-  background: #f1f2f3;
+  background: var(--fill-color);
+  color: var(--text-color-primary);
+  border: 1px solid var(--border-color-lighter);
   padding: 10px;
   border-radius: 4px;
   overflow-x: auto;
@@ -393,14 +397,15 @@ export default {
 
 .error-suggestions {
   text-align: left;
-  background: #f8f9fa;
+  background: var(--fill-color-light);
+  color: var(--text-color-primary);
   padding: 20px;
   border-radius: 8px;
   margin-top: 20px;
 }
 
 .error-suggestions h3 {
-  color: #303133;
+  color: var(--text-color-primary);
   margin-bottom: 12px;
   font-size: 16px;
 }
@@ -411,7 +416,7 @@ export default {
 }
 
 .error-suggestions li {
-  color: #606266;
+  color: var(--text-color-regular);
   margin-bottom: 8px;
   line-height: 1.5;
 }

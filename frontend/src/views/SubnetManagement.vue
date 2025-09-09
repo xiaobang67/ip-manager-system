@@ -512,7 +512,7 @@ export default {
 
 .usage-text {
   font-size: 12px;
-  color: #606266;
+  color: var(--text-color-secondary);
   text-align: center;
 }
 

@@ -14,31 +14,35 @@ export default {
     ...mapGetters('auth', ['isAuthenticated', 'userTheme'])
   },
   watch: {
-    // 监听用户主题偏好变化
+    // 监听用户主题偏好变化，同步用户偏好到本地存储
     userTheme: {
       handler(newTheme) {
         if (newTheme && newTheme !== this.currentTheme) {
-          this.$store.dispatch('theme/initThemeFromUser', newTheme)
+          this.$store.dispatch('theme/setTheme', newTheme)
         }
       },
-      immediate: true
+      immediate: false // 不立即执行，避免初始化时的冲突
     }
   },
   methods: {
     ...mapActions('theme', ['setTheme']),
     
     initializeTheme() {
-      // 如果用户已登录且有主题偏好，使用用户偏好
-      if (this.isAuthenticated && this.userTheme) {
-        this.$store.dispatch('theme/initThemeFromUser', this.userTheme)
-      } else {
-        // 否则使用默认主题
-        this.$store.dispatch('theme/setTheme', 'light')
+      // 主题初始化优先级：
+      // 1. localStorage中的主题设置（已在theme store中处理）
+      // 2. 如果用户已登录且有不同的主题偏好，同步用户偏好
+      if (this.isAuthenticated && this.userTheme && this.userTheme !== this.currentTheme) {
+        this.$store.dispatch('theme/setTheme', this.userTheme)
       }
+      // 如果没有localStorage存储的主题，theme store已经设置了默认的'light'主题
     }
   },
-  created() {
+  mounted() {
+    // 在mounted阶段初始化主题，确保DOM已准备好
     this.initializeTheme()
+    
+    // 确保主题样式立即应用到DOM
+    this.$store.dispatch('theme/setTheme', this.currentTheme)
   }
 }
 </script>

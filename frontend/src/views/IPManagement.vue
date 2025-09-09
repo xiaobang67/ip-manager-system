@@ -1281,7 +1281,7 @@ export default {
 }
 
 .no-selection {
-  color: #999;
+  color: var(--text-color-placeholder);
   font-style: italic;
 }
 
