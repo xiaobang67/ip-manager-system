@@ -33,7 +33,7 @@
           </el-col>
           <el-col :span="4">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
+            <el-button type="primary" plain @click="handleReset">重置</el-button>
           </el-col>
         </el-row>
       </div>
@@ -123,7 +123,8 @@
                   编辑
                 </el-button>
                 <el-button
-                  :type="row.status === 'active' ? 'warning' : 'success'"
+                  type="primary"
+                  plain
                   size="small"
                   @click="toggleStatus(row)"
                 >
@@ -131,7 +132,8 @@
                 </el-button>
                 <el-button
                   v-if="row.usage_count === 0"
-                  type="danger"
+                  type="primary"
+                  plain
                   size="small"
                   @click="deleteDeviceTypeHandler(row)"
                 >
@@ -546,7 +548,9 @@ export default {
 
 <style scoped>
 .device-type-management {
-  padding: 0;
+  padding: 20px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
 .header-section {
@@ -555,14 +559,14 @@ export default {
   align-items: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--bg-color);
+  background: #ffffff;
   border-radius: 8px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .header-section h1 {
   margin: 0;
-  color: var(--text-color-primary);
+  color: #303133;
   font-size: 24px;
   font-weight: 600;
 }
@@ -575,9 +579,9 @@ export default {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--bg-color);
+  background: #ffffff;
   border-radius: 8px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .stats-section {
@@ -587,11 +591,14 @@ export default {
 .stats-card {
   text-align: center;
   transition: all 0.3s ease;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .stats-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--box-shadow-hover);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
 }
 
 .stats-item {
@@ -601,21 +608,21 @@ export default {
 .stats-value {
   font-size: 32px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #409eff;
   margin-bottom: 8px;
 }
 
 .stats-label {
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: #909399;
   font-weight: 500;
 }
 
 .table-section {
-  background: var(--bg-color);
+  background: #ffffff;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .action-buttons {
@@ -632,7 +639,7 @@ export default {
 
 .form-tip {
   font-size: 12px;
-  color: var(--text-color-secondary);
+  color: #909399;
   margin-top: 4px;
 }
 

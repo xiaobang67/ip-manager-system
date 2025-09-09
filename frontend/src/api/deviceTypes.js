@@ -6,7 +6,7 @@ import request from './request'
 // 获取设备类型列表
 export const getDeviceTypes = (params = {}) => {
   return request({
-    url: '/api/device-types',
+    url: '/device-types',
     method: 'get',
     params
   })
@@ -15,7 +15,7 @@ export const getDeviceTypes = (params = {}) => {
 // 获取设备类型选项（用于下拉选择）
 export const getDeviceTypeOptions = () => {
   return request({
-    url: '/api/device-types/options',
+    url: '/device-types/options',
     method: 'get'
   })
 }
@@ -23,7 +23,7 @@ export const getDeviceTypeOptions = () => {
 // 创建设备类型
 export const createDeviceType = (data) => {
   return request({
-    url: '/api/device-types',
+    url: '/device-types',
     method: 'post',
     data
   })
@@ -32,7 +32,7 @@ export const createDeviceType = (data) => {
 // 更新设备类型
 export const updateDeviceType = (id, data) => {
   return request({
-    url: `/api/device-types/${id}`,
+    url: `/device-types/${id}`,
     method: 'put',
     data
   })
@@ -41,7 +41,7 @@ export const updateDeviceType = (id, data) => {
 // 删除设备类型
 export const deleteDeviceType = (id) => {
   return request({
-    url: `/api/device-types/${id}`,
+    url: `/device-types/${id}`,
     method: 'delete'
   })
 }
@@ -49,7 +49,7 @@ export const deleteDeviceType = (id) => {
 // 切换设备类型状态
 export const toggleDeviceTypeStatus = (id, status) => {
   return request({
-    url: `/api/device-types/${id}/status`,
+    url: `/device-types/${id}/status`,
     method: 'patch',
     data: { status }
   })
@@ -58,7 +58,7 @@ export const toggleDeviceTypeStatus = (id, status) => {
 // 获取设备类型统计信息
 export const getDeviceTypeStatistics = () => {
   return request({
-    url: '/api/device-types/statistics',
+    url: '/device-types/statistics',
     method: 'get'
   })
 }
@@ -66,7 +66,7 @@ export const getDeviceTypeStatistics = () => {
 // 获取设备类型使用情况
 export const getDeviceTypeUsage = (id) => {
   return request({
-    url: `/api/device-types/${id}/usage`,
+    url: `/device-types/${id}/usage`,
     method: 'get'
   })
 }
