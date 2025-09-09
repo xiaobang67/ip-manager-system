@@ -104,6 +104,36 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: str
 
+class DeviceTypeCreate(BaseModel):
+    name: str
+    code: str
+    category: str
+    status: str = "active"
+    description: Optional[str] = None
+
+class DeviceTypeUpdate(BaseModel):
+    name: Optional[str] = None
+    code: Optional[str] = None
+    category: Optional[str] = None
+    status: Optional[str] = None
+    description: Optional[str] = None
+
+class DeviceTypeResponse(BaseModel):
+    id: int
+    name: str
+    code: str
+    category: str
+    status: str
+    description: Optional[str]
+    usage_count: int
+    created_at: str
+    updated_at: Optional[str]
+
+class DeviceTypeOption(BaseModel):
+    code: str
+    name: str
+    status: str
+
 # 数据库连接函数
 def get_db_connection():
     """获取数据库连接"""
@@ -829,6 +859,341 @@ async def get_statistics():
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch statistics: {str(e)}")
+    finally:
+        connection.close()
+
+# 设备类型管理端点
+@app.get("/api/device-types")
+async def get_device_types(skip: int = 0, limit: int = 100, search: Optional[str] = None):
+    """获取设备类型列表"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 构建查询条件
+            where_clause = ""
+            params = []
+            
+            if search:
+                where_clause = "WHERE name LIKE %s OR description LIKE %s"
+                params.extend([f"%{search}%", f"%{search}%"])
+            
+            # 获取总数
+            count_sql = f"SELECT COUNT(*) as total FROM device_types {where_clause}"
+            cursor.execute(count_sql, params)
+            total = cursor.fetchone()['total']
+            
+            # 获取设备类型使用统计
+            usage_sql = """
+                SELECT dt.*, 
+                       COALESCE(ip_count.usage_count, 0) as usage_count
+                FROM device_types dt
+                LEFT JOIN (
+                    SELECT device_type, COUNT(*) as usage_count
+                    FROM ip_addresses 
+                    WHERE device_type IS NOT NULL AND device_type != ''
+                    GROUP BY device_type
+                ) ip_count ON dt.code = ip_count.device_type
+                {where_clause}
+                ORDER BY dt.created_at DESC
+                LIMIT %s OFFSET %s
+            """.format(where_clause=where_clause)
+            
+            cursor.execute(usage_sql, params + [limit, skip])
+            results = cursor.fetchall()
+            
+            device_types = []
+            for row in results:
+                device_types.append(DeviceTypeResponse(
+                    id=row['id'],
+                    name=row['name'],
+                    code=row['code'],
+                    category=row['category'],
+                    status=row['status'],
+                    description=row['description'],
+                    usage_count=row['usage_count'],
+                    created_at=str(row['created_at']),
+                    updated_at=str(row['updated_at']) if row['updated_at'] else None
+                ))
+            
+            return {
+                "data": device_types,
+                "total": total,
+                "page": skip // limit + 1,
+                "size": limit
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch device types: {str(e)}")
+    finally:
+        connection.close()
+
+@app.get("/api/device-types/options")
+async def get_device_type_options():
+    """获取设备类型选项（用于下拉选择）"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT code, name, status 
+                FROM device_types 
+                WHERE status = 'active'
+                ORDER BY name
+            """)
+            results = cursor.fetchall()
+            
+            return [
+                DeviceTypeOption(
+                    code=row['code'],
+                    name=row['name'],
+                    status=row['status']
+                ) for row in results
+            ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch device type options: {str(e)}")
+    finally:
+        connection.close()
+
+@app.post("/api/device-types", response_model=DeviceTypeResponse)
+async def create_device_type(device_type: DeviceTypeCreate):
+    """创建设备类型"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 检查代码是否已存在
+            cursor.execute("SELECT id FROM device_types WHERE code = %s", (device_type.code,))
+            if cursor.fetchone():
+                raise HTTPException(status_code=400, detail="设备类型代码已存在")
+            
+            # 创建设备类型
+            sql = """
+            INSERT INTO device_types (name, code, category, status, description, created_at)
+            VALUES (%s, %s, %s, %s, %s, NOW())
+            """
+            cursor.execute(sql, (
+                device_type.name,
+                device_type.code,
+                device_type.category,
+                device_type.status,
+                device_type.description
+            ))
+            connection.commit()
+            
+            # 获取创建的记录
+            device_type_id = cursor.lastrowid
+            cursor.execute("""
+                SELECT dt.*, COALESCE(ip_count.usage_count, 0) as usage_count
+                FROM device_types dt
+                LEFT JOIN (
+                    SELECT device_type, COUNT(*) as usage_count
+                    FROM ip_addresses 
+                    WHERE device_type IS NOT NULL AND device_type != ''
+                    GROUP BY device_type
+                ) ip_count ON dt.code = ip_count.device_type
+                WHERE dt.id = %s
+            """, (device_type_id,))
+            result = cursor.fetchone()
+            
+            return DeviceTypeResponse(
+                id=result['id'],
+                name=result['name'],
+                code=result['code'],
+                category=result['category'],
+                status=result['status'],
+                description=result['description'],
+                usage_count=result['usage_count'],
+                created_at=str(result['created_at']),
+                updated_at=str(result['updated_at']) if result['updated_at'] else None
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create device type: {str(e)}")
+    finally:
+        connection.close()
+
+@app.put("/api/device-types/{device_type_id}", response_model=DeviceTypeResponse)
+async def update_device_type(device_type_id: int, device_type: DeviceTypeUpdate):
+    """更新设备类型"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 检查设备类型是否存在
+            cursor.execute("SELECT id FROM device_types WHERE id = %s", (device_type_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="设备类型不存在")
+            
+            # 如果更新代码，检查是否与其他记录冲突
+            if device_type.code:
+                cursor.execute("SELECT id FROM device_types WHERE code = %s AND id != %s", 
+                             (device_type.code, device_type_id))
+                if cursor.fetchone():
+                    raise HTTPException(status_code=400, detail="设备类型代码已存在")
+            
+            # 构建更新字段
+            update_fields = []
+            update_values = []
+            
+            if device_type.name is not None:
+                update_fields.append("name = %s")
+                update_values.append(device_type.name)
+            
+            if device_type.code is not None:
+                update_fields.append("code = %s")
+                update_values.append(device_type.code)
+            
+            if device_type.category is not None:
+                update_fields.append("category = %s")
+                update_values.append(device_type.category)
+            
+            if device_type.status is not None:
+                update_fields.append("status = %s")
+                update_values.append(device_type.status)
+            
+            if device_type.description is not None:
+                update_fields.append("description = %s")
+                update_values.append(device_type.description)
+            
+            if not update_fields:
+                raise HTTPException(status_code=400, detail="没有提供要更新的字段")
+            
+            # 添加更新时间和设备类型ID
+            update_fields.append("updated_at = NOW()")
+            update_values.append(device_type_id)
+            
+            sql = f"UPDATE device_types SET {', '.join(update_fields)} WHERE id = %s"
+            cursor.execute(sql, update_values)
+            connection.commit()
+            
+            # 获取更新后的记录
+            cursor.execute("""
+                SELECT dt.*, COALESCE(ip_count.usage_count, 0) as usage_count
+                FROM device_types dt
+                LEFT JOIN (
+                    SELECT device_type, COUNT(*) as usage_count
+                    FROM ip_addresses 
+                    WHERE device_type IS NOT NULL AND device_type != ''
+                    GROUP BY device_type
+                ) ip_count ON dt.code = ip_count.device_type
+                WHERE dt.id = %s
+            """, (device_type_id,))
+            result = cursor.fetchone()
+            
+            return DeviceTypeResponse(
+                id=result['id'],
+                name=result['name'],
+                code=result['code'],
+                category=result['category'],
+                status=result['status'],
+                description=result['description'],
+                usage_count=result['usage_count'],
+                created_at=str(result['created_at']),
+                updated_at=str(result['updated_at']) if result['updated_at'] else None
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update device type: {str(e)}")
+    finally:
+        connection.close()
+
+@app.delete("/api/device-types/{device_type_id}")
+async def delete_device_type(device_type_id: int):
+    """删除设备类型"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 检查设备类型是否存在
+            cursor.execute("SELECT code FROM device_types WHERE id = %s", (device_type_id,))
+            device_type = cursor.fetchone()
+            if not device_type:
+                raise HTTPException(status_code=404, detail="设备类型不存在")
+            
+            # 检查是否有IP地址正在使用此设备类型
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses WHERE device_type = %s", 
+                         (device_type['code'],))
+            usage_count = cursor.fetchone()['count']
+            
+            if usage_count > 0:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"无法删除设备类型，还有 {usage_count} 个IP地址正在使用此类型"
+                )
+            
+            # 删除设备类型
+            cursor.execute("DELETE FROM device_types WHERE id = %s", (device_type_id,))
+            connection.commit()
+            
+            return {"message": "设备类型删除成功"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete device type: {str(e)}")
+    finally:
+        connection.close()
+
+@app.patch("/api/device-types/{device_type_id}/status")
+async def toggle_device_type_status(device_type_id: int, request: dict):
+    """切换设备类型状态"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 检查设备类型是否存在
+            cursor.execute("SELECT id, status FROM device_types WHERE id = %s", (device_type_id,))
+            device_type = cursor.fetchone()
+            if not device_type:
+                raise HTTPException(status_code=404, detail="设备类型不存在")
+            
+            new_status = request.get('status')
+            if new_status not in ['active', 'inactive']:
+                raise HTTPException(status_code=400, detail="无效的状态值")
+            
+            # 更新状态
+            cursor.execute(
+                "UPDATE device_types SET status = %s, updated_at = NOW() WHERE id = %s",
+                (new_status, device_type_id)
+            )
+            connection.commit()
+            
+            return {"message": f"设备类型状态已更新为 {new_status}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to toggle device type status: {str(e)}")
+    finally:
+        connection.close()
+
+@app.get("/api/device-types/statistics")
+async def get_device_type_statistics():
+    """获取设备类型统计信息"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 总数统计
+            cursor.execute("SELECT COUNT(*) as total FROM device_types")
+            total = cursor.fetchone()['total']
+            
+            # 状态统计
+            cursor.execute("SELECT COUNT(*) as active FROM device_types WHERE status = 'active'")
+            active = cursor.fetchone()['active']
+            
+            cursor.execute("SELECT COUNT(*) as inactive FROM device_types WHERE status = 'inactive'")
+            inactive = cursor.fetchone()['inactive']
+            
+            # 使用统计
+            cursor.execute("""
+                SELECT COUNT(DISTINCT device_type) as usage_count 
+                FROM ip_addresses 
+                WHERE device_type IS NOT NULL AND device_type != ''
+            """)
+            usage_count = cursor.fetchone()['usage_count']
+            
+            return {
+                "total": total,
+                "active": active,
+                "inactive": inactive,
+                "usage_count": usage_count
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch device type statistics: {str(e)}")
     finally:
         connection.close()
 

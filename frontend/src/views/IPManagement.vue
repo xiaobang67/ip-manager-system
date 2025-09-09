@@ -3,7 +3,7 @@
     <div class="ip-management">
     <!-- 页面标题和操作栏 -->
     <div class="header-section">
-      <h1>网络资源管理</h1>
+      <h1>IP地址管理</h1>
       <div class="header-actions">
         <el-button type="primary" @click="showAllocationDialog = true">
           <el-icon><Plus /></el-icon>
@@ -221,11 +221,12 @@
         </el-form-item>
         <el-form-item label="设备类型" prop="device_type">
           <el-select v-model="allocationForm.device_type" placeholder="选择设备类型" style="width: 100%">
-            <el-option label="服务器" value="server" />
-            <el-option label="工作站" value="workstation" />
-            <el-option label="网络设备" value="network" />
-            <el-option label="打印机" value="printer" />
-            <el-option label="其他" value="other" />
+            <el-option
+              v-for="deviceType in deviceTypes"
+              :key="deviceType.code"
+              :label="deviceType.name"
+              :value="deviceType.code"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="使用部门" prop="assigned_to">
@@ -477,6 +478,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
 import { getDepartmentOptions } from '@/api/departments'
+import { getDeviceTypeOptions } from '@/api/deviceTypes'
 import AppLayout from '@/components/AppLayout.vue'
 import SimpleIPFilter from '@/components/SimpleIPFilter.vue'
 import { useStore } from 'vuex'
@@ -508,6 +510,7 @@ export default {
     const ipList = ref([])
     const subnets = ref([])
     const departments = ref([])
+    const deviceTypes = ref([])
     const selectedIPs = ref([])
     const historyData = ref([])
     
@@ -699,6 +702,44 @@ export default {
           '人事部',
           '财务部',
           '客服部'
+        ]
+      }
+    }
+    
+    const loadDeviceTypes = async () => {
+      try {
+        // 从设备类型管理API获取设备类型列表
+        const response = await getDeviceTypeOptions()
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // 处理API响应格式：response.data
+          deviceTypes.value = response.data.filter(type => type.status === 'active')
+        } else if (response && Array.isArray(response)) {
+          // 处理直接响应格式：response
+          deviceTypes.value = response.filter(type => type.status === 'active')
+        } else {
+          // 如果获取失败，使用静态列表作为备选
+          deviceTypes.value = [
+            { code: 'server', name: '服务器' },
+            { code: 'workstation', name: '工作站' },
+            { code: 'switch', name: '网络交换机' },
+            { code: 'router', name: '路由器' },
+            { code: 'printer', name: '打印机' },
+            { code: 'firewall', name: '防火墙' },
+            { code: 'other', name: '其他' }
+          ]
+        }
+      } catch (error) {
+        console.error('加载设备类型列表失败：', error)
+        // 如果获取失败，使用静态列表
+        deviceTypes.value = [
+          { code: 'server', name: '服务器' },
+          { code: 'workstation', name: '工作站' },
+          { code: 'switch', name: '网络交换机' },
+          { code: 'router', name: '路由器' },
+          { code: 'printer', name: '打印机' },
+          { code: 'firewall', name: '防火墙' },
+          { code: 'other', name: '其他' }
         ]
       }
     }
@@ -1045,6 +1086,7 @@ export default {
     onMounted(() => {
       loadSubnets()
       loadDepartments()
+      loadDeviceTypes()
       loadIPList()
       loadStatistics()
     })
@@ -1085,6 +1127,7 @@ export default {
       ipList,
       subnets,
       departments,
+      deviceTypes,
       selectedIPs,
       historyData,
       searchQuery,

@@ -49,6 +49,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/device-type-management',
+    name: 'DeviceTypeManagement',
+    component: () => import('@/views/DeviceTypeManagement.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/custom-fields-test',
     name: 'CustomFieldsTest',
     component: () => import('@/components/CustomFieldsTest.vue'),
