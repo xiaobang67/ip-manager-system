@@ -9,11 +9,11 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button v-if="isAdmin" type="warning" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="info" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button @click="refreshData">
+        <el-button type="info" @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
@@ -86,46 +86,46 @@
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
+        <el-table-column type="selection" width="70" />
+        <el-table-column prop="ip_address" label="IP地址" width="160" sortable align="center" />
+        <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusTagType(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="120" align="center">
+        <el-table-column prop="user_name" label="使用人" width="150" align="center">
           <template #default="{ row }">
             <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="mac_address" label="MAC地址" width="140" align="center">
+        <el-table-column prop="mac_address" label="MAC地址" width="170" align="center">
           <template #default="{ row }">
             <span>{{ row.mac_address || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="device_type" label="设备类型" width="100" align="center">
+        <el-table-column prop="device_type" label="设备类型" width="140" align="center">
           <template #default="{ row }">
             <span>{{ row.device_type || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="assigned_to" label="所属部门" width="110" align="center">
+        <el-table-column prop="assigned_to" label="所属部门" width="160" align="center">
           <template #default="{ row }">
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" min-width="120" show-overflow-tooltip align="center">
+        <el-table-column prop="description" label="描述" width="250" show-overflow-tooltip align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="allocated_at" label="分配时间" width="150" align="center">
+        <el-table-column prop="allocated_at" label="分配时间" width="200" align="center">
           <template #default="{ row }">
             <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right" align="center">
+        <el-table-column label="操作" width="350" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
@@ -991,6 +991,19 @@ export default {
       }
     }
     
+    const getBulkOperationButtonType = () => {
+      switch (bulkForm.operation) {
+        case 'reserve':
+          return 'warning'  // 🟠 保留操作使用橙色
+        case 'release':
+          return 'danger'   // 🔴 释放操作使用红色
+        case 'delete':
+          return 'danger'   // 🔴 删除操作使用红色
+        default:
+          return 'primary'  // 默认使用蓝色
+      }
+    }
+    
     const submitBulkOperation = async () => {
       if (selectedIPs.value.length === 0) {
         ElMessage.warning('请选择要操作的IP地址')
@@ -1186,6 +1199,7 @@ export default {
       resetReleaseForm,
       resetBulkForm,
       resetDeleteForm,
+      getBulkOperationButtonType,
       getStatusTagType,
       getStatusText,
       formatDate
@@ -1393,6 +1407,7 @@ oped>
   gap: 4px;
   justify-content: center;
   align-items: center;
+  min-width: 280px;
 }
 
 .action-buttons .el-button {
