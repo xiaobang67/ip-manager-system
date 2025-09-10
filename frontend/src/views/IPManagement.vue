@@ -27,10 +27,10 @@
     />
 
     <!-- 统计信息卡片 -->
-    <div class="theme-stats-card">
+    <div class="stats-section">
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-card class="theme-stats-card">
+          <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.total }}</div>
               <div class="stats-label">总IP数量</div>
@@ -38,7 +38,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="theme-stats-card">
+          <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.available }}</div>
               <div class="stats-label">可用IP</div>
@@ -46,7 +46,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="theme-stats-card">
+          <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.allocated }}</div>
               <div class="stats-label">使用中</div>
@@ -54,7 +54,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="theme-stats-card">
+          <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.utilization_rate }}%</div>
               <div class="stats-label">使用率</div>
@@ -65,7 +65,7 @@
     </div>
 
     <!-- IP地址列表表格 -->
-    <div class="theme-table-section">
+    <div class="table-section">
       <!-- 搜索状态提示 -->
       <div v-if="currentSearchParams" class="search-status">
         <el-alert
@@ -1896,8 +1896,114 @@ oped>
   color: #909399 !important;
 }
 
+/* 基础样式 */
+.ip-management {
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-section h1 {
+  margin: 0;
+  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-section {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stats-item {
+  padding: 20px;
+}
+
+.stats-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #409eff;
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 14px;
+  color: #909399;
+}
+
+.table-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-status {
+  margin-bottom: 16px;
+}
+
+.pagination-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selected-ips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  align-items: center;
+}
+
+.no-selection {
+  color: #c0c4cc;
+  font-style: italic;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .ip-management {
+    padding: 16px;
+  }
+  
   .header-section {
     flex-direction: column;
     gap: 16px;
@@ -1935,248 +2041,5 @@ oped>
   .table-section {
     padding: 12px;
   }
-}
-</style>
-<!-- 全局样
-式修复暗黑模式下拉框显示问题 -->
-<style>
-/* 修复Element Plus下拉框在暗黑模式下的显示问题 - 使用Element Plus的CSS变量 */
-.el-select-dropdown {
-  background-color: var(--el-bg-color) !important;
-  border: 1px solid var(--el-border-color) !important;
-  box-shadow: var(--el-box-shadow-light) !important;
-}
-
-.el-select-dropdown .el-select-dropdown__item {
-  background-color: transparent !important;
-  color: var(--el-text-color-primary) !important;
-}
-
-.el-select-dropdown .el-select-dropdown__item:hover {
-  background-color: var(--el-fill-color-light) !important;
-  color: var(--el-text-color-primary) !important;
-}
-
-.el-select-dropdown .el-select-dropdown__item.selected {
-  background-color: var(--el-color-primary) !important;
-  color: #ffffff !important;
-  font-weight: bold !important;
-}
-
-.el-select-dropdown .el-select-dropdown__item.is-disabled {
-  color: var(--el-text-color-disabled) !important;
-  cursor: not-allowed !important;
-}
-
-/* 修复下拉框输入框样式 */
-.el-select .el-input__wrapper {
-  background-color: var(--el-fill-color-blank) !important;
-  border: 1px solid var(--el-border-color) !important;
-}
-
-.el-select .el-input__wrapper:hover {
-  border-color: var(--el-border-color-hover) !important;
-}
-
-.el-select .el-input__wrapper.is-focus {
-  border-color: var(--el-color-primary) !important;
-  box-shadow: 0 0 0 2px var(--el-color-primary-light-8) !important;
-}
-
-.el-select .el-input__inner {
-  color: var(--el-text-color-primary) !important;
-}
-
-.el-select .el-input__suffix .el-input__suffix-inner .el-select__caret {
-  color: var(--el-text-color-placeholder) !important;
-}
-
-/* 特别针对IP管理页面的下拉框 */
-.ip-management .el-select-dropdown {
-  background-color: var(--el-bg-color) !important;
-  border: 1px solid var(--el-border-color) !important;
-}
-
-.ip-management .el-select-dropdown .el-select-dropdown__item {
-  color: var(--el-text-color-primary) !important;
-  background-color: transparent !important;
-}
-
-.ip-management .el-select-dropdown .el-select-dropdown__item:hover {
-  background-color: var(--el-fill-color-light) !important;
-  color: var(--el-text-color-primary) !important;
-}
-
-.ip-management .el-select-dropdown .el-select-dropdown__item.selected {
-  background-color: var(--el-color-primary) !important;
-  color: #ffffff !important;
-}
-
-/* 暗黑模式特殊处理 */
-[data-theme="dark"] .el-select-dropdown {
-  background-color: #1d1e1f !important;
-  border-color: #414243 !important;
-}
-
-[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #262727 !important;
-  color: #e5eaf3 !important;
-}
-
-[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item.selected {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-}
-
-/* 针对body有dark类的情况 */
-body.dark .el-select-dropdown {
-  background-color: #1d1e1f !important;
-  border-color: #414243 !important;
-}
-
-body.dark .el-select-dropdown .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-body.dark .el-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #262727 !important;
-  color: #e5eaf3 !important;
-}
-
-body.dark .el-select-dropdown .el-select-dropdown__item.selected {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-}
-
-/* 专门针对IP管理页面的下拉框 - 强制样式 */
-.ip-management-select-dropdown {
-  background-color: var(--el-bg-color) !important;
-  border: 1px solid var(--el-border-color) !important;
-  box-shadow: var(--el-box-shadow-light) !important;
-  z-index: 9999 !important;
-}
-
-.ip-management-select-dropdown .el-select-dropdown__item {
-  background-color: transparent !important;
-  color: var(--el-text-color-primary) !important;
-  font-size: 14px !important;
-  padding: 0 20px !important;
-  position: relative !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  height: 34px !important;
-  line-height: 34px !important;
-  box-sizing: border-box !important;
-  cursor: pointer !important;
-}
-
-.ip-management-select-dropdown .el-select-dropdown__item:hover {
-  background-color: var(--el-fill-color-light) !important;
-  color: var(--el-text-color-primary) !important;
-}
-
-.ip-management-select-dropdown .el-select-dropdown__item.selected {
-  background-color: var(--el-color-primary) !important;
-  color: #ffffff !important;
-  font-weight: bold !important;
-}
-
-.ip-management-select-dropdown .el-select-dropdown__item.is-disabled {
-  color: var(--el-text-color-disabled) !important;
-  cursor: not-allowed !important;
-}
-
-/* 暗黑模式特殊处理 */
-[data-theme="dark"] .ip-management-select-dropdown {
-  background-color: #1d1e1f !important;
-  border: 1px solid #414243 !important;
-}
-
-[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #262727 !important;
-  color: #e5eaf3 !important;
-}
-
-[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item.selected {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-}
-
-/* 针对body有dark类的情况 */
-body.dark .ip-management-select-dropdown {
-  background-color: #1d1e1f !important;
-  border: 1px solid #414243 !important;
-}
-
-body.dark .ip-management-select-dropdown .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-body.dark .ip-management-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #262727 !important;
-  color: #e5eaf3 !important;
-}
-
-body.dark .ip-management-select-dropdown .el-select-dropdown__item.selected {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-}
-
-/* 确保在任何主题下都生效 */
-html[data-theme="dark"] .ip-management-select-dropdown {
-  background-color: #1d1e1f !important;
-  border: 1px solid #414243 !important;
-}
-
-html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #262727 !important;
-  color: #e5eaf3 !important;
-}
-
-html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item.selected {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-}
-
-/* 额外的强制样式修复 - 确保在所有情况下都能正确显示 */
-.ip-management .el-select-dropdown__item {
-  color: var(--el-text-color-primary) !important;
-}
-
-[data-theme="dark"] .ip-management .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-body.dark .ip-management .el-select-dropdown__item {
-  color: #e5eaf3 !important;
-}
-
-/* 修复输入框本身的样式 */
-.ip-management .el-select .el-input__wrapper {
-  background-color: var(--el-fill-color-blank) !important;
-  color: var(--el-text-color-primary) !important;
-}
-
-[data-theme="dark"] .ip-management .el-select .el-input__wrapper {
-  background-color: #1d1e1f !important;
-  color: #e5eaf3 !important;
-  border-color: #414243 !important;
-}
-
-[data-theme="dark"] .ip-management .el-select .el-input__inner {
-  color: #e5eaf3 !important;
 }
 </style>

@@ -17,7 +17,7 @@
       </div>
 
       <!-- 搜索栏 -->
-      <div class="theme-search-section">
+      <div class="search-section">
         <el-row :gutter="20">
           <el-col :span="8">
             <el-input
@@ -33,16 +33,16 @@
           </el-col>
           <el-col :span="4">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button type="warning" @click="resetForm">重置</el-button>
+            <el-button @click="resetForm">重置</el-button>
           </el-col>
         </el-row>
       </div>
 
       <!-- 统计信息卡片 -->
-      <div class="theme-stats-card">
+      <div class="stats-section">
         <el-row :gutter="20">
           <el-col :span="6">
-            <el-card class="theme-stats-card">
+            <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.total }}</div>
                 <div class="stats-label">设备类型总数</div>
@@ -50,7 +50,7 @@
             </el-card>
           </el-col>
           <el-col :span="6">
-            <el-card class="theme-stats-card">
+            <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.active }}</div>
                 <div class="stats-label">启用状态</div>
@@ -58,7 +58,7 @@
             </el-card>
           </el-col>
           <el-col :span="6">
-            <el-card class="theme-stats-card">
+            <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.inactive }}</div>
                 <div class="stats-label">禁用状态</div>
@@ -66,7 +66,7 @@
             </el-card>
           </el-col>
           <el-col :span="6">
-            <el-card class="theme-stats-card">
+            <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.usage_count }}</div>
                 <div class="stats-label">使用中设备</div>
@@ -77,7 +77,7 @@
       </div>
 
       <!-- 设备类型列表表格 -->
-      <div class="theme-table-section">
+      <div class="table-section">
         <el-table
           :data="deviceTypeList"
           v-loading="loading"
@@ -582,7 +582,7 @@ export default {
 <style scoped>
 .device-type-management {
   padding: 20px;
-  background-color: var(--bg-primary-page);
+  background-color: #f5f7fa;
   min-height: 100vh;
 }
 
@@ -592,15 +592,15 @@ export default {
   align-items: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
   border-radius: 8px;
-  box-shadow: var(--shadow-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
 }
 
 .header-section h1 {
   margin: 0;
-  color: var(--text-primary);
+  color: #303133;
   font-size: 28px;
   font-weight: 600;
 }
@@ -613,10 +613,10 @@ export default {
 .search-section {
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
   border-radius: 8px;
-  box-shadow: var(--shadow-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   font-size: 15px;
 }
 
@@ -627,10 +627,10 @@ export default {
 .stats-card {
   text-align: center;
   transition: all 0.3s ease;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
   border-radius: 8px;
-  box-shadow: var(--shadow-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
 }
 
 .stats-card:hover {
@@ -645,22 +645,22 @@ export default {
 .stats-value {
   font-size: 36px;
   font-weight: 700;
-  color: var(--primary) !important;
+  color: #409eff !important;
   margin-bottom: 8px;
 }
 
 .stats-label {
   font-size: 16px;
-  color: var(--text-tertiary);
+  color: #909399;
   font-weight: 500;
 }
 
 .table-section {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  background: #ffffff;
+  border: 1px solid #dcdfe6;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: var(--shadow-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   font-size: 15px;
 }
 
@@ -686,53 +686,45 @@ export default {
 
 .form-tip {
   font-size: 14px;
-  color: var(--text-tertiary);
+  color: #909399;
   margin-top: 4px;
 }
 
-/* 自定义按钮颜色 - 使用主题变量 - 强制优先级 */
+/* 自定义按钮颜色 - 强制优先级 */
 :deep(.el-button--primary) {
-  background-color: var(--primary) !important;
-  border-color: var(--primary) !important;
+  background-color: #409eff !important;
+  border-color: #409eff !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary:hover) {
-  background-color: var(--primary-light) !important;
-  border-color: var(--primary-light) !important;
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary:active) {
-  background-color: var(--primary-dark) !important;
-  border-color: var(--primary-dark) !important;
+  background-color: #337ecc !important;
+  border-color: #337ecc !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary.is-plain) {
-  background-color: var(--bg-primary) !important;
-  border-color: var(--primary) !important;
-  color: var(--primary) !important;
+  background-color: #ffffff !important;
+  border-color: #409eff !important;
+  color: #409eff !important;
 }
 
 :deep(.el-button--primary.is-plain:hover) {
-  background-color: var(--primary) !important;
-  border-color: var(--primary) !important;
+  background-color: #409eff !important;
+  border-color: #409eff !important;
   color: #ffffff !important;
 }
 
 :deep(.el-button--primary.is-plain:active) {
-  background-color: var(--primary-dark) !important;
-  border-color: var(--primary-dark) !important;
+  background-color: #337ecc !important;
+  border-color: #337ecc !important;
   color: #ffffff !important;
-}
-
-/* 统计数值颜色使用主题变量 */
-.stats-value {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--primary) !important;
-  margin-bottom: 8px;
 }
 
 /* 确保状态标签颜色正确显示 */
@@ -762,13 +754,13 @@ export default {
 }
 
 .device-type-management :deep(.el-button--primary) {
-  background: var(--primary) !important;
-  border: 1px solid var(--primary) !important;
+  background: #409eff !important;
+  border: 1px solid #409eff !important;
 }
 
 .device-type-management :deep(.el-button--primary:hover) {
-  background: var(--primary-light) !important;
-  border: 1px solid var(--primary-light) !important;
+  background: #66b1ff !important;
+  border: 1px solid #66b1ff !important;
 }
 
 /* 删除按钮颜色优化 */

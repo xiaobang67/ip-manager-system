@@ -1,14 +1,9 @@
 <template>
   <div class="login-container">
-    <!-- 主题切换按钮 -->
-    <div class="theme-toggle-wrapper">
-      <ThemeToggle />
-    </div>
-    
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <h2>网络资源管理系统</h2>
+          <h2>欧税通网络资源管理平台</h2>
           <p>请登录您的账户</p>
         </div>
       </template>
@@ -59,13 +54,9 @@
 
 <script>
 import { mapActions } from 'vuex'
-import ThemeToggle from '@/components/ThemeToggle.vue'
 
 export default {
   name: 'Login',
-  components: {
-    ThemeToggle
-  },
   data() {
     return {
       loginData: {
@@ -127,22 +118,15 @@ export default {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, #409eff 0%, #337ecc 100%);
   position: relative;
-}
-
-.theme-toggle-wrapper {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 10;
 }
 
 .login-card {
   width: 400px;
-  box-shadow: var(--shadow-light-light);
-  background-color: var(--bg-primary);
-  border-color: var(--border-primary);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-color: #dcdfe6;
 }
 
 .card-header {
@@ -151,12 +135,12 @@ export default {
 
 .card-header h2 {
   margin: 0 0 8px 0;
-  color: var(--text-primary);
+  color: #303133;
 }
 
 .card-header p {
   margin: 0;
-  color: var(--text-tertiary);
+  color: #909399;
   font-size: 14px;
 }
 
@@ -173,11 +157,6 @@ export default {
   .login-card {
     width: 90%;
     margin: 0 20px;
-  }
-  
-  .theme-toggle-wrapper {
-    top: 16px;
-    right: 16px;
   }
 }
 </style>

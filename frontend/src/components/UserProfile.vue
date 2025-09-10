@@ -32,12 +32,7 @@
             />
           </el-form-item>
           
-          <el-form-item label="主题" prop="theme">
-            <el-radio-group v-model="profileForm.theme">
-              <el-radio label="light">明亮主题</el-radio>
-              <el-radio label="dark">暗黑主题</el-radio>
-            </el-radio-group>
-          </el-form-item>
+
         </el-form>
         
         <div class="dialog-footer">
@@ -136,8 +131,7 @@ export default {
       passwordLoading: false,
       
       profileForm: {
-        email: '',
-        theme: 'light'
+        email: ''
       },
       
       passwordForm: {
@@ -196,8 +190,7 @@ export default {
     initForms() {
       // 初始化个人信息表单
       this.profileForm = {
-        email: this.currentUser.email || '',
-        theme: this.currentUser.theme || 'light'
+        email: this.currentUser.email || ''
       }
       
       // 重置密码表单
@@ -273,11 +266,6 @@ export default {
         
         this.$message.success('个人信息更新成功')
         
-        // 如果主题发生变化，应用新主题
-        if (this.profileForm.theme !== this.currentUser.theme) {
-          this.$store.dispatch('theme/setTheme', this.profileForm.theme)
-        }
-        
       } catch (error) {
         console.error('Update profile error:', error)
         this.$message.error(error.response?.data?.detail || '更新个人信息失败')
@@ -341,77 +329,18 @@ export default {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-lg);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--border-tertiary);
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #ebeef5;
 }
 
 :deep(.el-tabs__content) {
-  padding: var(--spacing-lg) 0;
+  padding: 24px 0;
 }
 
 :deep(.el-alert ul) {
   margin: 0;
-  padding-left: var(--spacing-lg);
-}
-
-/* 使用新的主题系统变量 - 所有样式都会自动适配主题 */
-:deep(.el-form-item__label) {
-  color: var(--text-primary) !important;
-  font-weight: 500 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-:deep(.el-dialog__body) {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-}
-
-:deep(.el-tabs__content) {
-  color: var(--text-primary) !important;
-}
-
-:deep(.el-form-item) {
-  color: var(--text-primary) !important;
-}
-
-:deep(.el-input__wrapper) {
-  background-color: var(--bg-primary) !important;
-  border-color: var(--border-primary) !important;
-}
-
-:deep(.el-input__inner) {
-  color: var(--text-primary) !important;
-  background-color: transparent !important;
-}
-
-:deep(.el-radio__label) {
-  color: var(--text-secondary) !important;
-}
-
-:deep(.el-tag) {
-  background-color: var(--fill-primary) !important;
-  border-color: var(--border-primary) !important;
-  color: var(--text-secondary) !important;
-}
-
-:deep(.el-tag.el-tag--danger) {
-  background-color: var(--danger) !important;
-  border-color: var(--danger) !important;
-  color: var(--text-inverse) !important;
-}
-
-:deep(.el-tag.el-tag--warning) {
-  background-color: var(--warning) !important;
-  border-color: var(--warning) !important;
-  color: var(--text-inverse) !important;
-}
-
-:deep(.el-tag.el-tag--info) {
-  background-color: var(--info) !important;
-  border-color: var(--info) !important;
-  color: var(--text-inverse) !important;
+  padding-left: 24px;
 }
 </style>
