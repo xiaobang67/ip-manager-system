@@ -123,17 +123,8 @@
                   编辑
                 </el-button>
                 <el-button
-                  type="primary"
-                  plain
-                  size="small"
-                  @click="toggleStatus(row)"
-                >
-                  {{ row.status === 'active' ? '禁用' : '启用' }}
-                </el-button>
-                <el-button
                   v-if="row.usage_count === 0"
-                  type="primary"
-                  plain
+                  type="danger"
                   size="small"
                   @click="deleteDeviceTypeHandler(row)"
                 >
@@ -635,6 +626,13 @@ export default {
   display: flex;
   gap: 8px;
   justify-content: center;
+  align-items: center;
+  min-height: 32px;
+}
+
+.action-buttons .el-button {
+  margin: 0;
+  min-width: 60px;
 }
 
 .pagination-section {

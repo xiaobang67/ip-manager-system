@@ -174,7 +174,8 @@
             </el-button>
             <el-button
               size="small"
-              class="btn-delete"
+              type="danger"
+              plain
               @click="confirmDeleteUser(row)"
               v-if="canManageUsers && row.id !== currentUserId"
             >
