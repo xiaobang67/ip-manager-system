@@ -177,6 +177,7 @@
               <el-option label="安全设备" value="security" />
               <el-option label="办公设备" value="office" />
               <el-option label="其他设备" value="other" />
+              
             </el-select>
           </el-form-item>
           <el-form-item label="状态" prop="status">

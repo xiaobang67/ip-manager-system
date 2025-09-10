@@ -115,7 +115,7 @@
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="250" show-overflow-tooltip align="center">
+        <el-table-column prop="description" label="描述" width="250" align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>

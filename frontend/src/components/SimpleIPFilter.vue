@@ -2,99 +2,90 @@
   <div class="simple-ip-filter">
     <!-- 搜索和筛选区域 -->
     <div class="filter-container">
-      <!-- 快速搜索栏 -->
-      <div class="search-section">
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索IP地址、使用人、MAC地址..."
-          @input="handleQuickSearch"
-          @keyup.enter="handleSearch"
-          clearable
-          class="search-input"
-          size="default"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-      </div>
-
-      <!-- 筛选条件栏 -->
+      <!-- 统一筛选条件栏 -->
       <div class="filter-section">
-        <el-row :gutter="16" align="middle">
-          <el-col :xs="24" :sm="12" :md="6" :lg="5">
-            <div class="filter-item">
-              <label class="filter-label">网段筛选</label>
-              <el-select 
-                v-model="filters.subnet_id" 
-                placeholder="选择网段" 
-                clearable
-                @change="handleFilterChange"
-                size="default"
-              >
-                <el-option
-                  v-for="subnet in subnets"
-                  :key="subnet.id"
-                  :label="subnet.network"
-                  :value="subnet.id"
-                />
-              </el-select>
-            </div>
-          </el-col>
-          
-          <el-col :xs="24" :sm="12" :md="6" :lg="4">
-            <div class="filter-item">
-              <label class="filter-label">状态筛选</label>
-              <el-select 
-                v-model="filters.status" 
-                placeholder="选择状态" 
-                clearable
-                @change="handleFilterChange"
-                size="default"
-              >
-                <el-option label="可用" value="available" />
-                <el-option label="使用中" value="allocated" />
-                <el-option label="保留" value="reserved" />
-                <el-option label="冲突" value="conflict" />
-              </el-select>
-            </div>
-          </el-col>
-          
-          <el-col :xs="24" :sm="12" :md="6" :lg="5">
-            <div class="filter-item">
-              <label class="filter-label">所属部门</label>
-              <el-select 
-                v-model="filters.assigned_to" 
-                placeholder="选择部门" 
-                clearable
-                filterable
-                allow-create
-                @change="handleFilterChange"
-                size="default"
-              >
-                <el-option
-                  v-for="dept in departments"
-                  :key="dept"
-                  :label="dept"
-                  :value="dept"
-                />
-              </el-select>
-            </div>
-          </el-col>
-          
-          <el-col :xs="24" :sm="12" :md="6" :lg="10">
-            <div class="filter-actions">
-              <el-button type="primary" @click="handleSearch" :loading="searching" size="default">
+        <div class="filter-row">
+          <div class="filter-item">
+            <label class="filter-label">搜索关键词</label>
+            <el-input
+              v-model="searchQuery"
+              placeholder="搜索IP地址、使用人、MAC地址..."
+              @input="handleQuickSearch"
+              @keyup.enter="handleSearch"
+              clearable
+              size="default"
+            >
+              <template #prefix>
                 <el-icon><Search /></el-icon>
-                搜索
-              </el-button>
-              <el-button @click="handleReset" size="default">
-                <el-icon><Refresh /></el-icon>
-                重置
-              </el-button>
-            </div>
-          </el-col>
-        </el-row>
+              </template>
+            </el-input>
+          </div>
+          
+          <div class="filter-item">
+            <label class="filter-label">网段筛选</label>
+            <el-select 
+              v-model="filters.subnet_id" 
+              placeholder="选择网段" 
+              clearable
+              @change="handleFilterChange"
+              size="default"
+            >
+              <el-option
+                v-for="subnet in subnets"
+                :key="subnet.id"
+                :label="subnet.network"
+                :value="subnet.id"
+              />
+            </el-select>
+          </div>
+          
+          <div class="filter-item">
+            <label class="filter-label">状态筛选</label>
+            <el-select 
+              v-model="filters.status" 
+              placeholder="选择状态" 
+              clearable
+              @change="handleFilterChange"
+              size="default"
+            >
+              <el-option label="可用" value="available" />
+              <el-option label="使用中" value="allocated" />
+              <el-option label="保留" value="reserved" />
+              <el-option label="冲突" value="conflict" />
+            </el-select>
+          </div>
+          
+          <div class="filter-item">
+            <label class="filter-label">所属部门</label>
+            <el-select 
+              v-model="filters.assigned_to" 
+              placeholder="选择部门" 
+              clearable
+              filterable
+              allow-create
+              @change="handleFilterChange"
+              size="default"
+            >
+              <el-option
+                v-for="dept in departments"
+                :key="dept"
+                :label="dept"
+                :value="dept"
+              />
+            </el-select>
+          </div>
+          
+          <div class="filter-actions">
+            <el-button type="primary" @click="handleSearch" :loading="searching" size="default">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset" size="default">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -384,11 +375,19 @@ export default {
   width: 100%;
 }
 
+.filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  width: 100%;
+}
+
 .filter-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .filter-label {
@@ -399,7 +398,8 @@ export default {
   white-space: nowrap;
 }
 
-.filter-item .el-select {
+.filter-item .el-select,
+.filter-item .el-input {
   width: 100%;
 }
 
@@ -408,7 +408,7 @@ export default {
   gap: 8px;
   align-items: flex-end;
   justify-content: flex-start;
-  padding-top: 20px;
+  flex-shrink: 0;
 }
 
 .filter-actions .el-button {
@@ -439,8 +439,8 @@ export default {
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
-  .filter-actions {
-    padding-top: 16px;
+  .filter-row {
+    gap: 12px;
   }
 }
 
@@ -453,18 +453,21 @@ export default {
     gap: 12px;
   }
   
-  .search-input {
-    max-width: 100%;
+  .filter-row {
+    flex-wrap: wrap;
+    gap: 12px;
   }
   
-  .filter-section .el-col {
-    margin-bottom: 12px;
+  .filter-item {
+    flex: 1;
+    min-width: 200px;
   }
   
   .filter-actions {
+    flex: none;
+    width: 100%;
     justify-content: flex-start;
-    flex-wrap: wrap;
-    padding-top: 12px;
+    margin-top: 8px;
   }
   
   .filter-actions .el-button {
@@ -479,13 +482,30 @@ export default {
     padding: 12px;
   }
   
+  .filter-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filter-item {
+    min-width: auto;
+  }
+  
   .filter-label {
     font-size: 12px;
+  }
+  
+  .filter-actions {
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0;
   }
   
   .filter-actions .el-button {
     font-size: 13px;
     padding: 8px 12px;
+    flex: 1;
+    max-width: none;
   }
 }
 </style>
