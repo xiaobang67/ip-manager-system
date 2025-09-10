@@ -9,11 +9,11 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button v-if="isAdmin" type="primary" plain @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="primary" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button type="primary" plain @click="refreshData">
+        <el-button type="primary" @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>

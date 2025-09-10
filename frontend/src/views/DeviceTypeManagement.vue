@@ -9,8 +9,8 @@
             <el-icon><Plus /></el-icon>
             添加设备类型
           </el-button>
-          <el-button type="primary" plain @click="showAddDialog = true">
-            <el-icon><Plus /></el-icon>
+          <el-button type="primary" @click="refreshData">
+            <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
         </div>
@@ -33,7 +33,7 @@
           </el-col>
           <el-col :span="4">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button type="primary" plain @click="handleSearch">重置</el-button>
+            <el-button type="warning" @click="resetForm">重置</el-button>
           </el-col>
         </el-row>
       </div>
@@ -196,7 +196,7 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button type="primary" plain @click="showAddDialog = false">取消</el-button>
+          <el-button @click="showAddDialog = false">取消</el-button>
           <el-button type="primary" @click="submitForm" :loading="submitting">
             {{ editingDeviceType ? '更新' : '添加' }}
           </el-button>
