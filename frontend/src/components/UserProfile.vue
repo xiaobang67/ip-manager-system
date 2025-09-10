@@ -341,18 +341,77 @@ export default {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #ebeef5;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-tertiary);
 }
 
 :deep(.el-tabs__content) {
-  padding: 20px 0;
+  padding: var(--spacing-lg) 0;
 }
 
 :deep(.el-alert ul) {
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--spacing-lg);
+}
+
+/* 使用新的主题系统变量 - 所有样式都会自动适配主题 */
+:deep(.el-form-item__label) {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+:deep(.el-dialog__body) {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-tabs__content) {
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-form-item) {
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-input__wrapper) {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+:deep(.el-input__inner) {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+:deep(.el-radio__label) {
+  color: var(--text-secondary) !important;
+}
+
+:deep(.el-tag) {
+  background-color: var(--fill-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-secondary) !important;
+}
+
+:deep(.el-tag.el-tag--danger) {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+:deep(.el-tag.el-tag--warning) {
+  background-color: var(--warning) !important;
+  border-color: var(--warning) !important;
+  color: var(--text-inverse) !important;
+}
+
+:deep(.el-tag.el-tag--info) {
+  background-color: var(--info) !important;
+  border-color: var(--info) !important;
+  color: var(--text-inverse) !important;
 }
 </style>

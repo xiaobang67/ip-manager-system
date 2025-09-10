@@ -62,7 +62,7 @@
         <el-table-column label="操作" width="200">
           <template #default="scope">
             <el-button size="small" @click="editTag(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="deleteTag(scope.row)">删除</el-button>
+            <el-button size="small" type="danger" plain @click="deleteTag(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

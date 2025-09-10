@@ -96,7 +96,7 @@
     </el-row>
 
     <!-- 网段使用率表格 -->
-    <el-row :gutter="20" class="table-section">
+    <el-row :gutter="20" class="theme-table-section">
       <el-col :span="24">
         <el-card class="table-card">
           <template #header>

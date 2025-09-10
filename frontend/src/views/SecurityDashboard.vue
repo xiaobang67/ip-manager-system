@@ -617,7 +617,7 @@ export default {
 
 .dashboard-header h1 {
   margin: 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .header-actions {
@@ -687,34 +687,34 @@ export default {
 .card-info h3 {
   margin: 0 0 5px 0;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
 }
 
 .card-value {
   margin: 0;
   font-size: 24px;
   font-weight: bold;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .card-value.threat-low {
-  color: var(--success-color);
+  color: var(--success);
 }
 
 .card-value.threat-medium {
-  color: var(--warning-color);
+  color: var(--warning);
 }
 
 .card-value.threat-high {
-  color: var(--danger-color);
+  color: var(--danger);
 }
 
 .card-value.threat-critical {
-  color: var(--info-color);
+  color: var(--info);
 }
 
 .card-value.alert-count {
-  color: var(--danger-color);
+  color: var(--danger);
 }
 
 .charts-section {
@@ -741,19 +741,19 @@ export default {
   width: 30px;
   text-align: center;
   font-weight: bold;
-  color: var(--primary-color);
+  color: var(--primary);
 }
 
 .threat-ip-item .ip {
   flex: 1;
   margin-left: 10px;
   font-family: monospace;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .threat-ip-item .count {
   margin-right: 10px;
-  color: var(--danger-color);
+  color: var(--danger);
   font-size: 12px;
 }
 
@@ -774,7 +774,7 @@ export default {
 }
 
 .acknowledged {
-  color: var(--success-color);
+  color: var(--success);
   font-size: 12px;
 }
 

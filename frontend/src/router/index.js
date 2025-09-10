@@ -59,6 +59,12 @@ const routes = [
     name: 'CustomFieldsTest',
     component: () => import('@/components/CustomFieldsTest.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/theme-test',
+    name: 'ThemeTest',
+    component: () => import('@/views/ThemeTest.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

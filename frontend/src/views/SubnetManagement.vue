@@ -11,7 +11,7 @@
     </div>
 
     <!-- 搜索和过滤 -->
-    <div class="search-section">
+    <div class="theme-search-section">
       <el-row :gutter="20">
         <el-col :span="8">
           <el-input
@@ -94,7 +94,7 @@
             </el-button>
             <el-button 
               size="small" 
-              type="warning"
+              type="primary"
               @click="syncSubnetIPs(scope.row)"
               :loading="scope.row.syncing"
             >
@@ -495,8 +495,8 @@ export default {
 <style scoped>
 .subnet-management {
   padding: 20px;
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 
 .page-header {
@@ -508,23 +508,23 @@ export default {
 
 .page-header h1 {
   margin: 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .search-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light);
 }
 
 .subnet-list {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light);
   padding: 20px;
 }
 
@@ -536,7 +536,7 @@ export default {
 
 .usage-text {
   font-size: 12px;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
   text-align: center;
 }
 

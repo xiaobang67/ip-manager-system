@@ -158,7 +158,7 @@
           <template #default="{ row }">
             <el-button
               size="small"
-              class="btn-edit"
+              type="primary"
               @click="editUser(row)"
               v-if="canManageUsers"
             >
@@ -166,7 +166,7 @@
             </el-button>
             <el-button
               size="small"
-              :class="row.is_active ? 'btn-reservation' : 'btn-edit'"
+              :type="row.is_active ? 'warning' : 'primary'"
               @click="handleToggleUserStatus(row)"
               v-if="canManageUsers && row.id !== currentUserId"
             >

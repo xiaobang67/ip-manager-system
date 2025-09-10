@@ -219,14 +219,14 @@ export default {
 }
 
 .app-header {
-  background-color: var(--bg-color);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   height: 60px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: var(--shadow-light-base);
   z-index: 1000;
 }
 
@@ -237,7 +237,7 @@ export default {
 }
 
 .sidebar-toggle {
-  color: var(--text-color-primary) !important;
+  color: var(--text-primary) !important;
   font-size: 18px;
   padding: 8px;
   border-radius: 4px;
@@ -245,12 +245,12 @@ export default {
 }
 
 .sidebar-toggle:hover {
-  background-color: var(--bg-color-hover);
-  color: var(--primary-color) !important;
+  background-color: var(--bg-primary-hover);
+  color: var(--primary) !important;
 }
 
 .app-title {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
   margin: 0;
@@ -263,7 +263,7 @@ export default {
 }
 
 .user-menu-button {
-  color: var(--text-color-primary) !important;
+  color: var(--text-primary) !important;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -271,7 +271,7 @@ export default {
 }
 
 .user-menu-button:hover {
-  color: var(--primary-color) !important;
+  color: var(--primary) !important;
 }
 
 .app-container {
@@ -281,8 +281,8 @@ export default {
 
 /* 侧边栏样式 */
 .app-sidebar {
-  background: var(--bg-color) !important;
-  border-right: 1px solid var(--border-color);
+  background: var(--bg-primary) !important;
+  border-right: 1px solid var(--border-primary);
   transition: width 0.3s ease;
   overflow: hidden;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -296,7 +296,7 @@ export default {
 
 .sidebar-header {
   padding: 24px 20px;
-  border-bottom: 1px solid var(--border-color-lighter);
+  border-bottom: 1px solid var(--border-primary-lighter);
   background: transparent !important;
 }
 
@@ -307,7 +307,7 @@ export default {
 }
 
 .system-title {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 4px;
@@ -318,7 +318,7 @@ export default {
 }
 
 .system-subtitle {
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
   font-size: 12px;
   white-space: nowrap;
   opacity: 1;
@@ -340,7 +340,7 @@ export default {
 }
 
 .sidebar-menu :deep(.el-menu-item) {
-  color: var(--text-color-regular);
+  color: var(--text-secondary);
   margin: 4px 12px;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -357,12 +357,12 @@ export default {
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
-  background-color: var(--fill-color);
-  color: var(--primary-color);
+  background-color: var(--fill-primary);
+  color: var(--primary);
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background-color: var(--primary-color);
+  background-color: var(--primary);
   color: white;
   box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 }
@@ -380,7 +380,7 @@ export default {
 }
 
 .sidebar-menu :deep(.el-sub-menu__title) {
-  color: var(--text-color-regular);
+  color: var(--text-secondary);
   border-radius: 8px;
   transition: all 0.3s ease;
   height: 48px;
@@ -396,12 +396,12 @@ export default {
 }
 
 .sidebar-menu :deep(.el-sub-menu__title:hover) {
-  background-color: var(--fill-color);
-  color: var(--primary-color);
+  background-color: var(--fill-primary);
+  color: var(--primary);
 }
 
 .sidebar-menu :deep(.el-sub-menu.is-active .el-sub-menu__title) {
-  background-color: var(--primary-color);
+  background-color: var(--primary);
   color: white;
 }
 
@@ -412,7 +412,7 @@ export default {
 
 /* 子菜单项样式 */
 .sidebar-menu :deep(.el-sub-menu .el-menu-item) {
-  background-color: var(--bg-color-soft);
+  background-color: var(--bg-primary-soft);
   margin: 2px 8px;
   height: 40px;
   font-size: 13px;
@@ -426,12 +426,12 @@ export default {
 }
 
 .sidebar-menu :deep(.el-sub-menu .el-menu-item:hover) {
-  background-color: var(--fill-color-light);
+  background-color: var(--fill-primary-light);
 }
 
 .sidebar-menu :deep(.el-sub-menu .el-menu-item.is-active) {
-  background-color: var(--primary-color-light-7);
-  color: var(--primary-color);
+  background-color: var(--primary-light-7);
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -501,7 +501,7 @@ export default {
 
 /* 主要内容区域 */
 .app-main {
-  background-color: var(--bg-color-page);
+  background-color: var(--bg-primary-page);
   padding: 24px;
   transition: all 0.3s ease;
   overflow-y: auto;

@@ -9,11 +9,11 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button v-if="isAdmin" type="primary" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="info" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button type="primary" @click="refreshData">
+        <el-button type="info" @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
@@ -27,10 +27,10 @@
     />
 
     <!-- 统计信息卡片 -->
-    <div class="stats-section">
+    <div class="theme-stats-card">
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-card class="stats-card">
+          <el-card class="theme-stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.total }}</div>
               <div class="stats-label">总IP数量</div>
@@ -38,7 +38,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="stats-card">
+          <el-card class="theme-stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.available }}</div>
               <div class="stats-label">可用IP</div>
@@ -46,7 +46,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="stats-card">
+          <el-card class="theme-stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.allocated }}</div>
               <div class="stats-label">使用中</div>
@@ -54,7 +54,7 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="stats-card">
+          <el-card class="theme-stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.utilization_rate }}%</div>
               <div class="stats-label">使用率</div>
@@ -65,7 +65,7 @@
     </div>
 
     <!-- IP地址列表表格 -->
-    <div class="table-section">
+    <div class="theme-table-section">
       <!-- 搜索状态提示 -->
       <div v-if="currentSearchParams" class="search-status">
         <el-alert
@@ -1253,8 +1253,8 @@ export default {
 <style scoped>
 .ip-management {
   padding: 20px;
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 
 .header-section {
@@ -1265,7 +1265,7 @@ export default {
 }
 
 .header-section h1 {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -1277,10 +1277,10 @@ export default {
 .filter-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: var(--fill-color);
-  border: 1px solid var(--border-color);
+  background: var(--fill-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .stats-section {
@@ -1289,14 +1289,14 @@ export default {
 
 .stats-card {
   text-align: center;
-  background: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
   transition: all 0.3s ease !important;
 }
 
 .stats-card:hover {
-  border-color: var(--primary-color) !important;
-  box-shadow: var(--box-shadow-light) !important;
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-light-light) !important;
 }
 
 .stats-item {
@@ -1306,21 +1306,21 @@ export default {
 .stats-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--primary-color) !important;
+  color: var(--primary) !important;
   margin-bottom: 5px;
 }
 
 .stats-label {
   font-size: 14px;
-  color: var(--text-color-secondary) !important;
+  color: var(--text-tertiary) !important;
 }
 
 .table-section {
-  background: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
   border-radius: 8px;
   padding: 20px;
-  color: var(--text-color-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 .pagination-section {
@@ -1337,7 +1337,7 @@ export default {
 }
 
 .no-selection {
-  color: var(--text-color-placeholder);
+  color: var(--text-quaternary);
   font-style: italic;
 }
 
@@ -1353,7 +1353,7 @@ oped>
 /* 表单提示样式 */
 .form-tip {
   font-size: 12px;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
   margin-top: 4px;
   line-height: 1.4;
 }
@@ -1369,14 +1369,14 @@ oped>
   align-items: center;
   margin-bottom: 20px;
   padding: 20px;
-  background: var(--bg-color);
+  background: var(--bg-primary);
   border-radius: 8px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: var(--shadow-light-base);
 }
 
 .header-section h1 {
   margin: 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 600;
 }
@@ -1393,7 +1393,7 @@ oped>
 .stats-card {
   text-align: center;
   border-radius: 8px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: var(--shadow-light-base);
 }
 
 .stats-item {
@@ -1403,20 +1403,20 @@ oped>
 .stats-value {
   font-size: 32px;
   font-weight: bold;
-  color: var(--primary-color);
+  color: var(--primary);
   margin-bottom: 8px;
 }
 
 .stats-label {
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
 }
 
 .table-section {
-  background: var(--bg-color);
+  background: var(--bg-primary);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: var(--box-shadow-base);
+  box-shadow: var(--shadow-light-base);
 }
 
 .search-status {
@@ -1438,7 +1438,7 @@ oped>
 }
 
 .no-selection {
-  color: var(--text-color-placeholder);
+  color: var(--text-quaternary);
   font-size: 14px;
 }
 

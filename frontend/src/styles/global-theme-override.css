@@ -1,0 +1,247 @@
+/* ===== 超强力全局主题覆盖系统 ===== */
+/* 确保所有Element Plus组件在暗黑主题下都正确显示 */
+
+/* ===== 精准全局覆盖 - 只修复需要的元素 ===== */
+
+/* 只覆盖明确需要修复的白色背景元素 */
+[data-theme="dark"] *[style*="background-color: #ffffff"],
+[data-theme="dark"] *[style*="background-color: #fff"],
+[data-theme="dark"] *[style*="background-color: white"],
+[data-theme="dark"] *[style*="background: #ffffff"],
+[data-theme="dark"] *[style*="background: #fff"],
+[data-theme="dark"] *[style*="background: white"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 255, 255)"],
+[data-theme="dark"] *[style*="background: rgb(255, 255, 255)"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 不要全局覆盖所有元素，而是让元素使用默认的透明背景 */
+
+/* ===== 精准 Element Plus 组件覆盖 ===== */
+/* 只修复真正需要的组件，不强制覆盖所有子元素 */
+
+/* 对话框系统 - 精准覆盖 */
+[data-theme="dark"] .el-dialog {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog__header {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog__body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog__footer {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 对话框内的标签页 - 精准覆盖 */
+[data-theme="dark"] .el-dialog .el-tabs {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog .el-tabs__header {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog .el-tabs__content {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="dark"] .el-dialog .el-tab-pane {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 对话框内的表单 - 精准覆盖 */
+[data-theme="dark"] .el-dialog .el-form-item__label {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .el-dialog .el-radio__label {
+  color: var(--text-secondary) !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .el-dialog .el-checkbox__label {
+  color: var(--text-secondary) !important;
+  background-color: transparent !important;
+}
+
+/* 输入框 - 精准覆盖 */
+[data-theme="dark"] .el-input__wrapper {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+[data-theme="dark"] .el-input__inner {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .el-textarea__inner {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* 选择器下拉 - 精准覆盖 */
+[data-theme="dark"] .el-select-dropdown {
+  background-color: var(--bg-overlay) !important;
+  border-color: var(--border-primary) !important;
+}
+
+[data-theme="dark"] .el-select-dropdown__item {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .el-select-dropdown__item:hover {
+  background-color: var(--fill-primary) !important;
+}
+
+/* 单选框和复选框内部 - 精准覆盖 */
+[data-theme="dark"] .el-radio__inner {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+[data-theme="dark"] .el-checkbox__inner {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* ===== 修复内联样式覆盖 ===== */
+
+/* 修复所有可能的内联白色背景 */
+[data-theme="dark"] *[style*="background-color: #ffffff"],
+[data-theme="dark"] *[style*="background-color: #fff"],
+[data-theme="dark"] *[style*="background-color: white"],
+[data-theme="dark"] *[style*="background-color:white"],
+[data-theme="dark"] *[style*="background-color:#fff"],
+[data-theme="dark"] *[style*="background-color:#ffffff"],
+[data-theme="dark"] *[style*="background: #ffffff"],
+[data-theme="dark"] *[style*="background: #fff"],
+[data-theme="dark"] *[style*="background: white"],
+[data-theme="dark"] *[style*="background:white"],
+[data-theme="dark"] *[style*="background:#fff"],
+[data-theme="dark"] *[style*="background:#ffffff"],
+[data-theme="dark"] *[style*="background-color: rgb(255, 255, 255)"],
+[data-theme="dark"] *[style*="background-color:rgb(255,255,255)"],
+[data-theme="dark"] *[style*="background: rgb(255, 255, 255)"],
+[data-theme="dark"] *[style*="background:rgb(255,255,255)"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 修复所有可能的内联黑色文字 */
+[data-theme="dark"] *[style*="color: #000000"],
+[data-theme="dark"] *[style*="color: #000"],
+[data-theme="dark"] *[style*="color: black"],
+[data-theme="dark"] *[style*="color:black"],
+[data-theme="dark"] *[style*="color:#000"],
+[data-theme="dark"] *[style*="color:#000000"],
+[data-theme="dark"] *[style*="color: rgb(0, 0, 0)"],
+[data-theme="dark"] *[style*="color:rgb(0,0,0)"] {
+  color: var(--text-primary) !important;
+}
+
+/* ===== 特殊处理 - 保留有颜色的元素 ===== */
+
+/* 恢复按钮的原有颜色 */
+[data-theme="dark"] .el-button--primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-button--success {
+  background-color: var(--success) !important;
+  border-color: var(--success) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-button--warning {
+  background-color: var(--warning) !important;
+  border-color: var(--warning) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-button--danger {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-button--info {
+  background-color: var(--info) !important;
+  border-color: var(--info) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* 恢复标签的原有颜色 */
+[data-theme="dark"] .el-tag--primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-tag--success {
+  background-color: var(--success) !important;
+  border-color: var(--success) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-tag--warning {
+  background-color: var(--warning) !important;
+  border-color: var(--warning) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-tag--danger {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .el-tag--info {
+  background-color: var(--info) !important;
+  border-color: var(--info) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* ===== 特殊元素处理 ===== */
+
+/* 遮罩层 */
+[data-theme="dark"] .el-overlay {
+  background-color: var(--bg-mask) !important;
+}
+
+/* 分割线 */
+[data-theme="dark"] .el-divider {
+  border-color: var(--border-primary) !important;
+}
+
+/* 移除全局边框覆盖，让元素使用自己的边框颜色 */
+
+/* 使用JavaScript动态检查和修复特定容器 */
+[data-theme="dark"] .force-dark-theme {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ===== 调试辅助 ===== */
+
+/* 调试模式：给所有白色背景添加红色边框 */
+.debug-white-bg [data-theme="dark"] *[style*="background"] {
+  border: 2px solid red !important;
+}
+
+/* 调试模式：给所有Element Plus组件添加绿色边框 */
+.debug-el-components [data-theme="dark"] [class*="el-"] {
+  border: 1px solid green !important;
+}

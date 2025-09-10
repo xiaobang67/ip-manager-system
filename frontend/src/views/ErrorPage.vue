@@ -331,15 +331,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-color-page);
+  background: var(--bg-primary-page);
   padding: 20px;
 }
 
 .error-container {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
-  box-shadow: var(--box-shadow-light);
+  box-shadow: var(--shadow-light-light);
   padding: 40px;
   text-align: center;
   max-width: 600px;
@@ -353,13 +353,13 @@ export default {
 .error-title {
   font-size: 32px;
   font-weight: 600;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .error-message {
   font-size: 16px;
-  color: var(--text-color-regular);
+  color: var(--text-secondary);
   margin-bottom: 30px;
   line-height: 1.6;
 }
@@ -370,17 +370,17 @@ export default {
 }
 
 .error-detail-content {
-  background: var(--fill-color-light);
-  color: var(--text-color-primary);
+  background: var(--fill-primary-light);
+  color: var(--text-primary);
   padding: 15px;
   border-radius: 6px;
   font-size: 14px;
 }
 
 .error-detail-content pre {
-  background: var(--fill-color);
-  color: var(--text-color-primary);
-  border: 1px solid var(--border-color-lighter);
+  background: var(--fill-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary-lighter);
   padding: 10px;
   border-radius: 4px;
   overflow-x: auto;
@@ -397,15 +397,15 @@ export default {
 
 .error-suggestions {
   text-align: left;
-  background: var(--fill-color-light);
-  color: var(--text-color-primary);
+  background: var(--fill-primary-light);
+  color: var(--text-primary);
   padding: 20px;
   border-radius: 8px;
   margin-top: 20px;
 }
 
 .error-suggestions h3 {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   margin-bottom: 12px;
   font-size: 16px;
 }
@@ -416,7 +416,7 @@ export default {
 }
 
 .error-suggestions li {
-  color: var(--text-color-regular);
+  color: var(--text-secondary);
   margin-bottom: 8px;
   line-height: 1.5;
 }

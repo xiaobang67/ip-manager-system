@@ -3,7 +3,7 @@
     <!-- 搜索和筛选区域 -->
     <div class="filter-container">
       <!-- 统一筛选条件栏 -->
-      <div class="filter-section">
+      <div class="theme-search-section">
         <div class="filter-row">
           <div class="filter-item">
             <label class="filter-label">搜索关键词</label>
@@ -347,11 +347,11 @@ export default {
 <style scoped>
 .simple-ip-filter {
   margin-bottom: 20px;
-  background-color: var(--bg-color, #ffffff);
-  border: 1px solid var(--border-color, #e4e7ed);
+  background-color: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-primary, #e4e7ed);
   border-radius: 8px;
   padding: 20px;
-  color: var(--text-color-primary, #303133);
+  color: var(--text-primary, #303133);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
@@ -393,7 +393,7 @@ export default {
 .filter-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-color-regular, #606266);
+  color: var(--text-secondary, #606266);
   margin-bottom: 2px;
   white-space: nowrap;
 }
@@ -421,12 +421,12 @@ export default {
   gap: 8px;
   flex-wrap: wrap;
   padding-top: 16px;
-  border-top: 1px solid var(--border-color-lighter, #f0f0f0);
+  border-top: 1px solid var(--border-primary-lighter, #f0f0f0);
   margin-top: 8px;
 }
 
 .active-filters .filter-label {
-  color: var(--text-color-secondary, #909399);
+  color: var(--text-tertiary, #909399);
   margin-right: 8px;
   font-size: 13px;
   white-space: nowrap;
