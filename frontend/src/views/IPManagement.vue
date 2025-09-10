@@ -141,6 +141,13 @@
                 分配
               </el-button>
               <el-button
+                type="warning"
+                size="small"
+                @click="editIP(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
                 v-if="row.status === 'available'"
                 type="warning"
                 size="small"
@@ -164,13 +171,6 @@
                 @click="deleteIP(row)"
               >
                 删除
-              </el-button>
-              <el-button
-                type="info"
-                size="small"
-                @click="viewHistory(row)"
-              >
-                历史
               </el-button>
             </div>
           </template>
@@ -444,6 +444,83 @@
       </template>
     </el-dialog>
 
+    <!-- IP编辑对话框 -->
+    <el-dialog
+      v-model="showEditDialog"
+      title="编辑IP地址"
+      width="600px"
+      @close="resetEditForm"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        label-width="100px"
+      >
+        <el-form-item label="IP地址">
+          <el-input v-model="editForm.ip_address" disabled />
+        </el-form-item>
+        <el-form-item label="MAC地址" prop="mac_address">
+          <el-input v-model="editForm.mac_address" placeholder="如：00:11:22:33:44:55" />
+        </el-form-item>
+        <el-form-item label="使用人" prop="user_name">
+          <el-input v-model="editForm.user_name" placeholder="使用人" />
+        </el-form-item>
+        <el-form-item label="设备类型" prop="device_type">
+          <el-select v-model="editForm.device_type" placeholder="选择设备类型" style="width: 100%">
+            <el-option
+              v-for="deviceType in deviceTypes"
+              :key="deviceType.code"
+              :label="deviceType.name"
+              :value="deviceType.code"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="使用部门" prop="assigned_to">
+          <el-select 
+            v-model="editForm.assigned_to" 
+            placeholder="选择部门" 
+            filterable
+            allow-create
+            style="width: 100%"
+            popper-class="ip-management-select-dropdown"
+            @visible-change="handleSelectVisibleChange"
+          >
+            <el-option
+              v-for="dept in departments"
+              :key="dept"
+              :label="dept"
+              :value="dept"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分配时间" prop="allocated_at">
+          <el-date-picker
+            v-model="editForm.allocated_at"
+            type="datetime"
+            placeholder="选择分配时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="备注信息"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitEdit" :loading="submitting">
+          确认修改
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- IP历史记录对话框 -->
     <el-dialog
       v-model="showHistoryDialog"
@@ -541,6 +618,7 @@ export default {
     const showBulkDialog = ref(false)
     const showHistoryDialog = ref(false)
     const showDeleteDialog = ref(false)
+    const showEditDialog = ref(false)
     
     // 表单数据
     const allocationForm = reactive({
@@ -573,6 +651,16 @@ export default {
     const deleteForm = reactive({
       ip_address: '',
       reason: ''
+    })
+    
+    const editForm = reactive({
+      ip_address: '',
+      mac_address: '',
+      user_name: '',
+      device_type: '',
+      assigned_to: '',
+      description: '',
+      allocated_at: null
     })
     
     // 表单验证规则
@@ -624,6 +712,21 @@ export default {
       ]
     }
     
+    const editRules = {
+      user_name: [
+        { required: true, message: '请填写使用人', trigger: 'blur' }
+      ],
+      device_type: [
+        { required: true, message: '请选择设备类型', trigger: 'change' }
+      ],
+      assigned_to: [
+        { required: true, message: '请选择使用部门', trigger: 'change' }
+      ],
+      mac_address: [
+        { pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, message: 'MAC地址格式不正确', trigger: 'blur' }
+      ]
+    }
+    
     // 方法
     const loadIPList = async () => {
       loading.value = true
@@ -668,45 +771,36 @@ export default {
     }
     
     const loadDepartments = async () => {
+      // 直接使用静态部门列表确保功能正常
+      departments.value = [
+        '技术部',
+        '运维部', 
+        '产品部',
+        '市场部',
+        '人事部',
+        '财务部',
+        '客服部',
+        '测试部',
+        '设计部',
+        '销售部'
+      ]
+      
+      // 可选：尝试从API获取部门列表
       try {
-        // 从组织管理API获取部门列表
         const response = await getDepartmentOptions()
-
         
         if (response && response.data && response.data.departments) {
           // 处理API响应格式：response.data.departments
-          departments.value = response.data.departments.map(dept => dept.name).sort()
+          const apiDepartments = response.data.departments.map(dept => dept.name).sort()
+          departments.value = [...new Set([...departments.value, ...apiDepartments])]
         } else if (response && response.departments) {
           // 处理直接响应格式：response.departments
-          departments.value = response.departments.map(dept => dept.name).sort()
-        } else {
-
-          // 如果获取失败，使用静态列表作为备选
-          departments.value = [
-            '技术部',
-            '运维部', 
-            '产品部',
-            '市场部',
-            '人事部',
-            '财务部',
-            '客服部'
-          ]
+          const apiDepartments = response.departments.map(dept => dept.name).sort()
+          departments.value = [...new Set([...departments.value, ...apiDepartments])]
         }
-        
-
-        
       } catch (error) {
-        console.error('加载部门列表失败：', error)
-        // 如果获取失败，使用静态列表
-        departments.value = [
-          '技术部',
-          '运维部', 
-          '产品部',
-          '市场部',
-          '人事部',
-          '财务部',
-          '客服部'
-        ]
+        console.error('从API加载部门列表失败，使用静态列表：', error)
+        // 静态列表已经设置，无需额外处理
       }
     }
     
@@ -926,6 +1020,91 @@ export default {
     const deleteIP = (row) => {
       deleteForm.ip_address = row.ip_address
       showDeleteDialog.value = true
+    }
+    
+    const editIP = (row) => {
+      // 填充编辑表单数据
+      editForm.ip_address = row.ip_address
+      editForm.mac_address = row.mac_address || ''
+      editForm.user_name = row.user_name || ''
+      editForm.device_type = row.device_type || ''
+      editForm.assigned_to = row.assigned_to || ''
+      editForm.description = row.description || ''
+      editForm.allocated_at = row.allocated_at || null
+      showEditDialog.value = true
+      
+      // 延迟修复下拉框样式
+      setTimeout(() => {
+        fixDropdownStyles()
+      }, 100)
+    }
+    
+    // 处理下拉框可见性变化
+    const handleSelectVisibleChange = (visible) => {
+      if (visible) {
+        // 下拉框打开时，延迟应用样式修复
+        setTimeout(() => {
+          fixDropdownStyles()
+        }, 50)
+      }
+    }
+    
+    // 修复下拉框样式的函数
+    const fixDropdownStyles = () => {
+      // 检查多种暗黑模式标识
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+                     document.body.classList.contains('dark') ||
+                     document.documentElement.classList.contains('dark')
+      
+      // 延迟执行以确保DOM已渲染
+      setTimeout(() => {
+        // 查找IP管理页面的下拉框
+        const dropdowns = document.querySelectorAll('.ip-management-select-dropdown, .el-select-dropdown')
+        
+        dropdowns.forEach(dropdown => {
+          if (isDark) {
+            // 应用暗黑模式样式
+            dropdown.style.setProperty('background-color', '#1d1e1f', 'important')
+            dropdown.style.setProperty('border-color', '#414243', 'important')
+            dropdown.style.setProperty('color', '#e5eaf3', 'important')
+            
+            // 修复选项样式
+            const items = dropdown.querySelectorAll('.el-select-dropdown__item')
+            items.forEach(item => {
+              item.style.setProperty('color', '#e5eaf3', 'important')
+              item.style.setProperty('background-color', 'transparent', 'important')
+              
+              // 移除旧的事件监听器（如果存在）
+              item.removeEventListener('mouseenter', item._darkModeEnterHandler)
+              item.removeEventListener('mouseleave', item._darkModeLeaveHandler)
+              
+              // 添加新的悬停事件处理器
+              item._darkModeEnterHandler = () => {
+                if (isDark && !item.classList.contains('selected')) {
+                  item.style.setProperty('background-color', '#262727', 'important')
+                  item.style.setProperty('color', '#e5eaf3', 'important')
+                }
+              }
+              
+              item._darkModeLeaveHandler = () => {
+                if (isDark && !item.classList.contains('selected')) {
+                  item.style.setProperty('background-color', 'transparent', 'important')
+                  item.style.setProperty('color', '#e5eaf3', 'important')
+                }
+              }
+              
+              item.addEventListener('mouseenter', item._darkModeEnterHandler)
+              item.addEventListener('mouseleave', item._darkModeLeaveHandler)
+              
+              // 处理选中状态
+              if (item.classList.contains('selected')) {
+                item.style.setProperty('background-color', '#409eff', 'important')
+                item.style.setProperty('color', '#ffffff', 'important')
+              }
+            })
+          }
+        })
+      }, 10)
     }
     
     const viewHistory = async (row) => {
@@ -1166,6 +1345,48 @@ export default {
         reason: ''
       })
     }
+    
+    // 编辑IP地址的提交方法
+    const submitEdit = async () => {
+      submitting.value = true
+      try {
+        // 准备提交数据
+        const submitData = { ...editForm }
+        if (submitData.allocated_at) {
+          // 确保时间格式为MySQL兼容格式 YYYY-MM-DD HH:mm:ss
+          const date = new Date(submitData.allocated_at)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          const hours = String(date.getHours()).padStart(2, '0')
+          const minutes = String(date.getMinutes()).padStart(2, '0')
+          const seconds = String(date.getSeconds()).padStart(2, '0')
+          submitData.allocated_at = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+        
+        await ipAPI.updateIP(editForm.ip_address, submitData)
+        ElMessage.success('IP地址修改成功')
+        showEditDialog.value = false
+        refreshData()
+      } catch (error) {
+        ElMessage.error('修改失败：' + error.message)
+      } finally {
+        submitting.value = false
+      }
+    }
+    
+    // 编辑表单重置方法
+    const resetEditForm = () => {
+      Object.assign(editForm, {
+        ip_address: '',
+        mac_address: '',
+        user_name: '',
+        device_type: '',
+        assigned_to: '',
+        description: '',
+        allocated_at: null
+      })
+    }
 
     return {
       // 用户权限
@@ -1199,6 +1420,7 @@ export default {
       showBulkDialog,
       showHistoryDialog,
       showDeleteDialog,
+      showEditDialog,
       
       // 表单数据
       allocationForm,
@@ -1206,6 +1428,7 @@ export default {
       releaseForm,
       bulkForm,
       deleteForm,
+      editForm,
       
       // 验证规则
       allocationRules,
@@ -1213,6 +1436,7 @@ export default {
       releaseRules,
       bulkRules,
       deleteRules,
+      editRules,
       
       // 方法
       refreshData,
@@ -1228,17 +1452,22 @@ export default {
       reserveIP,
       releaseIP,
       deleteIP,
+      editIP,
+      fixDropdownStyles,
+      handleSelectVisibleChange,
       viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
       submitBulkOperation,
       submitDelete,
+      submitEdit,
       resetAllocationForm,
       resetReservationForm,
       resetReleaseForm,
       resetBulkForm,
       resetDeleteForm,
+      resetEditForm,
       getBulkOperationButtonType,
       getStatusTagType,
       getStatusStyle,
@@ -1467,6 +1696,43 @@ oped>
   color: #ffffff !important;
 }
 
+/* 修复暗黑模式下下拉框选项显示问题 */
+:deep(.el-select-dropdown) {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item) {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item:hover) {
+  background-color: var(--fill-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item.selected) {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* 修复下拉框输入框在暗黑模式下的显示 */
+:deep(.el-select .el-input__inner) {
+  background-color: var(--fill-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select .el-input__inner:focus) {
+  border-color: var(--primary) !important;
+}
+
+/* 修复下拉箭头颜色 */
+:deep(.el-select .el-input__suffix .el-input__suffix-inner .el-select__caret) {
+  color: var(--text-primary) !important;
+}
+
 .ip-management .action-buttons .el-button--primary:hover {
   background-color: #66b1ff !important;
   border-color: #66b1ff !important;
@@ -1508,7 +1774,6 @@ oped>
   border-color: #f56c6c !important;
   color: #ffffff !important;
 }
-
 .ip-management .action-buttons .el-button--info {
   background-color: #909399 !important;
   border-color: #909399 !important;
@@ -1605,5 +1870,248 @@ oped>
   .table-section {
     padding: 12px;
   }
+}
+</style>
+<!-- 全局样
+式修复暗黑模式下拉框显示问题 -->
+<style>
+/* 修复Element Plus下拉框在暗黑模式下的显示问题 - 使用Element Plus的CSS变量 */
+.el-select-dropdown {
+  background-color: var(--el-bg-color) !important;
+  border: 1px solid var(--el-border-color) !important;
+  box-shadow: var(--el-box-shadow-light) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: var(--el-fill-color-light) !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: var(--el-color-primary) !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.is-disabled {
+  color: var(--el-text-color-disabled) !important;
+  cursor: not-allowed !important;
+}
+
+/* 修复下拉框输入框样式 */
+.el-select .el-input__wrapper {
+  background-color: var(--el-fill-color-blank) !important;
+  border: 1px solid var(--el-border-color) !important;
+}
+
+.el-select .el-input__wrapper:hover {
+  border-color: var(--el-border-color-hover) !important;
+}
+
+.el-select .el-input__wrapper.is-focus {
+  border-color: var(--el-color-primary) !important;
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-8) !important;
+}
+
+.el-select .el-input__inner {
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-select .el-input__suffix .el-input__suffix-inner .el-select__caret {
+  color: var(--el-text-color-placeholder) !important;
+}
+
+/* 特别针对IP管理页面的下拉框 */
+.ip-management .el-select-dropdown {
+  background-color: var(--el-bg-color) !important;
+  border: 1px solid var(--el-border-color) !important;
+}
+
+.ip-management .el-select-dropdown .el-select-dropdown__item {
+  color: var(--el-text-color-primary) !important;
+  background-color: transparent !important;
+}
+
+.ip-management .el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: var(--el-fill-color-light) !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.ip-management .el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: var(--el-color-primary) !important;
+  color: #ffffff !important;
+}
+
+/* 暗黑模式特殊处理 */
+[data-theme="dark"] .el-select-dropdown {
+  background-color: #1d1e1f !important;
+  border-color: #414243 !important;
+}
+
+[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: #262727 !important;
+  color: #e5eaf3 !important;
+}
+
+[data-theme="dark"] .el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 针对body有dark类的情况 */
+body.dark .el-select-dropdown {
+  background-color: #1d1e1f !important;
+  border-color: #414243 !important;
+}
+
+body.dark .el-select-dropdown .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+body.dark .el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: #262727 !important;
+  color: #e5eaf3 !important;
+}
+
+body.dark .el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 专门针对IP管理页面的下拉框 - 强制样式 */
+.ip-management-select-dropdown {
+  background-color: var(--el-bg-color) !important;
+  border: 1px solid var(--el-border-color) !important;
+  box-shadow: var(--el-box-shadow-light) !important;
+  z-index: 9999 !important;
+}
+
+.ip-management-select-dropdown .el-select-dropdown__item {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+  font-size: 14px !important;
+  padding: 0 20px !important;
+  position: relative !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+}
+
+.ip-management-select-dropdown .el-select-dropdown__item:hover {
+  background-color: var(--el-fill-color-light) !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.ip-management-select-dropdown .el-select-dropdown__item.selected {
+  background-color: var(--el-color-primary) !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+
+.ip-management-select-dropdown .el-select-dropdown__item.is-disabled {
+  color: var(--el-text-color-disabled) !important;
+  cursor: not-allowed !important;
+}
+
+/* 暗黑模式特殊处理 */
+[data-theme="dark"] .ip-management-select-dropdown {
+  background-color: #1d1e1f !important;
+  border: 1px solid #414243 !important;
+}
+
+[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item:hover {
+  background-color: #262727 !important;
+  color: #e5eaf3 !important;
+}
+
+[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item.selected {
+  background-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 针对body有dark类的情况 */
+body.dark .ip-management-select-dropdown {
+  background-color: #1d1e1f !important;
+  border: 1px solid #414243 !important;
+}
+
+body.dark .ip-management-select-dropdown .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+body.dark .ip-management-select-dropdown .el-select-dropdown__item:hover {
+  background-color: #262727 !important;
+  color: #e5eaf3 !important;
+}
+
+body.dark .ip-management-select-dropdown .el-select-dropdown__item.selected {
+  background-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 确保在任何主题下都生效 */
+html[data-theme="dark"] .ip-management-select-dropdown {
+  background-color: #1d1e1f !important;
+  border: 1px solid #414243 !important;
+}
+
+html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item:hover {
+  background-color: #262727 !important;
+  color: #e5eaf3 !important;
+}
+
+html[data-theme="dark"] .ip-management-select-dropdown .el-select-dropdown__item.selected {
+  background-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 额外的强制样式修复 - 确保在所有情况下都能正确显示 */
+.ip-management .el-select-dropdown__item {
+  color: var(--el-text-color-primary) !important;
+}
+
+[data-theme="dark"] .ip-management .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+body.dark .ip-management .el-select-dropdown__item {
+  color: #e5eaf3 !important;
+}
+
+/* 修复输入框本身的样式 */
+.ip-management .el-select .el-input__wrapper {
+  background-color: var(--el-fill-color-blank) !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+[data-theme="dark"] .ip-management .el-select .el-input__wrapper {
+  background-color: #1d1e1f !important;
+  color: #e5eaf3 !important;
+  border-color: #414243 !important;
+}
+
+[data-theme="dark"] .ip-management .el-select .el-input__inner {
+  color: #e5eaf3 !important;
 }
 </style>

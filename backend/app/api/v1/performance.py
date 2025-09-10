@@ -15,7 +15,7 @@ from app.core.performance_testing import (
 from app.core.query_optimizer import get_database_performance_info, query_monitor
 from app.core.cache_manager import cache_manager
 from app.core.redis_client import get_redis_health
-from app.models.user import User
+from app.models.user import User, UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def get_database_performance(
 ):
     """获取数据库性能信息"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         performance_info = get_database_performance_info()
@@ -45,7 +45,7 @@ async def get_cache_performance(
 ):
     """获取缓存性能信息"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         cache_stats = cache_manager.get_cache_stats()
@@ -68,7 +68,7 @@ async def get_slow_queries(
 ):
     """获取慢查询列表"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         slow_queries = query_monitor.get_slow_queries(hours=hours)
@@ -89,7 +89,7 @@ async def get_query_statistics(
 ):
     """获取查询统计信息"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         query_stats = query_monitor.get_query_stats(hours=hours)
@@ -111,7 +111,7 @@ async def run_load_test(
 ):
     """运行负载测试"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         if concurrent_users > 50 or requests_per_user > 50:
@@ -153,7 +153,7 @@ async def run_cache_test(
 ):
     """运行缓存性能测试"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         if iterations > 5000:
@@ -180,7 +180,7 @@ async def run_database_test(
 ):
     """运行数据库性能测试"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         if iterations > 1000:
@@ -211,7 +211,7 @@ async def run_comprehensive_test(
 ):
     """运行综合性能测试"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         # 在后台运行综合测试
@@ -241,7 +241,7 @@ async def clear_cache(
 ):
     """清除缓存"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         if pattern:
@@ -270,7 +270,7 @@ async def invalidate_cache(
 ):
     """手动失效缓存"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         context = context or {}
@@ -294,7 +294,7 @@ async def get_performance_summary(
 ):
     """获取性能摘要信息"""
     try:
-        if current_user.role != "admin":
+        if current_user.role != UserRole.ADMIN:
             raise HTTPException(status_code=403, detail="需要管理员权限")
         
         # 获取各种性能指标

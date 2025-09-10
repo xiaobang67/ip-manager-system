@@ -7,7 +7,7 @@ import io
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.services.audit_service import AuditService
 from app.schemas.audit_log import (
     AuditLogSearchRequest,
@@ -116,7 +116,7 @@ async def get_user_activity(
     audit_service = AuditService(db)
     
     # 检查权限：只有管理员或用户本人可以查看活动记录
-    if current_user.role != "admin" and current_user.id != user_id:
+    if current_user.role != UserRole.ADMIN and current_user.id != user_id:
         raise HTTPException(
             status_code=403,
             detail="没有权限查看其他用户的活动记录"
@@ -168,7 +168,7 @@ async def get_audit_statistics(
 ):
     """获取审计日志统计信息"""
     # 只有管理员可以查看统计信息
-    if current_user.role != "admin":
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=403,
             detail="只有管理员可以查看审计统计信息"
@@ -194,7 +194,7 @@ async def export_audit_logs(
 ):
     """导出审计日志"""
     # 只有管理员可以导出审计日志
-    if current_user.role != "admin":
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=403,
             detail="只有管理员可以导出审计日志"
@@ -245,7 +245,7 @@ async def archive_old_logs(
 ):
     """归档旧的审计日志"""
     # 只有超级管理员可以归档日志
-    if current_user.role != "admin":
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=403,
             detail="只有管理员可以归档审计日志"

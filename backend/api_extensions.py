@@ -1051,6 +1051,86 @@ def add_missing_endpoints(app, get_db_connection):
         finally:
             connection.close()
 
+    @app.put("/api/ips/{ip_address}")
+    async def update_ip_api(ip_address: str, data: dict):
+        """更新IP地址信息"""
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # 首先验证IP地址是否存在
+                cursor.execute("SELECT id FROM ip_addresses WHERE ip_address = %s", (ip_address,))
+                ip_record = cursor.fetchone()
+                
+                if not ip_record:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 不存在")
+                
+                # 准备更新字段
+                update_fields = []
+                update_values = []
+                
+                # 可更新的字段列表
+                updatable_fields = {
+                    'mac_address': 'mac_address',
+                    'user_name': 'user_name', 
+                    'device_type': 'device_type',
+                    'assigned_to': 'assigned_to',
+                    'description': 'description',
+                    'allocated_at': 'allocated_at'
+                }
+                
+                for field_name, db_column in updatable_fields.items():
+                    if field_name in data:
+                        update_fields.append(f"{db_column} = %s")
+                        update_values.append(data[field_name])
+                
+                if not update_fields:
+                    raise HTTPException(status_code=400, detail="没有提供要更新的字段")
+                
+                # 添加更新时间
+                update_fields.append("updated_at = NOW()")
+                
+                # 构建更新SQL
+                update_sql = f"""
+                    UPDATE ip_addresses 
+                    SET {', '.join(update_fields)}
+                    WHERE ip_address = %s
+                """
+                update_values.append(ip_address)
+                
+                # 执行更新
+                cursor.execute(update_sql, update_values)
+                connection.commit()
+                
+                if cursor.rowcount == 0:
+                    raise HTTPException(status_code=404, detail=f"IP地址 {ip_address} 更新失败")
+                
+                # 记录审计日志
+                try:
+                    cursor.execute("""
+                        INSERT INTO audit_logs (action, resource_type, resource_id, username, details, created_at)
+                        VALUES (%s, %s, %s, %s, %s, NOW())
+                    """, (
+                        'update',
+                        'ip_address', 
+                        ip_record['id'],
+                        data.get('username', 'system'),
+                        f"更新IP地址 {ip_address} 的信息"
+                    ))
+                    connection.commit()
+                except Exception as audit_error:
+                    print(f"审计日志记录失败: {audit_error}")
+                    # 审计日志失败不影响主要操作
+                
+                return {"message": f"IP地址 {ip_address} 更新成功"}
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            connection.rollback()
+            raise HTTPException(status_code=500, detail=f"更新IP地址失败: {str(e)}")
+        finally:
+            connection.close()
+
     @app.get("/api/ips/{ip_address}/history")
     async def get_ip_history_api(ip_address: str):
         """获取IP地址历史记录"""
