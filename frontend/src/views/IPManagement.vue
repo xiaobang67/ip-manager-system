@@ -87,7 +87,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="70" />
-        <el-table-column prop="ip_address" label="IP地址" width="160" sortable align="center" />
+        <el-table-column prop="ip_address" label="IP地址" width="150" sortable align="center" />
         <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusTagType(row.status)" size="small">
@@ -95,37 +95,37 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="150" align="center">
+        <el-table-column prop="user_name" label="使用人" width="140" align="center">
           <template #default="{ row }">
             <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="mac_address" label="MAC地址" width="170" align="center">
+        <el-table-column prop="mac_address" label="MAC地址" width="160" align="center">
           <template #default="{ row }">
             <span>{{ row.mac_address || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="device_type" label="设备类型" width="160" align="center">
+        <el-table-column prop="device_type" label="设备类型" width="140" align="center">
           <template #default="{ row }">
             <span>{{ row.device_type || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="assigned_to" label="所属部门" width="160" align="center">
+        <el-table-column prop="assigned_to" label="所属部门" width="140" align="center">
           <template #default="{ row }">
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="250" align="center">
+        <el-table-column prop="description" label="描述" width="160" show-overflow-tooltip align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="allocated_at" label="分配时间" width="200" align="center">
+        <el-table-column prop="allocated_at" label="分配时间" width="220" align="center">
           <template #default="{ row }">
             <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="350" fixed="right" align="center">
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
