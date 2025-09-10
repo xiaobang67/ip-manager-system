@@ -67,6 +67,7 @@
               <el-button
                 size="small"
                 type="danger"
+                plain
                 @click="confirmDeleteDepartment(row)"
                 v-if="canManageDepartments"
               >

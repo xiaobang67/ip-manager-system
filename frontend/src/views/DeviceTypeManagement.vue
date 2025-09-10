@@ -9,8 +9,8 @@
             <el-icon><Plus /></el-icon>
             添加设备类型
           </el-button>
-          <el-button type="primary" plain @click="refreshData">
-            <el-icon><Refresh /></el-icon>
+          <el-button type="primary" plain @click="showAddDialog = true">
+            <el-icon><Plus /></el-icon>
             刷新
           </el-button>
         </div>
@@ -33,7 +33,7 @@
           </el-col>
           <el-col :span="4">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button type="primary" plain @click="handleReset">重置</el-button>
+            <el-button type="primary" plain @click="handleSearch">重置</el-button>
           </el-col>
         </el-row>
       </div>
@@ -96,13 +96,17 @@
           </el-table-column>
           <el-table-column prop="status" label="状态" width="120" align="center">
             <template #default="{ row }">
-              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
-                {{ row.status === 'active' ? '启用' : '禁用' }}
+              <el-tag 
+                :type="getStatusTagType(row.status)" 
+                size="small"
+                :style="getStatusStyle(row.status)"
+              >
+                {{ getStatusText(row.status) }}
               </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="usage_count" label="使用数量" width="140" align="center" />
-          <el-table-column prop="description" label="描述" width="350" show-overflow-tooltip align="center">
+          <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip align="center">
             <template #default="{ row }">
               <span>{{ row.description || '-' }}</span>
             </template>
@@ -112,7 +116,7 @@
               <span>{{ formatDate(row.created_at) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="320" fixed="right" align="center">
+          <el-table-column label="操作" width="260" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button
@@ -123,10 +127,12 @@
                   编辑
                 </el-button>
                 <el-button
-                  v-if="row.usage_count === 0"
                   type="danger"
                   size="small"
+                  :disabled="row.usage_count > 0"
                   @click="deleteDeviceTypeHandler(row)"
+                  :title="row.usage_count > 0 ? `该设备类型正在被 ${row.usage_count} 个设备使用，无法删除` : '删除设备类型'"
+                  :class="{ 'delete-disabled': row.usage_count > 0 }"
                 >
                   删除
                 </el-button>
@@ -179,12 +185,6 @@
               <el-option label="其他设备" value="other" />
               
             </el-select>
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-radio-group v-model="deviceTypeForm.status">
-              <el-radio label="active">启用</el-radio>
-              <el-radio label="inactive">禁用</el-radio>
-            </el-radio-group>
           </el-form-item>
           <el-form-item label="描述" prop="description">
             <el-input
@@ -491,6 +491,43 @@ export default {
       return textMap[category] || category
     }
     
+    // 状态相关工具方法
+    const getStatusTagType = (status) => {
+      const typeMap = {
+        active: 'success',
+        inactive: 'danger'
+      }
+      return typeMap[status] || 'info'
+    }
+    
+    const getStatusStyle = (status) => {
+      const styleMap = {
+        active: {
+          backgroundColor: '#f0f9ff',
+          borderColor: '#67c23a',
+          color: '#67c23a'
+        },
+        inactive: {
+          backgroundColor: '#fef0f0',
+          borderColor: '#f56c6c',
+          color: '#f56c6c'
+        }
+      }
+      return styleMap[status] || {
+        backgroundColor: '#f4f4f5',
+        borderColor: '#909399',
+        color: '#909399'
+      }
+    }
+    
+    const getStatusText = (status) => {
+      const textMap = {
+        active: '启用',
+        inactive: '禁用'
+      }
+      return textMap[status] || status
+    }
+    
     // 组件挂载时加载数据
     onMounted(() => {
       loadDeviceTypes()
@@ -532,7 +569,10 @@ export default {
       resetForm,
       formatDate,
       getCategoryTagType,
-      getCategoryText
+      getCategoryText,
+      getStatusTagType,
+      getStatusStyle,
+      getStatusText
     }
   }
 }
@@ -694,6 +734,27 @@ export default {
   margin-bottom: 8px;
 }
 
+/* 确保状态标签颜色正确显示 */
+.device-type-management .el-tag.el-tag--success,
+.device-type-management .status-active {
+  background-color: #f0f9ff !important;
+  border-color: #67c23a !important;
+  color: #67c23a !important;
+}
+
+.device-type-management .el-tag.el-tag--danger,
+.device-type-management .status-inactive {
+  background-color: #fef0f0 !important;
+  border-color: #f56c6c !important;
+  color: #f56c6c !important;
+}
+
+.device-type-management .el-tag.el-tag--info {
+  background-color: #f4f4f5 !important;
+  border-color: #909399 !important;
+  color: #909399 !important;
+}
+
 /* 额外的按钮样式强制覆盖 */
 .device-type-management :deep(.el-button) {
   font-size: 15px !important;
@@ -707,6 +768,33 @@ export default {
 .device-type-management :deep(.el-button--primary:hover) {
   background: var(--primary-light) !important;
   border: 1px solid var(--primary-light) !important;
+}
+
+/* 删除按钮颜色优化 */
+.device-type-management :deep(.el-button--danger) {
+  background: #f56c6c !important;
+  border: 1px solid #f56c6c !important;
+  color: #ffffff !important;
+}
+
+.device-type-management :deep(.el-button--danger:hover) {
+  background: #f78989 !important;
+  border: 1px solid #f78989 !important;
+  color: #ffffff !important;
+}
+
+/* 禁用状态的删除按钮 - 浅色显示 */
+.device-type-management :deep(.el-button--danger.delete-disabled) {
+  background: #fbc4c4 !important;
+  border: 1px solid #fbc4c4 !important;
+  color: #c0c4cc !important;
+  cursor: not-allowed !important;
+}
+
+.device-type-management :deep(.el-button--danger.delete-disabled:hover) {
+  background: #fbc4c4 !important;
+  border: 1px solid #fbc4c4 !important;
+  color: #c0c4ant;
 }
 
 /* 响应式设计 */

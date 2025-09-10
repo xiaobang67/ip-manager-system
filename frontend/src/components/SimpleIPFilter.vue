@@ -80,7 +80,7 @@
               <el-icon><Search /></el-icon>
               搜索
             </el-button>
-            <el-button @click="handleReset" size="default">
+            <el-button type="info" @click="handleReset" size="default">
               <el-icon><Refresh /></el-icon>
               重置
             </el-button>

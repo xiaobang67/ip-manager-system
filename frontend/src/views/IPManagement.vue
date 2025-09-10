@@ -9,11 +9,11 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button v-if="isAdmin" type="info" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="primary" plain @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button type="info" @click="refreshData">
+        <el-button type="primary" plain @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
@@ -87,15 +87,19 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="70" />
-        <el-table-column prop="ip_address" label="IP地址" width="150" sortable align="center" />
+        <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
         <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusTagType(row.status)" size="small">
+            <el-tag 
+              :type="getStatusTagType(row.status)" 
+              size="small"
+              :style="getStatusStyle(row.status)"
+            >
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="140" align="center">
+        <el-table-column prop="user_name" label="使用人" width="120" align="center">
           <template #default="{ row }">
             <span>{{ row.user_name || '-' }}</span>
           </template>
@@ -115,7 +119,7 @@
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="160" show-overflow-tooltip align="center">
+        <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>
@@ -1080,6 +1084,36 @@ export default {
       return typeMap[status] || 'info'
     }
     
+    const getStatusStyle = (status) => {
+      const styleMap = {
+        available: {
+          backgroundColor: '#f0f9ff',
+          borderColor: '#67c23a',
+          color: '#67c23a'
+        },
+        allocated: {
+          backgroundColor: '#ecf5ff',
+          borderColor: '#409eff',
+          color: '#409eff'
+        },
+        reserved: {
+          backgroundColor: '#fdf6ec',
+          borderColor: '#e6a23c',
+          color: '#e6a23c'
+        },
+        conflict: {
+          backgroundColor: '#fef0f0',
+          borderColor: '#f56c6c',
+          color: '#f56c6c'
+        }
+      }
+      return styleMap[status] || {
+        backgroundColor: '#f4f4f5',
+        borderColor: '#909399',
+        color: '#909399'
+      }
+    }
+    
     const getStatusText = (status) => {
       const textMap = {
         available: '可用',
@@ -1207,6 +1241,7 @@ export default {
       resetDeleteForm,
       getBulkOperationButtonType,
       getStatusTagType,
+      getStatusStyle,
       getStatusText,
       formatDate,
       getDeviceTypeName
@@ -1494,6 +1529,41 @@ oped>
 /* 状态标签样式 */
 .el-tag {
   font-weight: 500;
+}
+
+/* 确保状态标签颜色正确显示 */
+.ip-management .el-tag.el-tag--success,
+.ip-management .status-available {
+  background-color: #f0f9ff !important;
+  border-color: #67c23a !important;
+  color: #67c23a !important;
+}
+
+.ip-management .el-tag.el-tag--primary,
+.ip-management .status-allocated {
+  background-color: #ecf5ff !important;
+  border-color: #409eff !important;
+  color: #409eff !important;
+}
+
+.ip-management .el-tag.el-tag--warning,
+.ip-management .status-reserved {
+  background-color: #fdf6ec !important;
+  border-color: #e6a23c !important;
+  color: #e6a23c !important;
+}
+
+.ip-management .el-tag.el-tag--danger,
+.ip-management .status-conflict {
+  background-color: #fef0f0 !important;
+  border-color: #f56c6c !important;
+  color: #f56c6c !important;
+}
+
+.ip-management .el-tag.el-tag--info {
+  background-color: #f4f4f5 !important;
+  border-color: #909399 !important;
+  color: #909399 !important;
 }
 
 /* 响应式设计 */

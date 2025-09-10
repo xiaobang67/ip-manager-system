@@ -48,7 +48,7 @@
         <template #header>
           <div class="card-header">
             <span>IP地址使用统计</span>
-            <el-button size="small" @click="refreshStats">刷新</el-button>
+            <el-button size="small" type="info" @click="refreshStats">刷新</el-button>
           </div>
         </template>
 
@@ -93,7 +93,7 @@
         <template #header>
           <div class="card-header">
             <span>IP地址列表</span>
-            <el-button size="small" @click="viewAllIPs">查看全部</el-button>
+            <el-button size="small" type="info" @click="viewAllIPs">查看全部</el-button>
           </div>
         </template>
 
