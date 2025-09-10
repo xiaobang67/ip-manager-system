@@ -94,7 +94,7 @@
             </el-button>
             <el-button 
               size="small" 
-              type="info"
+              type="warning"
               @click="syncSubnetIPs(scope.row)"
               :loading="scope.row.syncing"
             >
@@ -259,7 +259,14 @@ export default {
       if (vlanFilter.value) {
         loading.value = true
         try {
-          const response = await subnetApi.getSubnetsByVlan(vlanFilter.value)
+          // 使用搜索API进行VLAN过滤
+          const params = {
+            vlan_id: parseInt(vlanFilter.value),
+            skip: (currentPage.value - 1) * pageSize.value,
+            limit: pageSize.value
+          }
+          
+          const response = await subnetApi.searchSubnets(params)
           
           if (!response) {
             subnets.value = []
@@ -268,19 +275,27 @@ export default {
           }
 
           let subnetData = []
-          
-          if (Array.isArray(response)) {
+          let totalCount = 0
+
+          if (response.subnets && Array.isArray(response.subnets)) {
+            subnetData = response.subnets
+            totalCount = response.total || 0
+          } else if (response.data?.subnets && Array.isArray(response.data.subnets)) {
+            subnetData = response.data.subnets
+            totalCount = response.data.total || 0
+          } else if (Array.isArray(response)) {
             subnetData = response
+            totalCount = response.length
           } else if (response.data && Array.isArray(response.data)) {
             subnetData = response.data
-          } else if (response.subnets && Array.isArray(response.subnets)) {
-            subnetData = response.subnets
+            totalCount = response.data.length
           } else {
             subnetData = []
+            totalCount = 0
           }
 
           subnets.value = subnetData
-          total.value = subnetData.length
+          total.value = totalCount
         } catch (error) {
           subnets.value = []
           total.value = 0

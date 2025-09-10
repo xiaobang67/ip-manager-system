@@ -79,6 +79,17 @@ async def search_subnets(
     )
 
 
+@router.get("/vlan/{vlan_id}", response_model=List[SubnetResponse])
+async def get_subnets_by_vlan(
+    vlan_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """根据VLAN ID获取网段列表"""
+    subnet_service = SubnetService(db)
+    return subnet_service.get_subnets_by_vlan(vlan_id)
+
+
 @router.get("/{subnet_id}", response_model=SubnetResponse)
 async def get_subnet(
     subnet_id: int,
@@ -158,17 +169,6 @@ async def validate_subnet(
         validation_data.network,
         validation_data.exclude_id
     )
-
-
-@router.get("/vlan/{vlan_id}", response_model=List[SubnetResponse])
-async def get_subnets_by_vlan(
-    vlan_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """根据VLAN ID获取网段列表"""
-    subnet_service = SubnetService(db)
-    return subnet_service.get_subnets_by_vlan(vlan_id)
 
 
 @router.get("/{subnet_id}/ips")

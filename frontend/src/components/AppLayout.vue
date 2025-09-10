@@ -442,29 +442,61 @@ export default {
 
 /* 折叠状态下的菜单样式 */
 .sidebar-collapsed .sidebar-menu :deep(.el-menu-item) {
-  margin: 4px 0 !important;
+  margin: 4px 8px !important;
   text-align: center !important;
   padding: 0 !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 100% !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
+  position: relative !important;
 }
 
 .sidebar-collapsed .sidebar-menu :deep(.el-menu-item .el-icon) {
   margin-right: 0 !important;
   margin-left: 0 !important;
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  position: static !important;
+  transform: none !important;
+  font-size: 18px !important;
 }
 
 .sidebar-collapsed .sidebar-menu :deep(.el-menu-item span) {
   display: none !important;
 }
 
-.sidebar-collapsed .sidebar-menu :deep(.el-menu-item) {
+/* 折叠状态下的子菜单样式 */
+.sidebar-collapsed .sidebar-menu :deep(.el-sub-menu) {
+  margin: 4px 8px !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-sub-menu__title) {
+  text-align: center !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
   position: relative !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-sub-menu__title .el-icon) {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  position: static !important;
+  transform: none !important;
+  font-size: 18px !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-sub-menu__title span) {
+  display: none !important;
+}
+
+.sidebar-collapsed .sidebar-menu :deep(.el-sub-menu__title .el-sub-menu__icon-arrow) {
+  display: none !important;
 }
 
 /* 主要内容区域 */
