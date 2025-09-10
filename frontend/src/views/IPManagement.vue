@@ -111,7 +111,7 @@
         </el-table-column>
         <el-table-column prop="device_type" label="设备类型" width="140" align="center">
           <template #default="{ row }">
-            <span>{{ row.device_type || '-' }}</span>
+            <span>{{ getDeviceTypeName(row.device_type) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="assigned_to" label="所属部门" width="140" align="center">
@@ -204,7 +204,7 @@
         :rules="allocationRules"
         label-width="100px"
       >
-        <el-form-item label="网段" prop="subnet_id">
+        <el-form-item label="网段" prop="subnet_id" required>
           <el-select v-model="allocationForm.subnet_id" placeholder="选择网段" style="width: 100%">
             <el-option
               v-for="subnet in subnets"
@@ -220,10 +220,10 @@
         <el-form-item label="MAC地址" prop="mac_address">
           <el-input v-model="allocationForm.mac_address" placeholder="如：00:11:22:33:44:55" />
         </el-form-item>
-        <el-form-item label="使用人" prop="user_name">
+        <el-form-item label="使用人" prop="user_name" required>
           <el-input v-model="allocationForm.user_name" placeholder="使用人" />
         </el-form-item>
-        <el-form-item label="设备类型" prop="device_type">
+        <el-form-item label="设备类型" prop="device_type" required>
           <el-select v-model="allocationForm.device_type" placeholder="选择设备类型" style="width: 100%">
             <el-option
               v-for="deviceType in deviceTypes"
@@ -233,7 +233,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="使用部门" prop="assigned_to">
+        <el-form-item label="使用部门" prop="assigned_to" required>
           <el-select 
             v-model="allocationForm.assigned_to" 
             placeholder="选择部门" 
@@ -249,7 +249,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="分配时间" prop="allocated_at">
+        <el-form-item label="分配时间" prop="allocated_at" required>
           <el-date-picker
             v-model="allocationForm.allocated_at"
             type="datetime"
@@ -463,10 +463,10 @@
         <el-form-item label="MAC地址" prop="mac_address">
           <el-input v-model="editForm.mac_address" placeholder="如：00:11:22:33:44:55" />
         </el-form-item>
-        <el-form-item label="使用人" prop="user_name">
+        <el-form-item label="使用人" prop="user_name" required>
           <el-input v-model="editForm.user_name" placeholder="使用人" />
         </el-form-item>
-        <el-form-item label="设备类型" prop="device_type">
+        <el-form-item label="设备类型" prop="device_type" required>
           <el-select v-model="editForm.device_type" placeholder="选择设备类型" style="width: 100%">
             <el-option
               v-for="deviceType in deviceTypes"
@@ -476,7 +476,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="使用部门" prop="assigned_to">
+        <el-form-item label="使用部门" prop="assigned_to" required>
           <el-select 
             v-model="editForm.assigned_to" 
             placeholder="选择部门" 
@@ -771,36 +771,24 @@ export default {
     }
     
     const loadDepartments = async () => {
-      // 直接使用静态部门列表确保功能正常
-      departments.value = [
-        '技术部',
-        '运维部', 
-        '产品部',
-        '市场部',
-        '人事部',
-        '财务部',
-        '客服部',
-        '测试部',
-        '设计部',
-        '销售部'
-      ]
-      
-      // 可选：尝试从API获取部门列表
       try {
         const response = await getDepartmentOptions()
         
         if (response && response.data && response.data.departments) {
           // 处理API响应格式：response.data.departments
           const apiDepartments = response.data.departments.map(dept => dept.name).sort()
-          departments.value = [...new Set([...departments.value, ...apiDepartments])]
+          departments.value = apiDepartments
         } else if (response && response.departments) {
           // 处理直接响应格式：response.departments
           const apiDepartments = response.departments.map(dept => dept.name).sort()
-          departments.value = [...new Set([...departments.value, ...apiDepartments])]
+          departments.value = apiDepartments
+        } else {
+          console.warn('部门API返回格式不正确:', response)
+          departments.value = []
         }
       } catch (error) {
-        console.error('从API加载部门列表失败，使用静态列表：', error)
-        // 静态列表已经设置，无需额外处理
+        console.error('从API加载部门列表失败：', error)
+        departments.value = []
       }
     }
     
@@ -954,6 +942,10 @@ export default {
     
     // 存储当前搜索参数
     const currentSearchParams = ref(null)
+    
+    // 表单引用
+    const allocationFormRef = ref(null)
+    const editFormRef = ref(null)
     
     const handleSizeChange = (size) => {
       pageSize.value = size
@@ -1122,6 +1114,16 @@ export default {
     
     // 表单提交方法
     const submitAllocation = async () => {
+      // 先进行表单验证
+      if (!allocationFormRef.value) return
+      
+      try {
+        await allocationFormRef.value.validate()
+      } catch (error) {
+        ElMessage.warning('请填写完整的必填信息')
+        return
+      }
+      
       submitting.value = true
       try {
         // 准备提交数据，确保时间格式正确
@@ -1310,15 +1312,54 @@ export default {
     
     const getDeviceTypeName = (deviceTypeCode) => {
       if (!deviceTypeCode) return '-'
-      const deviceType = deviceTypes.value.find(type => type.code === deviceTypeCode)
-      return deviceType ? deviceType.name : deviceTypeCode
+      
+      // 使用默认的设备类型映射作为主要方案
+      const defaultMapping = {
+        'server': '服务器',
+        'workstation': '工作站',
+        'switch': '网络交换机',
+        'router': '路由器',
+        'printer': '打印机',
+        'firewall': '防火墙',
+        'other': '其他',
+        'desktop': '台式机',
+        'laptop': '笔记本电脑',
+        'tablet': '平板电脑',
+        'phone': '手机',
+        'camera': '摄像头',
+        'access_point': '无线接入点',
+        'storage': '存储设备',
+        'monitor': '显示器',
+        'projector': '投影仪'
+      }
+      
+      // 首先尝试从默认映射中获取
+      if (defaultMapping[deviceTypeCode]) {
+        return defaultMapping[deviceTypeCode]
+      }
+      
+      // 如果设备类型列表已加载，尝试从中查找
+      if (deviceTypes.value && deviceTypes.value.length > 0) {
+        const deviceType = deviceTypes.value.find(type => type.code === deviceTypeCode)
+        if (deviceType && deviceType.name) {
+          return deviceType.name
+        }
+      }
+      
+      // 如果都找不到，返回代码本身
+      return deviceTypeCode
     }
     
     // 生命周期
-    onMounted(() => {
-      loadSubnets()
-      loadDepartments()
-      loadDeviceTypes()
+    onMounted(async () => {
+      // 先加载基础数据
+      await Promise.all([
+        loadSubnets(),
+        loadDepartments(),
+        loadDeviceTypes()
+      ])
+      
+      // 然后加载IP列表和统计信息
       loadIPList()
       loadStatistics()
     })
@@ -1348,6 +1389,26 @@ export default {
     
     // 编辑IP地址的提交方法
     const submitEdit = async () => {
+      console.log('submitEdit 方法被调用')
+      console.log('editFormRef.value:', editFormRef.value)
+      console.log('editForm 数据:', editForm)
+      
+      // 先进行表单验证
+      if (!editFormRef.value) {
+        console.log('editFormRef.value 为空，返回')
+        return
+      }
+      
+      try {
+        console.log('开始表单验证')
+        await editFormRef.value.validate()
+        console.log('表单验证通过')
+      } catch (error) {
+        console.log('表单验证失败:', error)
+        ElMessage.warning('请填写完整的必填信息')
+        return
+      }
+      
       submitting.value = true
       try {
         // 准备提交数据
@@ -1437,6 +1498,10 @@ export default {
       bulkRules,
       deleteRules,
       editRules,
+      
+      // 表单引用
+      allocationFormRef,
+      editFormRef,
       
       // 方法
       refreshData,
