@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Callable, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import requests
 import json
 
@@ -317,7 +318,7 @@ class CachePerformanceTester:
         get_times = []
         errors = []
         
-        test_data = {"test": "data", "timestamp": datetime.utcnow().isoformat()}
+        test_data = {"test": "data", "timestamp": now_beijing().isoformat()}
         
         # 测试写入性能
         for i in range(iterations):
@@ -386,7 +387,7 @@ def run_comprehensive_performance_test() -> Dict[str, Any]:
     logger.info("Starting comprehensive performance test...")
     
     results = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": now_beijing().isoformat(),
         "tests": {}
     }
     

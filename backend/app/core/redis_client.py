@@ -7,6 +7,7 @@ import json
 import pickle
 from typing import Any, Optional, Union, Dict, List
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import logging
 from functools import wraps
 import asyncio
@@ -330,8 +331,8 @@ class SessionStore:
             # 存储会话数据
             session_data = {
                 "user_id": user_id,
-                "created_at": datetime.utcnow().isoformat(),
-                "last_accessed": datetime.utcnow().isoformat(),
+                "created_at": now_beijing().isoformat(),
+                "last_accessed": now_beijing().isoformat(),
                 **user_data
             }
             
@@ -358,7 +359,7 @@ class SessionStore:
             
             if session_data:
                 # 更新最后访问时间
-                session_data["last_accessed"] = datetime.utcnow().isoformat()
+                session_data["last_accessed"] = now_beijing().isoformat()
                 self.cache.set(session_key, session_data, self.default_ttl)
                 
             return session_data
@@ -375,7 +376,7 @@ class SessionStore:
             
             if session_data:
                 session_data.update(data)
-                session_data["last_accessed"] = datetime.utcnow().isoformat()
+                session_data["last_accessed"] = now_beijing().isoformat()
                 return self.cache.set(session_key, session_data, self.default_ttl)
             
             return False

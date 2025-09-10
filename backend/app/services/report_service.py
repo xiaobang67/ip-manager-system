@@ -8,6 +8,7 @@ import csv
 import io
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, StreamingResponse
@@ -59,8 +60,8 @@ class ReportService:
             report_type=report_request.report_type,
             format=report_request.format.value,
             file_url=f"/api/v1/monitoring/reports/{report_id}/download",
-            generated_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=7)
+            generated_at=now_beijing(),
+            expires_at=now_beijing() + timedelta(days=7)
         )
 
     def _generate_report_task(
@@ -124,7 +125,7 @@ class ReportService:
 
         return {
             "report_type": "IP地址使用率报告",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": now_beijing().isoformat(),
             "summary": ip_stats,
             "subnet_details": subnet_stats,
             "allocation_trends": trends
@@ -166,7 +167,7 @@ class ReportService:
 
         return {
             "report_type": "IP地址清单报告",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": now_beijing().isoformat(),
             "total_count": len(ip_list),
             "ip_addresses": ip_list
         }
@@ -190,7 +191,7 @@ class ReportService:
 
         return {
             "report_type": "网段规划报告",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": now_beijing().isoformat(),
             "subnet_analysis": subnet_stats
         }
 
@@ -468,8 +469,8 @@ class ReportService:
             "format": report_request.format.value,
             "user_id": user_id,
             "file_path": file_path,
-            "generated_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(days=7)).isoformat()
+            "generated_at": now_beijing().isoformat(),
+            "expires_at": (now_beijing() + timedelta(days=7)).isoformat()
         }
         
         metadata_path = os.path.join(self.reports_dir, f"{report_id}_metadata.json")
@@ -518,7 +519,7 @@ class ReportService:
         
         # 检查是否过期
         expires_at = datetime.fromisoformat(metadata['expires_at'])
-        if datetime.utcnow() > expires_at:
+        if now_beijing() > expires_at:
             raise HTTPException(status_code=410, detail="报告已过期")
         
         return FileResponse(

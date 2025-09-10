@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_HOSTS: List[str] = ["*"]
     
+    # Timezone
+    TIMEZONE: str = "Asia/Shanghai"
+    
     # Pagination
     DEFAULT_PAGE_SIZE: int = 50
     MAX_PAGE_SIZE: int = 1000

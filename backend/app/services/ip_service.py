@@ -14,6 +14,7 @@ from app.schemas.ip_address import (
 from app.core.exceptions import ValidationError, NotFoundError, ConflictError
 import ipaddress
 from datetime import datetime
+from app.core.timezone_config import now_beijing
 
 
 class IPService:
@@ -101,7 +102,7 @@ class IPService:
                     raise ConflictError(f"IP地址 {request.preferred_ip} 不可用，当前状态: {preferred_ip.status}")
                 
                 # 分配指定IP
-                allocated_time = request.allocated_at if request.allocated_at else datetime.utcnow()
+                allocated_time = request.allocated_at if request.allocated_at else now_beijing()
                 
                 update_data = IPAddressUpdate(
                     mac_address=request.mac_address,
@@ -131,7 +132,7 @@ class IPService:
         ip_to_allocate = available_ips[0]
         
         # 更新分配信息
-        allocated_time = request.allocated_at if request.allocated_at else datetime.utcnow()
+        allocated_time = request.allocated_at if request.allocated_at else now_beijing()
         
         update_data = IPAddressUpdate(
             mac_address=request.mac_address,
@@ -167,7 +168,7 @@ class IPService:
         )
         
         # 更新保留信息
-        ip_record.allocated_at = datetime.utcnow()
+        ip_record.allocated_at = now_beijing()
         ip_record.allocated_by = reserved_by
         
         updated_ip = self.ip_repo.update(ip_record.id, update_data)
@@ -352,7 +353,7 @@ class IPService:
                     ip_record = self.ip_repo.get_by_ip_address(ip_address)
                     if ip_record and ip_record.status == IPStatus.AVAILABLE:
                         update_data = IPAddressUpdate(status=IPStatus.ALLOCATED)
-                        ip_record.allocated_at = datetime.utcnow()
+                        ip_record.allocated_at = now_beijing()
                         ip_record.allocated_by = user_id
                         self.ip_repo.update(ip_record.id, update_data)
                         success_ips.append(ip_address)

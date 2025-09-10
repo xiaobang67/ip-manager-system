@@ -7,6 +7,7 @@ import logging
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import datetime
+from app.core.timezone_config import now_beijing
 from typing import Optional
 
 from app.core.database import get_db_session, SessionLocal
@@ -361,7 +362,7 @@ def create_demo_data(db: Session) -> None:
             ip_address = IPAddress(
                 subnet_id=demo_subnet.id,
                 allocated_by=admin_user.id if ip_data["status"] != IPStatus.AVAILABLE else None,
-                allocated_at=datetime.utcnow() if ip_data["status"] != IPStatus.AVAILABLE else None,
+                allocated_at=now_beijing() if ip_data["status"] != IPStatus.AVAILABLE else None,
                 **ip_data
             )
             db.add(ip_address)

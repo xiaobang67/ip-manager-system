@@ -3,6 +3,7 @@
 """
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
 from app.models.ip_address import IPAddress, IPStatus
@@ -100,7 +101,7 @@ class MonitoringService:
         """
         获取IP分配趋势数据
         """
-        end_date = datetime.utcnow()
+        end_date = now_beijing()
         start_date = end_date - timedelta(days=days)
 
         # 按天统计IP分配数量
@@ -146,7 +147,7 @@ class MonitoringService:
         active_rules = self.db.query(AlertRule).filter(AlertRule.is_active == True).count()
         
         # 最近30天的警报数量
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = now_beijing() - timedelta(days=30)
         recent_alerts = self.db.query(AlertHistory).filter(
             AlertHistory.created_at >= thirty_days_ago
         ).count()
@@ -191,7 +192,7 @@ class MonitoringService:
         # 最近活动
         recent_allocations = self.db.query(IPAddress).filter(
             and_(
-                IPAddress.allocated_at >= datetime.utcnow() - timedelta(hours=24),
+                IPAddress.allocated_at >= now_beijing() - timedelta(hours=24),
                 IPAddress.status == IPStatus.ALLOCATED
             )
         ).count()
@@ -202,7 +203,7 @@ class MonitoringService:
             "total_subnets": total_subnets,
             "total_users": total_users,
             "recent_allocations_24h": recent_allocations,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": now_beijing().isoformat()
         }
 
     def check_utilization_alerts(self) -> List[Dict[str, Any]]:

@@ -4,6 +4,7 @@ from sqlalchemy import desc, func, and_
 from app.models.audit_log import AuditLog
 from app.models.user import User
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import csv
 import json
 import io
@@ -438,7 +439,7 @@ class AuditService:
 
     def archive_old_logs(self, days_to_keep: int = 365) -> int:
         """归档旧的审计日志"""
-        cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
+        cutoff_date = now_beijing() - timedelta(days=days_to_keep)
         
         # 计算要删除的记录数
         count = (

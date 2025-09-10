@@ -3,6 +3,7 @@
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from app.core.timezone_config import now_beijing
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from app.models.alert import AlertRule, AlertHistory, RuleType, AlertSeverity
@@ -156,7 +157,7 @@ class AlertService:
             raise HTTPException(status_code=400, detail="警报已经被解决")
 
         alert.is_resolved = True
-        alert.resolved_at = datetime.utcnow()
+        alert.resolved_at = now_beijing()
         alert.resolved_by = user_id
 
         self.db.commit()
@@ -179,7 +180,7 @@ class AlertService:
                 and_(
                     AlertHistory.rule_id == alert_data['rule_id'],
                     AlertHistory.is_resolved == False,
-                    AlertHistory.created_at >= datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+                    AlertHistory.created_at >= now_beijing().replace(hour=0, minute=0, second=0, microsecond=0)
                 )
             ).first()
 

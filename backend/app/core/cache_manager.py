@@ -5,6 +5,7 @@
 import logging
 from typing import Any, Optional, List, Dict, Callable
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import asyncio
 from functools import wraps
 
@@ -266,7 +267,7 @@ class CacheManager:
             return {
                 'total_keys': len(all_keys),
                 'by_prefix': stats,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': now_beijing().isoformat()
             }
             
         except Exception as e:

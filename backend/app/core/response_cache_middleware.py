@@ -7,6 +7,7 @@ import hashlib
 import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+from app.core.timezone_config import now_beijing
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
@@ -153,7 +154,7 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": response_body.decode('utf-8') if response_body else "",
-                "cached_at": datetime.utcnow().isoformat()
+                "cached_at": now_beijing().isoformat()
             }
             
             # 获取TTL
