@@ -141,7 +141,7 @@
                 分配
               </el-button>
               <el-button
-                type="primary"
+                type="info"
                 size="small"
                 @click="editIP(row)"
               >
@@ -172,13 +172,7 @@
               >
                 删除
               </el-button>
-              <el-button
-                type="info"
-                size="small"
-                @click="viewHistory(row)"
-              >
-                历史
-              </el-button>
+
             </div>
           </template>
         </el-table-column>
@@ -528,34 +522,7 @@
       </template>
     </el-dialog>
 
-    <!-- IP历史记录对话框 -->
-    <el-dialog
-      v-model="showHistoryDialog"
-      title="IP地址历史记录"
-      width="800px"
-    >
-      <el-table :data="historyData" v-loading="historyLoading">
-        <el-table-column prop="action" label="操作" width="100" />
-        <el-table-column prop="username" label="操作人" width="120" />
-        <el-table-column prop="created_at" label="操作时间" width="160">
-          <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="old_values" label="变更前" min-width="200">
-          <template #default="{ row }">
-            <pre v-if="row.old_values">{{ JSON.stringify(row.old_values, null, 2) }}</pre>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="new_values" label="变更后" min-width="200">
-          <template #default="{ row }">
-            <pre v-if="row.new_values">{{ JSON.stringify(row.new_values, null, 2) }}</pre>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
+
     </div>
   </AppLayout>
 </template>
@@ -593,14 +560,12 @@ export default {
     // 响应式数据
     const loading = ref(false)
     const submitting = ref(false)
-    const historyLoading = ref(false)
     
     const ipList = ref([])
     const subnets = ref([])
     const departments = ref([])
     const deviceTypes = ref([])
     const selectedIPs = ref([])
-    const historyData = ref([])
     
     const searchQuery = ref('')
     const statusFilter = ref('')
@@ -623,7 +588,6 @@ export default {
     const showReservationDialog = ref(false)
     const showReleaseDialog = ref(false)
     const showBulkDialog = ref(false)
-    const showHistoryDialog = ref(false)
     const showDeleteDialog = ref(false)
     const showEditDialog = ref(false)
     
@@ -1106,18 +1070,7 @@ export default {
       }, 10)
     }
     
-    const viewHistory = async (row) => {
-      historyLoading.value = true
-      showHistoryDialog.value = true
-      try {
-        const response = await ipAPI.getIPHistory(row.ip_address)
-        historyData.value = response.data || []
-      } catch (error) {
-        ElMessage.error('加载历史记录失败：' + error.message)
-      } finally {
-        historyLoading.value = false
-      }
-    }
+
     
     // 表单提交方法
     const submitAllocation = async () => {
@@ -1527,7 +1480,6 @@ export default {
       editIP,
       fixDropdownStyles,
       handleSelectVisibleChange,
-      viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
