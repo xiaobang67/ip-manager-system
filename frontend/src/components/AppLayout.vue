@@ -119,13 +119,7 @@
               </el-menu-item>
             </el-sub-menu>
             
-            <el-menu-item 
-              v-if="userRole?.toLowerCase() === 'admin'"
-              index="/audit-logs"
-            >
-              <el-icon><Document /></el-icon>
-              <template #title>审计日志</template>
-            </el-menu-item>
+
           </el-menu>
         </div>
       </el-aside>

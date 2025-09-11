@@ -42,12 +42,7 @@ const routes = [
     component: () => import('@/views/DepartmentManagement.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
   },
-  {
-    path: '/audit-logs',
-    name: 'AuditLogs',
-    component: () => import('@/views/AuditLogs.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
+
   {
     path: '/device-type-management',
     name: 'DeviceTypeManagement',
