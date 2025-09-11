@@ -141,7 +141,7 @@
                 分配
               </el-button>
               <el-button
-                type="info"
+                type="primary"
                 size="small"
                 @click="editIP(row)"
               >

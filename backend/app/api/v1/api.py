@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-from .endpoints import auth, users, subnets, ips, custom_fields, tags, monitoring, audit_logs, security, departments
-from . import performance
+from .endpoints import auth, users, subnets, ips, custom_fields, tags, monitoring, security, departments
 
 api_router = APIRouter()
 
@@ -13,9 +12,7 @@ api_router.include_router(ips.router, prefix="/ips", tags=["ip-management"])
 api_router.include_router(custom_fields.router, prefix="/custom-fields", tags=["custom-fields"])
 api_router.include_router(tags.router, prefix="/tags", tags=["tags"])
 api_router.include_router(monitoring.router, prefix="/monitoring", tags=["monitoring"])
-api_router.include_router(audit_logs.router, prefix="/audit-logs", tags=["audit-logs"])
 api_router.include_router(security.router, prefix="/security", tags=["security"])
-api_router.include_router(performance.router, prefix="/performance", tags=["performance"])
 
 # Health check endpoint
 @api_router.get("/health")
