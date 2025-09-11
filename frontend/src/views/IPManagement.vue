@@ -141,7 +141,7 @@
                 分配
               </el-button>
               <el-button
-                type="warning"
+                type="primary"
                 size="small"
                 @click="editIP(row)"
               >
@@ -171,6 +171,13 @@
                 @click="deleteIP(row)"
               >
                 删除
+              </el-button>
+              <el-button
+                type="info"
+                size="small"
+                @click="viewHistory(row)"
+              >
+                历史
               </el-button>
             </div>
           </template>

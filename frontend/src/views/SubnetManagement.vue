@@ -94,7 +94,7 @@
             </el-button>
             <el-button 
               size="small" 
-              type="primary"
+              type="warning"
               @click="syncSubnetIPs(scope.row)"
               :loading="scope.row.syncing"
             >

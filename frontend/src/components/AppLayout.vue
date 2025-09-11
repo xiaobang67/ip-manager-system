@@ -90,10 +90,16 @@
               </el-menu-item>
             </el-sub-menu>
             
-            <el-menu-item index="/subnet-management">
-              <el-icon><Grid /></el-icon>
-              <template #title>网段管理</template>
-            </el-menu-item>
+            <el-sub-menu index="subnet-resources">
+              <template #title>
+                <el-icon><Grid /></el-icon>
+                <span>网段资源管理</span>
+              </template>
+              <el-menu-item index="/subnet-management">
+                <el-icon><Grid /></el-icon>
+                <template #title>网段管理</template>
+              </el-menu-item>
+            </el-sub-menu>
             
             <el-sub-menu 
               v-if="userRole?.toLowerCase() === 'admin'"
