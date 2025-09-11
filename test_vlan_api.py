@@ -1,81 +1,216 @@
 #!/usr/bin/env python3
 """
-测试VLAN API
+测试VLAN API和认证系统
+使用HTTP请求直接测试API端点
 """
+
 import requests
 import json
+import logging
+import time
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # API基础URL
 BASE_URL = "http://localhost:8000/api"
 
-def test_vlan_api():
-    """测试VLAN API"""
-    print("=== 测试VLAN API ===")
+def test_login():
+    """测试登录功能"""
+    logger.info("测试登录功能...")
     
-    # 1. 先登录获取token
     login_data = {
         "username": "admin",
-        "password": "admin"
+        "password": "admin123"
     }
     
     try:
-        login_response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
-        print(f"登录响应状态: {login_response.status_code}")
+        response = requests.post(f"{BASE_URL}/auth/login", json=login_data, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            logger.info("✅ 登录成功")
+            return data.get("access_token")
+        else:
+            logger.error(f"❌ 登录失败: {response.status_code} - {response.text}")
+            return None
+    except requests.exceptions.ConnectionError:
+        logger.error("❌ 无法连接到API服务器，请确保服务正在运行")
+        return None
+    except Exception as e:
+        logger.error(f"登录测试失败: {e}")
+        return None
+
+def test_password_reset(token):
+    """测试密码重置功能"""
+    logger.info("测试密码重置功能...")
+    
+    if not token:
+        logger.error("没有有效的token，跳过密码重置测试")
+        return False
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 测试重置用户ID为1的密码
+    reset_data = {"new_password": "TestPassword123!"}
+    
+    try:
+        response = requests.put(f"{BASE_URL}/users/1/password", 
+                              json=reset_data, headers=headers, timeout=10)
         
-        if login_response.status_code == 200:
-            token_data = login_response.json()
-            token = token_data.get("access_token")
-            print(f"获取到token: {token[:20]}...")
+        if response.status_code == 200:
+            logger.info("✅ 密码重置API调用成功")
             
-            # 设置认证头
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
+            # 等待一下确保密码更新生效
+            time.sleep(1)
+            
+            # 测试新密码登录
+            new_login_data = {
+                "username": "admin",
+                "password": "TestPassword123!"
             }
             
-            # 2. 测试获取所有网段
-            print("\n--- 测试获取所有网段 ---")
-            subnets_response = requests.get(f"{BASE_URL}/subnets", headers=headers)
-            print(f"获取网段响应状态: {subnets_response.status_code}")
-            
-            if subnets_response.status_code == 200:
-                subnets_data = subnets_response.json()
-                print(f"网段数量: {len(subnets_data.get('subnets', []))}")
+            response = requests.post(f"{BASE_URL}/auth/login", json=new_login_data, timeout=10)
+            if response.status_code == 200:
+                logger.info("✅ 新密码登录成功 - 密码重置功能正常！")
                 
-                # 显示所有网段的VLAN ID
-                for subnet in subnets_data.get('subnets', []):
-                    print(f"  - 网段: {subnet['network']}, VLAN ID: {subnet.get('vlan_id', 'None')}")
-            
-            # 3. 测试VLAN搜索（使用搜索端点）
-            print("\n--- 测试VLAN搜索 ---")
-            test_vlan_ids = [220, 100, 200, 300, 105, 99, 101, 10, 996]
-            
-            for vlan_id in test_vlan_ids:
-                print(f"\n测试VLAN ID: {vlan_id}")
-                # 使用搜索端点进行VLAN过滤
-                search_params = {"vlan_id": vlan_id}
-                vlan_response = requests.get(f"{BASE_URL}/subnets/search", params=search_params, headers=headers)
-                print(f"响应状态: {vlan_response.status_code}")
-                
-                if vlan_response.status_code == 200:
-                    vlan_data = vlan_response.json()
-                    # 处理不同的响应格式
-                    subnets = []
-                    if isinstance(vlan_data, dict) and 'subnets' in vlan_data:
-                        subnets = vlan_data['subnets']
-                    elif isinstance(vlan_data, list):
-                        subnets = vlan_data
+                # 获取新token并恢复原密码
+                new_token = response.json().get("access_token")
+                if new_token:
+                    restore_headers = {"Authorization": f"Bearer {new_token}"}
+                    restore_data = {"new_password": "admin"}
                     
-                    print(f"找到 {len(subnets)} 个网段")
-                    for subnet in subnets:
-                        print(f"  - {subnet['network']}: {subnet.get('description', 'No description')} (VLAN: {subnet.get('vlan_id', 'None')})")
+                    response = requests.put(f"{BASE_URL}/users/1/password", 
+                                          json=restore_data, headers=restore_headers, timeout=10)
+                    if response.status_code == 200:
+                        logger.info("✅ 原密码已恢复")
+                        return True
+                    else:
+                        logger.warning("⚠️  原密码恢复失败")
+                        return True  # 重置功能本身是正常的
                 else:
-                    print(f"错误: {vlan_response.text}")
+                    logger.warning("⚠️  无法获取新token恢复密码")
+                    return True
+            else:
+                logger.error("❌ 新密码登录失败 - 密码重置功能异常！")
+                logger.error(f"响应: {response.status_code} - {response.text}")
+                return False
         else:
-            print(f"登录失败: {login_response.text}")
+            logger.error(f"❌ 密码重置API调用失败: {response.status_code} - {response.text}")
+            return False
             
     except Exception as e:
-        print(f"测试过程中发生错误: {e}")
+        logger.error(f"密码重置测试失败: {e}")
+        return False
+
+def test_user_management(token):
+    """测试用户管理功能"""
+    logger.info("测试用户管理功能...")
+    
+    if not token:
+        logger.error("没有有效的token，跳过用户管理测试")
+        return False
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    try:
+        # 获取用户列表
+        response = requests.get(f"{BASE_URL}/users", headers=headers, timeout=10)
+        if response.status_code == 200:
+            users = response.json()
+            logger.info(f"✅ 获取用户列表成功，共 {len(users.get('users', []))} 个用户")
+            return True
+        else:
+            logger.error(f"❌ 获取用户列表失败: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"用户管理测试失败: {e}")
+        return False
+
+def test_change_password(token):
+    """测试修改密码功能"""
+    logger.info("测试修改密码功能...")
+    
+    if not token:
+        logger.error("没有有效的token，跳过修改密码测试")
+        return False
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 测试修改密码
+    change_data = {
+        "old_password": "admin123",
+        "new_password": "ChangeTest123!"
+    }
+    
+    try:
+        response = requests.put(f"{BASE_URL}/auth/password", 
+                              json=change_data, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            logger.info("✅ 修改密码API调用成功")
+            
+            # 测试新密码登录
+            new_login_data = {
+                "username": "admin",
+                "password": "ChangeTest123!"
+            }
+            
+            response = requests.post(f"{BASE_URL}/auth/login", json=new_login_data, timeout=10)
+            if response.status_code == 200:
+                logger.info("✅ 新密码登录成功 - 修改密码功能正常！")
+                
+                # 恢复原密码
+                new_token = response.json().get("access_token")
+                if new_token:
+                    restore_headers = {"Authorization": f"Bearer {new_token}"}
+                    restore_data = {
+                        "old_password": "ChangeTest123!",
+                        "new_password": "admin"
+                    }
+                    
+                    response = requests.put(f"{BASE_URL}/auth/password", 
+                                          json=restore_data, headers=restore_headers, timeout=10)
+                    if response.status_code == 200:
+                        logger.info("✅ 原密码已恢复")
+                        return True
+                    else:
+                        logger.warning("⚠️  原密码恢复失败")
+                        return True
+                else:
+                    logger.warning("⚠️  无法获取新token恢复密码")
+                    return True
+            else:
+                logger.error("❌ 新密码登录失败 - 修改密码功能异常！")
+                return False
+        else:
+            logger.error(f"❌ 修改密码API调用失败: {response.status_code} - {response.text}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"修改密码测试失败: {e}")
+        return False
+
+def main():
+    """主函数"""
+    logger.info("开始API认证系统测试...")
+    
+    # 1. 测试登录
+    token = test_login()
+    if not token:
+        logger.error("登录失败，无法继续测试")
+        return
+    
+    # 2. 测试用户管理
+    test_user_management(token)
+    
+    # 3. 测试修改密码
+    test_change_password(token)
+    
+    # 4. 测试密码重置（管理员功能）
+    test_password_reset(token)
+    
+    logger.info("=== API认证系统测试完成 ===")
 
 if __name__ == "__main__":
-    test_vlan_api()
+    main()

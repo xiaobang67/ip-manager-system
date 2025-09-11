@@ -1653,9 +1653,10 @@ def add_missing_endpoints(app, get_db_connection):
                     if cursor.fetchone():
                         raise HTTPException(status_code=400, detail="邮箱地址已存在")
                 
-                # 创建用户（简单的密码哈希，生产环境应使用bcrypt）
-                import hashlib
-                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                # 创建用户（使用bcrypt哈希）
+                from passlib.context import CryptContext
+                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                password_hash = pwd_context.hash(password)
                 
                 cursor.execute("""
                     INSERT INTO users (username, password_hash, email, role, theme, is_active, created_at)
@@ -1857,9 +1858,10 @@ def add_missing_endpoints(app, get_db_connection):
                 if not cursor.fetchone():
                     raise HTTPException(status_code=404, detail="用户不存在")
                 
-                # 更新密码（简单的密码哈希，生产环境应使用bcrypt）
-                import hashlib
-                password_hash = hashlib.sha256(new_password.encode()).hexdigest()
+                # 更新密码（使用bcrypt哈希）
+                from passlib.context import CryptContext
+                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                password_hash = pwd_context.hash(new_password)
                 
                 cursor.execute("""
                     UPDATE users SET password_hash = %s, updated_at = NOW() 
