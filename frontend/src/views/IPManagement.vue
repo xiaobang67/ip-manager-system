@@ -141,7 +141,7 @@
                 分配
               </el-button>
               <el-button
-                type="info"
+                type="primary"
                 size="small"
                 @click="editIP(row)"
               >
@@ -560,12 +560,14 @@ export default {
     // 响应式数据
     const loading = ref(false)
     const submitting = ref(false)
+    const historyLoading = ref(false)
     
     const ipList = ref([])
     const subnets = ref([])
     const departments = ref([])
     const deviceTypes = ref([])
     const selectedIPs = ref([])
+    const historyData = ref([])
     
     const searchQuery = ref('')
     const statusFilter = ref('')
@@ -588,6 +590,7 @@ export default {
     const showReservationDialog = ref(false)
     const showReleaseDialog = ref(false)
     const showBulkDialog = ref(false)
+    const showHistoryDialog = ref(false)
     const showDeleteDialog = ref(false)
     const showEditDialog = ref(false)
     
@@ -1070,7 +1073,18 @@ export default {
       }, 10)
     }
     
-
+    const viewHistory = async (row) => {
+      historyLoading.value = true
+      showHistoryDialog.value = true
+      try {
+        const response = await ipAPI.getIPHistory(row.ip_address)
+        historyData.value = response.data || []
+      } catch (error) {
+        ElMessage.error('加载历史记录失败：' + error.message)
+      } finally {
+        historyLoading.value = false
+      }
+    }
     
     // 表单提交方法
     const submitAllocation = async () => {
@@ -1480,6 +1494,7 @@ export default {
       editIP,
       fixDropdownStyles,
       handleSelectVisibleChange,
+      viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
