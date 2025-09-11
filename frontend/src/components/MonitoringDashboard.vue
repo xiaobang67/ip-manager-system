@@ -96,21 +96,15 @@
     </el-row>
 
     <!-- 网段使用率表格 -->
-    <el-row :gutter="20" class="table-section">
+    <el-row :gutter="20" class="theme-table-section">
       <el-col :span="24">
         <el-card class="table-card">
           <template #header>
             <div class="card-header">
               <span>网段使用率排行</span>
-              <div>
-                <el-button type="primary" size="small" @click="showReportDialog = true">
-                  <el-icon><Document /></el-icon>
-                  生成报告
-                </el-button>
-                <el-button type="text" @click="refreshSubnetStats">
-                  <el-icon><Refresh /></el-icon>
-                </el-button>
-              </div>
+              <el-button type="text" @click="refreshSubnetStats">
+                <el-icon><Refresh /></el-icon>
+              </el-button>
             </div>
           </template>
           
@@ -123,7 +117,7 @@
               </template>
             </el-table-column>
             <el-table-column prop="total_ips" label="总IP数" width="100"></el-table-column>
-            <el-table-column prop="allocated_ips" label="已分配" width="100"></el-table-column>
+            <el-table-column prop="allocated_ips" label="使用中" width="100"></el-table-column>
             <el-table-column prop="utilization_rate" label="使用率" width="120">
               <template #default="scope">
                 <el-progress 
@@ -140,63 +134,7 @@
       </el-col>
     </el-row>
 
-    <!-- 警报面板 -->
-    <el-row :gutter="20" class="alerts-section">
-      <el-col :span="24">
-        <el-card class="alerts-card">
-          <template #header>
-            <div class="card-header">
-              <span>最近警报</span>
-              <el-button type="text" @click="showAlertManagement">
-                <el-icon><Setting /></el-icon>
-                管理警报规则
-              </el-button>
-            </div>
-          </template>
-          
-          <el-table :data="recentAlerts" style="width: 100%" v-loading="alertsLoading">
-            <el-table-column prop="alert_message" label="警报信息" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="severity" label="严重程度" width="120">
-              <template #default="scope">
-                <el-tag :type="getSeverityType(scope.row.severity)">
-                  {{ getSeverityText(scope.row.severity) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="created_at" label="创建时间" width="180">
-              <template #default="scope">
-                {{ formatDateTime(scope.row.created_at) }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="is_resolved" label="状态" width="100">
-              <template #default="scope">
-                <el-tag :type="scope.row.is_resolved ? 'success' : 'warning'">
-                  {{ scope.row.is_resolved ? '已解决' : '未解决' }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="120">
-              <template #default="scope">
-                <el-button 
-                  v-if="!scope.row.is_resolved"
-                  type="text" 
-                  size="small" 
-                  @click="resolveAlert(scope.row.id)"
-                >
-                  解决
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
 
-    <!-- 报告生成对话框 -->
-    <ReportGenerationDialog 
-      v-model="showReportDialog"
-      @report-generated="handleReportGenerated"
-    />
   </div>
 </template>
 
@@ -205,46 +143,35 @@ import { ref, reactive, onMounted, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
-import { Connection, PieChart, Grid, Warning, Refresh, Document, Setting, User, ArrowDown } from '@element-plus/icons-vue'
+import { Connection, PieChart, Grid, Warning, Refresh } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { 
   getDashboardSummary, 
   getTopUtilizedSubnets, 
-  getAllocationTrends,
-  getAlertHistory,
-  resolveAlert as resolveAlertAPI
+  getAllocationTrends
 } from '@/api/monitoring'
-import ReportGenerationDialog from './ReportGenerationDialog.vue'
 
 export default {
   name: 'MonitoringDashboard',
   components: {
-    ReportGenerationDialog,
     Connection,
     PieChart,
     Grid,
     Warning,
-    Refresh,
-    Document,
-    Setting,
-    User,
-    ArrowDown
+    Refresh
   },
   setup() {
     const router = useRouter()
     const store = useStore()
     
     const loading = ref(false)
-    const alertsLoading = ref(false)
     const dashboardData = reactive({})
     const topSubnets = ref([])
-    const recentAlerts = ref([])
     const trendDays = ref(30)
-    const showReportDialog = ref(false)
     
     // 计算属性
     const currentUser = computed(() => store.getters['auth/currentUser'])
-    const isAdmin = computed(() => store.getters['auth/userRole'] === 'admin')
+    const isAdmin = computed(() => store.getters['auth/userRole']?.toLowerCase() === 'admin')
 
     // 图表实例
     const ipUtilizationChart = ref(null)
@@ -284,12 +211,12 @@ export default {
     // 加载分配趋势
     const loadAllocationTrends = async () => {
       try {
-        console.log('Loading allocation trends for days:', trendDays.value)
+
         const response = await getAllocationTrends(trendDays.value)
-        console.log('Allocation trends response:', response)
+
         await nextTick()
         if (response && Array.isArray(response)) {
-          console.log('Updating chart with data:', response)
+
           updateAllocationTrendChart(response)
         } else {
           console.error('Invalid response data:', response)
@@ -301,19 +228,7 @@ export default {
       }
     }
 
-    // 加载警报历史
-    const loadAlertHistory = async () => {
-      alertsLoading.value = true
-      try {
-        const response = await getAlertHistory({ limit: 10 })
-        recentAlerts.value = response
-      } catch (error) {
-        ElMessage.error('加载警报历史失败')
-        console.error('Alert history error:', error)
-      } finally {
-        alertsLoading.value = false
-      }
-    }
+
 
     // 更新IP使用率图表
     const updateIPUtilizationChart = () => {
@@ -339,7 +254,7 @@ export default {
             type: 'pie',
             radius: '50%',
             data: [
-              { value: stats.allocated_ips, name: '已分配', itemStyle: { color: '#409EFF' } },
+              { value: stats.allocated_ips, name: '使用中', itemStyle: { color: '#409EFF' } },
               { value: stats.reserved_ips, name: '保留', itemStyle: { color: '#E6A23C' } },
               { value: stats.available_ips, name: '可用', itemStyle: { color: '#67C23A' } },
               { value: stats.conflict_ips, name: '冲突', itemStyle: { color: '#F56C6C' } }
@@ -413,85 +328,43 @@ export default {
       return '#67C23A'
     }
 
-    // 获取严重程度类型
-    const getSeverityType = (severity) => {
-      const types = {
-        'low': 'info',
-        'medium': 'warning',
-        'high': 'danger',
-        'critical': 'danger'
-      }
-      return types[severity] || 'info'
-    }
 
-    // 获取严重程度文本
-    const getSeverityText = (severity) => {
-      const texts = {
-        'low': '低',
-        'medium': '中',
-        'high': '高',
-        'critical': '严重'
-      }
-      return texts[severity] || severity
-    }
-
-    // 格式化日期时间
-    const formatDateTime = (dateTime) => {
-      return new Date(dateTime).toLocaleString()
-    }
-
-    // 解决警报
-    const resolveAlert = async (alertId) => {
-      try {
-        await resolveAlertAPI(alertId)
-        ElMessage.success('警报已解决')
-        loadAlertHistory()
-      } catch (error) {
-        ElMessage.error('解决警报失败')
-        console.error('Resolve alert error:', error)
-      }
-    }
 
     // 刷新函数
-    const refreshIPStats = () => {
-      loadDashboardData()
+    const refreshIPStats = async () => {
+      ElMessage.info('正在刷新IP统计数据...')
+      await loadDashboardData()
+      ElMessage.success('IP统计数据已更新')
     }
 
-    const refreshTrends = () => {
-      loadAllocationTrends()
+    const refreshTrends = async () => {
+      ElMessage.info('正在刷新分配趋势数据...')
+      await loadAllocationTrends()
+      ElMessage.success('分配趋势数据已更新')
     }
 
-    const refreshSubnetStats = () => {
-      loadSubnetStats()
+    const refreshSubnetStats = async () => {
+      ElMessage.info('正在刷新网段统计数据...')
+      await loadSubnetStats()
+      ElMessage.success('网段统计数据已更新')
     }
 
-    // 显示警报管理
-    const showAlertManagement = () => {
-      // 这里可以导航到警报管理页面或打开对话框
-      ElMessage.info('警报管理功能开发中')
-    }
-
-    // 处理报告生成
-    const handleReportGenerated = (reportInfo) => {
-      ElMessage.success('报告生成请求已提交')
-      console.log('Report generated:', reportInfo)
-    }
-
-    // 导航功能
-    const navigateTo = (path) => {
-      router.push(path)
-    }
-
-    // 处理用户操作
-    const handleUserAction = (command) => {
-      switch (command) {
-        case 'profile':
-          ElMessage.info('个人资料功能开发中')
-          break
-        case 'logout':
-          store.dispatch('auth/logout')
-          router.push('/login')
-          break
+    // 全局刷新功能
+    const refreshAll = async () => {
+      ElMessage.info('正在刷新所有数据...')
+      loading.value = true
+      try {
+        await Promise.all([
+          loadDashboardData(),
+          loadSubnetStats(),
+          loadAllocationTrends()
+        ])
+        ElMessage.success('所有数据已更新')
+      } catch (error) {
+        ElMessage.error('刷新数据时出现错误')
+        console.error('Refresh all error:', error)
+      } finally {
+        loading.value = false
       }
     }
 
@@ -505,44 +378,29 @@ export default {
       loadDashboardData()
       loadSubnetStats()
       loadAllocationTrends()
-      loadAlertHistory()
 
       window.addEventListener('resize', handleResize)
     })
 
     return {
       loading,
-      alertsLoading,
       dashboardData,
       topSubnets,
-      recentAlerts,
       trendDays,
-      showReportDialog,
       ipUtilizationChart,
       allocationTrendChart,
       currentUser,
       isAdmin,
       getUtilizationColor,
-      getSeverityType,
-      getSeverityText,
-      formatDateTime,
-      resolveAlert,
       refreshIPStats,
       refreshTrends,
       refreshSubnetStats,
-      showAlertManagement,
-      handleReportGenerated,
-      navigateTo,
-      handleUserAction,
+      refreshAll,
       Connection,
       PieChart,
       Grid,
       Warning,
-      Refresh,
-      Document,
-      Setting,
-      User,
-      ArrowDown
+      Refresh
     }
   }
 }
@@ -928,6 +786,59 @@ export default {
 .nav-item:nth-child(2) { animation-delay: 0.2s; }
 .nav-item:nth-child(3) { animation-delay: 0.3s; }
 .nav-item:nth-child(4) { animation-delay: 0.4s; }
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+}
+
+/* 暗黑主题适配 */
+.dark .btn-allocation, .dark .btn-edit,
+.dark .btn-reservation, .dark .btn-sync,
+.dark .btn-release, .dark .btn-delete,
+.dark .btn-history, .dark .btn-view {
+  opacity: 0.9;
+}
 
 /* 响应式设计 */
 @media (max-width: 1200px) {

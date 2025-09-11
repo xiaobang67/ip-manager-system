@@ -32,12 +32,7 @@
             />
           </el-form-item>
           
-          <el-form-item label="主题" prop="theme">
-            <el-radio-group v-model="profileForm.theme">
-              <el-radio label="light">明亮主题</el-radio>
-              <el-radio label="dark">暗黑主题</el-radio>
-            </el-radio-group>
-          </el-form-item>
+
         </el-form>
         
         <div class="dialog-footer">
@@ -136,8 +131,7 @@ export default {
       passwordLoading: false,
       
       profileForm: {
-        email: '',
-        theme: 'light'
+        email: ''
       },
       
       passwordForm: {
@@ -196,8 +190,7 @@ export default {
     initForms() {
       // 初始化个人信息表单
       this.profileForm = {
-        email: this.currentUser.email || '',
-        theme: this.currentUser.theme || 'light'
+        email: this.currentUser.email || ''
       }
       
       // 重置密码表单
@@ -273,11 +266,6 @@ export default {
         
         this.$message.success('个人信息更新成功')
         
-        // 如果主题发生变化，应用新主题
-        if (this.profileForm.theme !== this.currentUser.theme) {
-          this.$store.dispatch('theme/setTheme', this.profileForm.theme)
-        }
-        
       } catch (error) {
         console.error('Update profile error:', error)
         this.$message.error(error.response?.data?.detail || '更新个人信息失败')
@@ -341,18 +329,18 @@ export default {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 24px;
   border-top: 1px solid #ebeef5;
 }
 
 :deep(.el-tabs__content) {
-  padding: 20px 0;
+  padding: 24px 0;
 }
 
 :deep(.el-alert ul) {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 24px;
 }
 </style>

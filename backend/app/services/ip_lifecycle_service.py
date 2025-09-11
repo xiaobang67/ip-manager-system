@@ -6,6 +6,7 @@ from app.models.subnet import Subnet
 from app.schemas.ip_address import IPAddressResponse, IPStatisticsResponse
 from app.core.exceptions import ValidationError, NotFoundError, ConflictError
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import ipaddress
 
 
@@ -67,7 +68,7 @@ class IPLifecycleService:
 
     def manage_ip_expiration(self, days_threshold: int = 30) -> Dict[str, List[str]]:
         """管理IP地址过期"""
-        expiration_date = datetime.utcnow() - timedelta(days=days_threshold)
+        expiration_date = now_beijing() - timedelta(days=days_threshold)
         
         # 查找长期未使用的已分配IP
         long_term_allocated = (
@@ -105,7 +106,7 @@ class IPLifecycleService:
 
     def auto_cleanup_expired_reservations(self, days_threshold: int = 90) -> Dict[str, int]:
         """自动清理过期的保留IP地址"""
-        expiration_date = datetime.utcnow() - timedelta(days=days_threshold)
+        expiration_date = now_beijing() - timedelta(days=days_threshold)
         
         # 查找过期的保留IP
         expired_reserved = (
@@ -124,7 +125,7 @@ class IPLifecycleService:
             ip.allocated_at = None
             ip.allocated_by = None
             ip.assigned_to = None
-            ip.description = f"自动清理过期保留 - {datetime.utcnow().strftime('%Y-%m-%d')}"
+            ip.description = f"自动清理过期保留 - {now_beijing().strftime('%Y-%m-%d')}"
             cleaned_count += 1
         
         self.db.commit()
@@ -179,7 +180,7 @@ class IPLifecycleService:
         )
         
         # 获取长期未使用的IP
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = now_beijing() - timedelta(days=30)
         long_term_allocated = (
             self.db.query(IPAddress)
             .filter(
@@ -229,7 +230,7 @@ class IPLifecycleService:
         }
         
         # 分析稳定分配的IP（分配超过30天且未变更）
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = now_beijing() - timedelta(days=30)
         stable_ips = [
             ip for ip in all_ips
             if ip.status == IPStatus.ALLOCATED 
@@ -242,7 +243,7 @@ class IPLifecycleService:
                 'ip_address': ip.ip_address,
                 'allocated_at': ip.allocated_at,
                 'assigned_to': ip.assigned_to,
-                'duration_days': (datetime.utcnow() - ip.allocated_at).days
+                'duration_days': (now_beijing() - ip.allocated_at).days
             }
             for ip in stable_ips[:10]  # 取前10个
         ]
@@ -262,7 +263,7 @@ class IPLifecycleService:
         elif ip_record.status == IPStatus.CONFLICT:
             return 'conflict'
         elif ip_record.allocated_at:
-            days_allocated = (datetime.utcnow() - ip_record.allocated_at).days
+            days_allocated = (now_beijing() - ip_record.allocated_at).days
             if days_allocated < 7:
                 return 'newly_allocated'
             elif days_allocated < 30:
@@ -277,7 +278,7 @@ class IPLifecycleService:
     def _calculate_usage_duration(self, ip_record: IPAddress) -> Optional[int]:
         """计算IP地址的使用时长（天数）"""
         if ip_record.allocated_at:
-            return (datetime.utcnow() - ip_record.allocated_at).days
+            return (now_beijing() - ip_record.allocated_at).days
         return None
 
     def _suggest_next_actions(self, ip_record: IPAddress) -> List[str]:
@@ -290,7 +291,7 @@ class IPLifecycleService:
             suggestions.append("可以分配给新设备")
         elif ip_record.status in [IPStatus.ALLOCATED, IPStatus.RESERVED]:
             if ip_record.allocated_at:
-                days_allocated = (datetime.utcnow() - ip_record.allocated_at).days
+                days_allocated = (now_beijing() - ip_record.allocated_at).days
                 if days_allocated > 90:
                     suggestions.append("检查是否仍在使用，考虑释放")
                 elif days_allocated > 30:

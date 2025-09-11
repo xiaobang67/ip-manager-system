@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Select
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 
 from .database import engine, SessionLocal
 from .redis_client import cache_service
@@ -30,7 +31,7 @@ class QueryPerformanceMonitor:
         """记录查询性能"""
         try:
             query_hash = hash(query)
-            timestamp = datetime.utcnow()
+            timestamp = now_beijing()
             
             perf_data = {
                 "query": query[:500],  # 截断长查询
@@ -60,7 +61,7 @@ class QueryPerformanceMonitor:
             keys = cache_service.keys(pattern)
             
             slow_queries = []
-            cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+            cutoff_time = now_beijing() - timedelta(hours=hours)
             
             for key in keys:
                 try:
@@ -89,7 +90,7 @@ class QueryPerformanceMonitor:
             total_queries = 0
             slow_queries = 0
             total_duration = 0.0
-            cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+            cutoff_time = now_beijing() - timedelta(hours=hours)
             
             for key in keys:
                 try:
@@ -416,7 +417,7 @@ class DatabaseIndexManager:
                 "tables": {},
                 "total_size_bytes": 0,
                 "total_rows": 0,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": now_beijing().isoformat()
             }
             
             for table in tables:
@@ -579,7 +580,7 @@ class QueryOptimizer:
         
         # 获取最近24小时的活动
         from datetime import datetime, timedelta
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = now_beijing() - timedelta(days=1)
         
         recent_allocations = session.query(IPAddress).filter(
             IPAddress.allocated_at >= yesterday,
@@ -614,7 +615,7 @@ def get_database_performance_info() -> Dict[str, Any]:
             "query_stats": query_stats,
             "database_summary": db_summary,
             "slow_queries": slow_queries[:10],  # 只返回前10个慢查询
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": now_beijing().isoformat()
         }
         
     except Exception as e:

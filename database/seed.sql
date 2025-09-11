@@ -85,6 +85,26 @@ INSERT INTO ip_addresses (ip_address, subnet_id, status, mac_address, hostname, 
 ('192.168.100.10', 5, 'allocated', '00:55:66:77:88:10', 'guest-ap-01', 'access_point', '访客区域', 'IT部门', '访客无线接入点', NOW(), 1, NOW(), NOW());
 
 -- ===========================================
+-- 创建设备类型
+-- ===========================================
+INSERT INTO device_types (id, name, code, category, status, description, created_at, updated_at) VALUES
+(1, '服务器', 'server', 'computing', 'active', '各类服务器设备，包括Web服务器、数据库服务器、应用服务器等', NOW(), NOW()),
+(2, '工作站', 'workstation', 'computing', 'active', '员工办公用台式机和工作站', NOW(), NOW()),
+(3, '笔记本电脑', 'laptop', 'computing', 'active', '便携式笔记本电脑设备', NOW(), NOW()),
+(4, '台式机', 'desktop', 'computing', 'active', '办公用台式计算机', NOW(), NOW()),
+(5, '网络交换机', 'switch', 'network', 'active', '网络交换设备，用于连接网络设备', NOW(), NOW()),
+(6, '路由器', 'router', 'network', 'active', '网络路由设备，用于网络间的数据转发', NOW(), NOW()),
+(7, '防火墙', 'firewall', 'security', 'active', '网络安全防护设备', NOW(), NOW()),
+(8, '无线接入点', 'access_point', 'network', 'active', '无线网络接入设备', NOW(), NOW()),
+(9, '打印机', 'printer', 'office', 'active', '办公打印设备', NOW(), NOW()),
+(10, '扫描仪', 'scanner', 'office', 'active', '文档扫描设备', NOW(), NOW()),
+(11, '存储设备', 'storage', 'storage', 'active', 'NAS、SAN等存储设备', NOW(), NOW()),
+(12, '监控摄像头', 'camera', 'security', 'active', '安防监控摄像设备', NOW(), NOW()),
+(13, '网络附加存储', 'nas', 'storage', 'active', '网络附加存储设备', NOW(), NOW()),
+(14, '负载均衡器', 'load_balancer', 'network', 'active', '负载均衡设备', NOW(), NOW()),
+(15, '其他设备', 'other', 'other', 'active', '其他未分类的网络设备', NOW(), NOW());
+
+-- ===========================================
 -- 创建标签
 -- ===========================================
 INSERT INTO tags (id, name, color, description, created_at) VALUES

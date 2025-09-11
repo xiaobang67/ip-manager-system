@@ -18,7 +18,7 @@ class IPRepository:
             subnet_id=ip_data.subnet_id,
             status=ip_data.status or IPStatus.AVAILABLE,
             mac_address=ip_data.mac_address,
-            hostname=ip_data.hostname,
+            user_name=ip_data.user_name,
             device_type=ip_data.device_type,
             location=ip_data.location,
             assigned_to=ip_data.assigned_to,
@@ -38,7 +38,7 @@ class IPRepository:
                 subnet_id=ip_data.subnet_id,
                 status=ip_data.status or IPStatus.AVAILABLE,
                 mac_address=ip_data.mac_address,
-                hostname=ip_data.hostname,
+                user_name=ip_data.user_name,
                 device_type=ip_data.device_type,
                 location=ip_data.location,
                 assigned_to=ip_data.assigned_to,
@@ -264,7 +264,7 @@ class IPRepository:
                 result.append({
                     'ip_address': ip_str,
                     'status': ip_obj.status,
-                    'hostname': ip_obj.hostname,
+                    'hostname': ip_obj.user_name,
                     'mac_address': ip_obj.mac_address,
                     'assigned_to': ip_obj.assigned_to
                 })

@@ -21,7 +21,7 @@ export default {
 
 <style scoped>
 .dashboard {
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 </style>

@@ -37,15 +37,28 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
-    path: '/audit-logs',
-    name: 'AuditLogs',
-    component: () => import('@/views/AuditLogs.vue'),
+    path: '/department-management',
+    name: 'DepartmentManagement',
+    component: () => import('@/views/DepartmentManagement.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+
+  {
+    path: '/device-type-management',
+    name: 'DeviceTypeManagement',
+    component: () => import('@/views/DeviceTypeManagement.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/custom-fields-test',
     name: 'CustomFieldsTest',
     component: () => import('@/components/CustomFieldsTest.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/theme-test',
+    name: 'ThemeTest',
+    component: () => import('@/views/ThemeTest.vue'),
     meta: { requiresAuth: true }
   }
 ]
@@ -79,7 +92,7 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // 如果需要管理员权限但不是管理员
-  if (to.meta.requiresAdmin && userRole !== 'admin') {
+  if (to.meta.requiresAdmin && userRole?.toLowerCase() !== 'admin') {
     next('/dashboard')
     return
   }

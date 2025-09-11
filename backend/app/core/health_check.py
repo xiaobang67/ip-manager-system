@@ -6,6 +6,7 @@
 import logging
 import time
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 from typing import Dict, Any, Optional, List
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -55,7 +56,7 @@ class DatabaseHealthChecker:
             HealthCheckResult: 健康检查结果
         """
         start_time = time.time()
-        timestamp = datetime.utcnow()
+        timestamp = now_beijing()
         
         try:
             # 基本连接检查
@@ -353,7 +354,7 @@ def get_database_health() -> Dict[str, Any]:
     try:
         # 如果最近5分钟内有检查结果，直接返回
         if (health_checker.last_check_time and 
-            datetime.utcnow() - health_checker.last_check_time < timedelta(minutes=5)):
+            now_beijing() - health_checker.last_check_time < timedelta(minutes=5)):
             return health_checker.get_health_summary()
         
         # 执行新的健康检查
@@ -365,7 +366,7 @@ def get_database_health() -> Dict[str, Any]:
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": now_beijing().isoformat()
         }
 
 

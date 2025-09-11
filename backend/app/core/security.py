@@ -3,6 +3,7 @@
 包含密码加密、JWT token生成和验证等功能
 """
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 from typing import Optional, Union
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -56,9 +57,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode = data.copy()
     
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now_beijing() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = now_beijing() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
@@ -79,9 +80,9 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) 
     to_encode = data.copy()
     
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now_beijing() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = now_beijing() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     
     to_encode.update({"exp": expire, "type": "refresh"})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
@@ -108,7 +109,7 @@ def verify_token(token: str, token_type: str = "access") -> Optional[dict]:
             
         # 检查过期时间
         exp = payload.get("exp")
-        if exp is None or datetime.utcfromtimestamp(exp) < datetime.utcnow():
+        if exp is None or datetime.utcfromtimestamp(exp) < now_beijing():
             return None
             
         return payload

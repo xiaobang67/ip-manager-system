@@ -34,7 +34,7 @@
       <el-form-item label="网关" prop="gateway">
         <el-input
           v-model="form.gateway"
-          placeholder="请输入网关地址（可选）"
+          placeholder="请输入网关地址（必填）"
         />
       </el-form-item>
 
@@ -43,7 +43,7 @@
           v-model="form.vlan_id"
           :min="1"
           :max="4094"
-          placeholder="请输入VLAN ID（可选）"
+          placeholder="请输入VLAN ID（必填）"
           style="width: 100%"
         />
       </el-form-item>
@@ -153,13 +153,18 @@ export default {
               callback()
               return
             }
-            // 支持CIDR格式或普通IP地址格式
+            // 必须是CIDR格式，包含掩码位数
             const cidrPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/
-            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/
-            if (cidrPattern.test(value) || ipPattern.test(value)) {
-              callback()
+            if (cidrPattern.test(value)) {
+              // 验证掩码位数范围
+              const maskBits = parseInt(value.split('/')[1])
+              if (maskBits >= 8 && maskBits <= 30) {
+                callback()
+              } else {
+                callback(new Error('掩码位数必须在8-30之间'))
+              }
             } else {
-              callback(new Error('请输入正确的网段格式（如 192.168.1.0/24 或 192.168.1.0）'))
+              callback(new Error('请输入CIDR格式的网段，如 192.168.1.0/24'))
             }
           },
           trigger: 'blur'
@@ -168,15 +173,17 @@ export default {
       netmask: [
         {
           validator: (rule, value, callback) => {
+            // 如果网段包含CIDR格式，子网掩码可以为空（会自动填充）
+            if (form.network && form.network.includes('/')) {
+              callback()
+              return
+            }
+            
             if (!value) {
-              // 如果网段包含CIDR格式，子网掩码可以为空
-              if (form.network && form.network.includes('/')) {
-                callback()
-                return
-              }
               callback(new Error('请输入子网掩码'))
               return
             }
+            
             // 支持点分十进制格式或CIDR前缀长度
             const dotDecimalPattern = /^(\d{1,3}\.){3}\d{1,3}$/
             const cidrPattern = /^\d{1,2}$/
@@ -190,15 +197,26 @@ export default {
         }
       ],
       gateway: [
+        { required: true, message: '请输入网关地址', trigger: 'blur' },
         {
           validator: (rule, value, callback) => {
             if (!value) {
-              callback()
+              callback(new Error('网关地址为必填项'))
               return
             }
             const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/
             if (ipPattern.test(value)) {
-              callback()
+              // 验证IP地址的每个段是否在0-255范围内
+              const parts = value.split('.')
+              const isValid = parts.every(part => {
+                const num = parseInt(part)
+                return num >= 0 && num <= 255
+              })
+              if (isValid) {
+                callback()
+              } else {
+                callback(new Error('IP地址格式不正确'))
+              }
             } else {
               callback(new Error('请输入正确的IP地址格式'))
             }
@@ -207,6 +225,7 @@ export default {
         }
       ],
       vlan_id: [
+        { required: true, message: '请输入VLAN ID', trigger: 'blur' },
         {
           type: 'number',
           min: 1,
@@ -227,6 +246,24 @@ export default {
       if (!form.network) {
         networkValidation.isValid = false
         networkValidation.message = ''
+        networkValidation.overlapping_subnets = []
+        return
+      }
+
+      // 前端CIDR格式验证
+      const cidrPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/
+      if (!cidrPattern.test(form.network)) {
+        networkValidation.isValid = false
+        networkValidation.message = '请输入CIDR格式的网段，如 192.168.1.0/24'
+        networkValidation.overlapping_subnets = []
+        return
+      }
+
+      // 验证掩码位数范围
+      const maskBits = parseInt(form.network.split('/')[1])
+      if (maskBits < 8 || maskBits > 30) {
+        networkValidation.isValid = false
+        networkValidation.message = '掩码位数必须在8-30之间'
         networkValidation.overlapping_subnets = []
         return
       }

@@ -78,5 +78,13 @@ export const subnetApi = {
       method: 'get',
       params
     })
+  },
+
+  // 同步网段IP地址
+  syncSubnetIPs(id) {
+    return request({
+      url: `/subnets/${id}/sync-ips`,
+      method: 'post'
+    })
   }
 }

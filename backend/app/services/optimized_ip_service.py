@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, text
 from datetime import datetime, timedelta
+from app.core.timezone_config import now_beijing
 import logging
 
 from app.repositories.ip_repository import IPRepository
@@ -142,7 +143,7 @@ class OptimizedIPService:
             ip.status = IPStatus.RESERVED
             ip.description = request.reason
             ip.allocated_by = user_id
-            ip.allocated_at = datetime.utcnow()
+            ip.allocated_at = now_beijing()
             
             self.db.commit()
             
@@ -255,7 +256,7 @@ class OptimizedIPService:
     def get_recent_allocations(self, hours: int = 24, limit: int = 10) -> List[IPAddressResponse]:
         """获取最近分配的IP地址"""
         try:
-            cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+            cutoff_time = now_beijing() - timedelta(hours=hours)
             
             recent_ips = self.db.query(IPAddress).filter(
                 IPAddress.allocated_at >= cutoff_time,
@@ -323,7 +324,7 @@ class OptimizedIPService:
         ip.assigned_to = request.assigned_to
         ip.description = request.description
         ip.allocated_by = user_id
-        ip.allocated_at = datetime.utcnow()
+        ip.allocated_at = now_beijing()
         
         return ip
     
@@ -348,7 +349,7 @@ class OptimizedIPService:
         available_ip.assigned_to = request.assigned_to
         available_ip.description = request.description
         available_ip.allocated_by = user_id
-        available_ip.allocated_at = datetime.utcnow()
+        available_ip.allocated_at = now_beijing()
         
         return available_ip
     

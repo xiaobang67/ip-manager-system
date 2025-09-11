@@ -178,9 +178,21 @@ export default {
     const loadAvailableSubnets = async () => {
       try {
         const response = await subnetApi.getSubnets()
-        availableSubnets.value = response.data.items || response.data
+        // 处理不同的响应格式
+        if (response.data) {
+          if (response.data.subnets) {
+            availableSubnets.value = response.data.subnets
+          } else if (Array.isArray(response.data)) {
+            availableSubnets.value = response.data
+          } else if (response.data.items) {
+            availableSubnets.value = response.data.items
+          }
+        } else if (Array.isArray(response)) {
+          availableSubnets.value = response
+        }
       } catch (error) {
         console.error('Load subnets error:', error)
+        ElMessage.error('加载网段列表失败')
       }
     }
 

@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 from app.models.user import User
 from app.services.ip_service import IPService
 from app.services.audit_service import AuditService
@@ -11,7 +11,7 @@ from app.schemas.ip_address import (
     IPReleaseRequest, IPSearchRequest, IPStatisticsResponse,
     IPConflictResponse, IPRangeStatusRequest, IPRangeStatusResponse,
     BulkIPOperationRequest, BulkIPOperationResponse,
-    SearchHistoryRequest, SearchHistoryResponse
+    SearchHistoryRequest, SearchHistoryResponse, IPDeleteRequest
 )
 from app.core.exceptions import ValidationError, NotFoundError, ConflictError
 
@@ -215,6 +215,66 @@ async def release_ip(
         )
 
 
+@router.delete("/delete")
+async def delete_ip(
+    request: IPDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    http_request: Request = None
+):
+    """删除IP地址"""
+    try:
+        ip_service = IPService(db)
+        audit_service = AuditService(db)
+        
+        # 获取删除前的IP信息用于审计
+        ip_before = ip_service.ip_repo.get_by_ip_address(request.ip_address)
+        old_values = {
+            "ip_address": ip_before.ip_address,
+            "status": ip_before.status,
+            "mac_address": ip_before.mac_address,
+            "hostname": ip_before.hostname,
+            "assigned_to": ip_before.assigned_to,
+            "description": ip_before.description
+        } if ip_before else None
+        
+        # 执行IP删除
+        result = ip_service.delete_ip(request, current_user.id)
+        
+        # 记录审计日志
+        audit_service.log_operation(
+            user_id=current_user.id,
+            action="DELETE",
+            entity_type="ip",
+            entity_id=ip_before.id if ip_before else None,
+            old_values=old_values,
+            new_values={
+                "reason": request.reason,
+                "deleted": True
+            },
+            ip_address=http_request.client.host if http_request else None,
+            user_agent=http_request.headers.get("user-agent") if http_request else None
+        )
+        
+        return result
+        
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"删除IP地址失败: {str(e)}"
+        )
+
+
 @router.get("/search", response_model=List[IPAddressResponse])
 async def search_ips(
     query: Optional[str] = None,
@@ -227,6 +287,8 @@ async def search_ips(
 ):
     """搜索IP地址 - 简单搜索接口（保持向后兼容）"""
     try:
+        print(f"搜索参数: query={query}, subnet_id={subnet_id}, status={status}, skip={skip}, limit={limit}")  # 调试信息
+        
         ip_service = IPService(db)
         search_request = IPSearchRequest(
             query=query,
@@ -236,8 +298,12 @@ async def search_ips(
             limit=limit
         )
         ips, total = ip_service.search_ips(search_request)
+        
+        print(f"搜索结果: 找到 {len(ips)} 条记录")  # 调试信息
+        
         return ips
     except Exception as e:
+        print(f"搜索错误: {str(e)}")  # 调试信息
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"搜索IP地址失败: {str(e)}"
@@ -327,10 +393,10 @@ async def get_ip_range_status(
 async def bulk_ip_operation(
     request: BulkIPOperationRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
     http_request: Request = None
 ):
-    """批量IP地址操作"""
+    """批量IP地址操作 - 仅管理员可操作"""
     try:
         ip_service = IPService(db)
         audit_service = AuditService(db)
@@ -567,4 +633,21 @@ async def delete_search_history(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"删除搜索历史失败: {str(e)}"
+        )
+
+
+@router.get("/departments")
+async def get_departments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取分配部门列表"""
+    try:
+        ip_service = IPService(db)
+        departments = ip_service.get_departments()
+        return {"departments": departments}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取部门列表失败: {str(e)}"
         )

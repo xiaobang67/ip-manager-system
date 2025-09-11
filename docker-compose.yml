@@ -6,72 +6,172 @@ services:
     image: mysql:8.0
     container_name: ipam_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass123
-      MYSQL_DATABASE: ipam
-      MYSQL_USER: ipam_user
-      MYSQL_PASSWORD: ipam_pass123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ipam}
+      MYSQL_USER: ${MYSQL_USER:-ipam_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ipam_pass123}
+      TZ: Asia/Shanghai
+    command: >
+      --default-time-zone=+08:00
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --max-connections=200
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=2
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - mysql_logs:/var/log/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./logs/mysql:/var/log/mysql
     networks:
       - ipam_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpass123}"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
 
   # Redis Cache
   redis:
     image: redis:6-alpine
     container_name: ipam_redis
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
+      - ./logs/redis:/var/log/redis
     networks:
       - ipam_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
 
   # Backend API Service
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: ipam_backend
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
+      # Database Configuration
       - DB_HOST=mysql
-      - DB_USER=ipam_user
-      - DB_PASSWORD=ipam_pass123
-      - DB_NAME=ipam
+      - DB_USER=${MYSQL_USER:-ipam_user}
+      - DB_PASSWORD=${MYSQL_PASSWORD:-ipam_pass123}
+      - DB_NAME=${MYSQL_DATABASE:-ipam}
       - DB_PORT=3306
+      
+      # Redis Configuration
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
+      
+      # Application Configuration
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key}
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRE_MINUTES=30
+      
+      # Environment
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+      # CORS Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:3000,http://localhost:5173}
+      
+      # Timezone
+      - TZ=Asia/Shanghai
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - ipam_network
     volumes:
-      - ./backend:/app
+      - ./logs/backend:/app/logs
+      - ./backups:/app/backups
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
 
   # Frontend Web Application
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: ipam_frontend
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_HTTPS_PORT:-443}:443"
+    environment:
+      - TZ=Asia/Shanghai
     depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ipam_network
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: ipam_nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:80"
+      - "${NGINX_HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - frontend
       - backend
     networks:
       - ipam_network
     restart: unless-stopped
+    profiles:
+      - production
 
 volumes:
   mysql_data:
+    driver: local
+  mysql_logs:
+    driver: local
   redis_data:
+    driver: local
 
 networks:
   ipam_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

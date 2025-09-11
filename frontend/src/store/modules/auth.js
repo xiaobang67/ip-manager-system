@@ -40,7 +40,7 @@ const getters = {
   userRole: state => state.user?.role || null,
   userName: state => state.user?.username || '',
   userEmail: state => state.user?.email || '',
-  userTheme: state => state.user?.theme || 'light',
+
   loginLoading: state => state.loginLoading
 }
 

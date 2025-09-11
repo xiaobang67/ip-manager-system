@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "UTF-8 Database Encoding",
+  "description": "Monitors database-related files and ensures UTF-8 encoding is used for database creation, table creation, and character encoding operations",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "database/*.sql",
+      "backend/alembic/versions/*.py",
+      "backend/manage_db.py",
+      "backend/app/models/*.py",
+      "scripts/fix_database_charset.sql",
+      "mysql/my.cnf"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the database-related file changes and ensure that all database creation, table creation, and character encoding operations use UTF-8 encoding. Check for CREATE DATABASE statements, CREATE TABLE statements, and any charset/collation specifications. Recommend UTF-8 encoding (utf8mb4 for MySQL) where needed. 对于数据库建表、建库操作、字符编码请使用utf-8编码。"
+  }
+}

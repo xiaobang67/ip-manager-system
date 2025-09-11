@@ -187,3 +187,19 @@ CREATE TABLE IF NOT EXISTS alert_history (
     INDEX idx_rule_created (rule_id, created_at),
     INDEX idx_severity_resolved (severity, is_resolved)
 );
+
+-- 设备类型表
+CREATE TABLE IF NOT EXISTS device_types (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    code VARCHAR(30) UNIQUE NOT NULL,
+    category ENUM('computing', 'network', 'storage', 'security', 'office', 'other') DEFAULT 'other',
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_code (code),
+    INDEX idx_category (category),
+    INDEX idx_status (status),
+    INDEX idx_name (name)
+);

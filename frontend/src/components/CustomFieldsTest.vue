@@ -94,7 +94,7 @@ export default {
 
       try {
         // 测试1: API健康检查
-        console.log('开始API健康检查...')
+
         const healthCheck = await customFieldsDebugger.checkApiHealth()
         addTestResult(
           'API健康检查',
@@ -112,7 +112,7 @@ export default {
         }
 
         // 测试2: 获取所有自定义字段
-        console.log('测试获取所有自定义字段...')
+
         try {
           const allFields = await safeGetCustomFields()
           addTestResult(
@@ -132,7 +132,7 @@ export default {
         }
 
         // 测试3: 获取IP类型字段
-        console.log('测试获取IP类型字段...')
+
         try {
           const ipFields = await safeGetCustomFields('ip')
           addTestResult(
@@ -151,7 +151,7 @@ export default {
         }
 
         // 测试4: 获取网段类型字段
-        console.log('测试获取网段类型字段...')
+
         try {
           const subnetFields = await safeGetCustomFields('subnet')
           addTestResult(
@@ -170,7 +170,7 @@ export default {
         }
 
         // 测试5: 获取实体字段（如果有IP地址的话）
-        console.log('测试获取实体字段...')
+
         try {
           const entityFields = await safeGetEntityCustomFields('ip', 1)
           addTestResult(
@@ -189,7 +189,7 @@ export default {
         }
 
         // 测试6: 直接API调用测试
-        console.log('测试直接API调用...')
+
         try {
           const directResponse = await customFieldsAPI.getFields()
           addTestResult(

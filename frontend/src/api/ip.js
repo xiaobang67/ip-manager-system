@@ -332,6 +332,30 @@ export const ipAPI = {
       url: `/ips/search-history/${searchId}`,
       method: 'delete'
     })
+  },
+
+  /**
+   * 获取分配部门列表
+   * @returns {Promise}
+   */
+  getDepartments() {
+    return request({
+      url: '/ips/departments',
+      method: 'get'
+    })
+  },
+
+  /**
+   * 删除IP地址
+   * @param {Object} data - 删除数据
+   * @returns {Promise}
+   */
+  deleteIP(data) {
+    return request({
+      url: '/ips/delete',
+      method: 'delete',
+      data
+    })
   }
 }
 

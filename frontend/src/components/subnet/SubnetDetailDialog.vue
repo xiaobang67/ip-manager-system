@@ -48,7 +48,7 @@
         <template #header>
           <div class="card-header">
             <span>IP地址使用统计</span>
-            <el-button size="small" @click="refreshStats">刷新</el-button>
+            <el-button size="small" type="info" @click="refreshStats">刷新</el-button>
           </div>
         </template>
 
@@ -62,7 +62,7 @@
           <el-col :span="6">
             <div class="stat-item">
               <div class="stat-value allocated">{{ subnet.allocated_count || 0 }}</div>
-              <div class="stat-label">已分配</div>
+              <div class="stat-label">使用中</div>
             </div>
           </el-col>
           <el-col :span="6">
@@ -93,13 +93,13 @@
         <template #header>
           <div class="card-header">
             <span>IP地址列表</span>
-            <el-button size="small" @click="viewAllIPs">查看全部</el-button>
+            <el-button size="small" type="info" @click="viewAllIPs">查看全部</el-button>
           </div>
         </template>
 
         <div class="ip-preview">
           <el-alert
-            title="IP地址管理功能"
+            title="网络资源管理功能"
             type="info"
             :closable="false"
             show-icon
@@ -165,7 +165,7 @@ export default {
 
     const viewAllIPs = () => {
       // 跳转到IP管理页面，并过滤当前网段
-      ElMessage.info('跳转到IP地址管理页面功能待实现')
+      ElMessage.info('跳转到网络资源管理页面功能待实现')
     }
 
     const editSubnet = () => {

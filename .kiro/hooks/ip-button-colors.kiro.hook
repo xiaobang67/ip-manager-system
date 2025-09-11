@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "name": "IP Management Button Colors",
+  "description": "Monitors IP address management page components and ensures buttons use the correct color scheme: blue for allocation, orange for reservation, red for release/delete, and gray for history",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "frontend/src/**/*.vue",
+      "frontend/src/**/*.js",
+      "frontend/src/**/*.ts",
+      "frontend/src/**/*.jsx",
+      "frontend/src/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the IP address management page components and ensure all buttons follow the specified color scheme:\n🔵 分配按钮 (Allocation buttons): type=\"primary\" (blue)\n🟠 保留按钮 (Reserve buttons): type=\"warning\" (orange) \n🔴 释放按钮 (Release buttons): type=\"danger\" (red)\n🔴 删除按钮 (Delete buttons): type=\"danger\" plain (red border)\n⚪ 历史按钮 (History buttons): type=\"info\" (gray)\n\nCheck for any buttons that don't match this color scheme and update them accordingly. Focus on IP management related components, tables, and forms."
+  }
+}

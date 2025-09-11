@@ -7,22 +7,22 @@
       <div class="header-actions">
         <el-button type="primary" @click="showAllocationDialog = true">
           <el-icon><Plus /></el-icon>
-          分配IP地址
+          分配地址
         </el-button>
-        <el-button type="warning" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="info" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button @click="refreshData">
+        <el-button type="info" @click="refreshData">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
       </div>
     </div>
 
-    <!-- 高级搜索组件 -->
-    <AdvancedSearch
-      @search="handleAdvancedSearch"
+    <!-- 简单筛选组件 -->
+    <SimpleIPFilter
+      @search="handleSimpleSearch"
       @reset="handleSearchReset"
     />
 
@@ -49,7 +49,7 @@
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.allocated }}</div>
-              <div class="stats-label">已分配IP</div>
+              <div class="stats-label">使用中</div>
             </div>
           </el-card>
         </el-col>
@@ -66,65 +66,114 @@
 
     <!-- IP地址列表表格 -->
     <div class="table-section">
+      <!-- 搜索状态提示 -->
+      <div v-if="currentSearchParams" class="search-status">
+        <el-alert
+          :title="`当前显示搜索结果：共 ${total} 条记录`"
+          type="info"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <span>当前显示搜索结果，点击"重置"按钮可查看所有数据</span>
+          </template>
+        </el-alert>
+      </div>
+      
       <el-table
         :data="ipList"
         v-loading="loading"
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="ip_address" label="IP地址" width="140" sortable />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column type="selection" width="70" />
+        <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
+        <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusTagType(row.status)">
+            <el-tag 
+              :type="getStatusTagType(row.status)" 
+              size="small"
+              :style="getStatusStyle(row.status)"
+            >
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="hostname" label="主机名" width="150" />
-        <el-table-column prop="mac_address" label="MAC地址" width="150" />
-        <el-table-column prop="device_type" label="设备类型" width="120" />
-        <el-table-column prop="assigned_to" label="分配给" width="120" />
-        <el-table-column prop="location" label="位置" width="120" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="allocated_at" label="分配时间" width="160">
+        <el-table-column prop="user_name" label="使用人" width="120" align="center">
           <template #default="{ row }">
-            {{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}
+            <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="mac_address" label="MAC地址" width="160" align="center">
           <template #default="{ row }">
-            <el-button
-              v-if="row.status === 'available'"
-              type="primary"
-              size="small"
-              @click="allocateIP(row)"
-            >
-              分配
-            </el-button>
-            <el-button
-              v-if="row.status === 'available'"
-              type="warning"
-              size="small"
-              @click="reserveIP(row)"
-            >
-              保留
-            </el-button>
-            <el-button
-              v-if="row.status === 'allocated' || row.status === 'reserved'"
-              type="danger"
-              size="small"
-              @click="releaseIP(row)"
-            >
-              释放
-            </el-button>
-            <el-button
-              type="info"
-              size="small"
-              @click="viewHistory(row)"
-            >
-              历史
-            </el-button>
+            <span>{{ row.mac_address || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="device_type" label="设备类型" width="140" align="center">
+          <template #default="{ row }">
+            <span>{{ getDeviceTypeName(row.device_type) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="assigned_to" label="所属部门" width="140" align="center">
+          <template #default="{ row }">
+            <span>{{ row.assigned_to || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip align="center">
+          <template #default="{ row }">
+            <span>{{ row.description || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="allocated_at" label="分配时间" width="220" align="center">
+          <template #default="{ row }">
+            <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right" align="center">
+          <template #default="{ row }">
+            <div class="action-buttons">
+              <el-button
+                v-if="row.status === 'available'"
+                type="primary"
+                size="small"
+                @click="allocateIP(row)"
+              >
+                分配
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                @click="editIP(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-if="row.status === 'available'"
+                type="warning"
+                size="small"
+                @click="reserveIP(row)"
+              >
+                保留
+              </el-button>
+              <el-button
+                v-if="row.status === 'allocated' || row.status === 'reserved'"
+                type="danger"
+                size="small"
+                @click="releaseIP(row)"
+              >
+                释放
+              </el-button>
+              <el-button
+                v-if="(row.status === 'available' || row.status === 'reserved') && isAdmin"
+                type="danger"
+                size="small"
+                plain
+                @click="deleteIP(row)"
+              >
+                删除
+              </el-button>
+
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -146,7 +195,7 @@
     <!-- IP分配对话框 -->
     <el-dialog
       v-model="showAllocationDialog"
-      title="分配IP地址"
+      title="分配地址"
       width="600px"
       @close="resetAllocationForm"
     >
@@ -156,7 +205,7 @@
         :rules="allocationRules"
         label-width="100px"
       >
-        <el-form-item label="网段" prop="subnet_id">
+        <el-form-item label="网段" prop="subnet_id" required>
           <el-select v-model="allocationForm.subnet_id" placeholder="选择网段" style="width: 100%">
             <el-option
               v-for="subnet in subnets"
@@ -172,23 +221,45 @@
         <el-form-item label="MAC地址" prop="mac_address">
           <el-input v-model="allocationForm.mac_address" placeholder="如：00:11:22:33:44:55" />
         </el-form-item>
-        <el-form-item label="主机名" prop="hostname">
-          <el-input v-model="allocationForm.hostname" placeholder="主机名" />
+        <el-form-item label="使用人" prop="user_name" required>
+          <el-input v-model="allocationForm.user_name" placeholder="使用人" />
         </el-form-item>
-        <el-form-item label="设备类型" prop="device_type">
+        <el-form-item label="设备类型" prop="device_type" required>
           <el-select v-model="allocationForm.device_type" placeholder="选择设备类型" style="width: 100%">
-            <el-option label="服务器" value="server" />
-            <el-option label="工作站" value="workstation" />
-            <el-option label="网络设备" value="network" />
-            <el-option label="打印机" value="printer" />
-            <el-option label="其他" value="other" />
+            <el-option
+              v-for="deviceType in deviceTypes"
+              :key="deviceType.code"
+              :label="deviceType.name"
+              :value="deviceType.code"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="位置" prop="location">
-          <el-input v-model="allocationForm.location" placeholder="设备位置" />
+        <el-form-item label="使用部门" prop="assigned_to" required>
+          <el-select 
+            v-model="allocationForm.assigned_to" 
+            placeholder="选择部门" 
+            filterable
+            allow-create
+            style="width: 100%"
+          >
+            <el-option
+              v-for="dept in departments"
+              :key="dept"
+              :label="dept"
+              :value="dept"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="分配给" prop="assigned_to">
-          <el-input v-model="allocationForm.assigned_to" placeholder="负责人或部门" />
+        <el-form-item label="分配时间" prop="allocated_at" required>
+          <el-date-picker
+            v-model="allocationForm.allocated_at"
+            type="datetime"
+            placeholder="选择分配时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+          <div class="form-tip">默认为当前时间，可手动修改</div>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input
@@ -234,7 +305,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReservationDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitReservation" :loading="submitting">
+        <el-button type="warning" @click="submitReservation" :loading="submitting">
           确认保留
         </el-button>
       </template>
@@ -267,7 +338,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReleaseDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitRelease" :loading="submitting">
+        <el-button type="danger" @click="submitRelease" :loading="submitting">
           确认释放
         </el-button>
       </template>
@@ -290,6 +361,7 @@
           <el-radio-group v-model="bulkForm.operation">
             <el-radio label="reserve">批量保留</el-radio>
             <el-radio label="release">批量释放</el-radio>
+            <el-radio v-if="isAdmin" label="delete">批量删除</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="选中IP">
@@ -319,7 +391,7 @@
       <template #footer>
         <el-button @click="showBulkDialog = false">取消</el-button>
         <el-button
-          type="primary"
+          :type="getBulkOperationButtonType()"
           @click="submitBulkOperation"
           :loading="submitting"
           :disabled="selectedIPs.length === 0"
@@ -329,34 +401,128 @@
       </template>
     </el-dialog>
 
-    <!-- IP历史记录对话框 -->
+    <!-- IP删除对话框 -->
     <el-dialog
-      v-model="showHistoryDialog"
-      title="IP地址历史记录"
-      width="800px"
+      v-model="showDeleteDialog"
+      title="删除IP地址"
+      width="500px"
+      @close="resetDeleteForm"
     >
-      <el-table :data="historyData" v-loading="historyLoading">
-        <el-table-column prop="action" label="操作" width="100" />
-        <el-table-column prop="username" label="操作人" width="120" />
-        <el-table-column prop="created_at" label="操作时间" width="160">
-          <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
+      <el-form
+        ref="deleteFormRef"
+        :model="deleteForm"
+        :rules="deleteRules"
+        label-width="100px"
+      >
+        <el-form-item label="IP地址">
+          <el-input v-model="deleteForm.ip_address" disabled />
+        </el-form-item>
+        <el-form-item label="删除原因" prop="reason">
+          <el-input
+            v-model="deleteForm.reason"
+            type="textarea"
+            :rows="3"
+            placeholder="请说明删除原因"
+          />
+        </el-form-item>
+        <el-alert
+          title="警告"
+          type="warning"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <p>删除IP地址将永久移除该记录，此操作不可恢复！</p>
+            <p>请确认该IP地址未被使用且确实需要删除。</p>
           </template>
-        </el-table-column>
-        <el-table-column prop="old_values" label="变更前" min-width="200">
-          <template #default="{ row }">
-            <pre v-if="row.old_values">{{ JSON.stringify(row.old_values, null, 2) }}</pre>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="new_values" label="变更后" min-width="200">
-          <template #default="{ row }">
-            <pre v-if="row.new_values">{{ JSON.stringify(row.new_values, null, 2) }}</pre>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-      </el-table>
+        </el-alert>
+      </el-form>
+      <template #footer>
+        <el-button @click="showDeleteDialog = false">取消</el-button>
+        <el-button type="danger" @click="submitDelete" :loading="submitting">
+          确认删除
+        </el-button>
+      </template>
     </el-dialog>
+
+    <!-- IP编辑对话框 -->
+    <el-dialog
+      v-model="showEditDialog"
+      title="编辑IP地址"
+      width="600px"
+      @close="resetEditForm"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        label-width="100px"
+      >
+        <el-form-item label="IP地址">
+          <el-input v-model="editForm.ip_address" disabled />
+        </el-form-item>
+        <el-form-item label="MAC地址" prop="mac_address">
+          <el-input v-model="editForm.mac_address" placeholder="如：00:11:22:33:44:55" />
+        </el-form-item>
+        <el-form-item label="使用人" prop="user_name" required>
+          <el-input v-model="editForm.user_name" placeholder="使用人" />
+        </el-form-item>
+        <el-form-item label="设备类型" prop="device_type" required>
+          <el-select v-model="editForm.device_type" placeholder="选择设备类型" style="width: 100%">
+            <el-option
+              v-for="deviceType in deviceTypes"
+              :key="deviceType.code"
+              :label="deviceType.name"
+              :value="deviceType.code"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="使用部门" prop="assigned_to" required>
+          <el-select 
+            v-model="editForm.assigned_to" 
+            placeholder="选择部门" 
+            filterable
+            allow-create
+            style="width: 100%"
+            popper-class="ip-management-select-dropdown"
+            @visible-change="handleSelectVisibleChange"
+          >
+            <el-option
+              v-for="dept in departments"
+              :key="dept"
+              :label="dept"
+              :value="dept"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分配时间" prop="allocated_at">
+          <el-date-picker
+            v-model="editForm.allocated_at"
+            type="datetime"
+            placeholder="选择分配时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="备注信息"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitEdit" :loading="submitting">
+          确认修改
+        </el-button>
+      </template>
+    </el-dialog>
+
+
     </div>
   </AppLayout>
 </template>
@@ -366,8 +532,11 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Operation, Refresh, Search } from '@element-plus/icons-vue'
 import { ipAPI, subnetApi } from '@/api'
+import { getDepartmentOptions } from '@/api/departments'
+import { getDeviceTypeOptions } from '@/api/deviceTypes'
 import AppLayout from '@/components/AppLayout.vue'
-import AdvancedSearch from '@/components/AdvancedSearch.vue'
+import SimpleIPFilter from '@/components/SimpleIPFilter.vue'
+import { useStore } from 'vuex'
 
 export default {
   name: 'IPManagement',
@@ -377,9 +546,17 @@ export default {
     Operation,
     Refresh,
     Search,
-    AdvancedSearch
+    SimpleIPFilter
   },
   setup() {
+    // Vuex store
+    const store = useStore()
+    
+    // 用户权限相关
+    const currentUser = computed(() => store.getters['auth/currentUser'])
+    const userRole = computed(() => store.getters['auth/userRole'])
+    const isAdmin = computed(() => userRole.value?.toLowerCase() === 'admin')
+    
     // 响应式数据
     const loading = ref(false)
     const submitting = ref(false)
@@ -387,6 +564,8 @@ export default {
     
     const ipList = ref([])
     const subnets = ref([])
+    const departments = ref([])
+    const deviceTypes = ref([])
     const selectedIPs = ref([])
     const historyData = ref([])
     
@@ -412,17 +591,20 @@ export default {
     const showReleaseDialog = ref(false)
     const showBulkDialog = ref(false)
     const showHistoryDialog = ref(false)
+    const showDeleteDialog = ref(false)
+    const showEditDialog = ref(false)
     
     // 表单数据
     const allocationForm = reactive({
       subnet_id: '',
       preferred_ip: '',
       mac_address: '',
-      hostname: '',
+      user_name: '',
       device_type: '',
       location: '',
       assigned_to: '',
-      description: ''
+      description: '',
+      allocated_at: null
     })
     
     const reservationForm = reactive({
@@ -440,10 +622,37 @@ export default {
       reason: ''
     })
     
+    const deleteForm = reactive({
+      ip_address: '',
+      reason: ''
+    })
+    
+    const editForm = reactive({
+      ip_address: '',
+      mac_address: '',
+      user_name: '',
+      device_type: '',
+      assigned_to: '',
+      description: '',
+      allocated_at: null
+    })
+    
     // 表单验证规则
     const allocationRules = {
       subnet_id: [
         { required: true, message: '请选择网段', trigger: 'change' }
+      ],
+      user_name: [
+        { required: true, message: '请填写使用人', trigger: 'blur' }
+      ],
+      device_type: [
+        { required: true, message: '请选择设备类型', trigger: 'change' }
+      ],
+      assigned_to: [
+        { required: true, message: '请选择使用部门', trigger: 'change' }
+      ],
+      allocated_at: [
+        { required: true, message: '请选择分配时间', trigger: 'change' }
       ],
       mac_address: [
         { pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, message: 'MAC地址格式不正确', trigger: 'blur' }
@@ -468,6 +677,27 @@ export default {
       ],
       reason: [
         { required: true, message: '请填写操作原因', trigger: 'blur' }
+      ]
+    }
+    
+    const deleteRules = {
+      reason: [
+        { required: true, message: '请填写删除原因', trigger: 'blur' }
+      ]
+    }
+    
+    const editRules = {
+      user_name: [
+        { required: true, message: '请填写使用人', trigger: 'blur' }
+      ],
+      device_type: [
+        { required: true, message: '请选择设备类型', trigger: 'change' }
+      ],
+      assigned_to: [
+        { required: true, message: '请选择使用部门', trigger: 'change' }
+      ],
+      mac_address: [
+        { pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, message: 'MAC地址格式不正确', trigger: 'blur' }
       ]
     }
     
@@ -514,6 +744,66 @@ export default {
       }
     }
     
+    const loadDepartments = async () => {
+      try {
+        const response = await getDepartmentOptions()
+        
+        if (response && response.data && response.data.departments) {
+          // 处理API响应格式：response.data.departments
+          const apiDepartments = response.data.departments.map(dept => dept.name).sort()
+          departments.value = apiDepartments
+        } else if (response && response.departments) {
+          // 处理直接响应格式：response.departments
+          const apiDepartments = response.departments.map(dept => dept.name).sort()
+          departments.value = apiDepartments
+        } else {
+          console.warn('部门API返回格式不正确:', response)
+          departments.value = []
+        }
+      } catch (error) {
+        console.error('从API加载部门列表失败：', error)
+        departments.value = []
+      }
+    }
+    
+    const loadDeviceTypes = async () => {
+      try {
+        // 从设备类型管理API获取设备类型列表
+        const response = await getDeviceTypeOptions()
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // 处理API响应格式：response.data
+          deviceTypes.value = response.data.filter(type => type.status === 'active')
+        } else if (response && Array.isArray(response)) {
+          // 处理直接响应格式：response
+          deviceTypes.value = response.filter(type => type.status === 'active')
+        } else {
+          // 如果获取失败，使用静态列表作为备选
+          deviceTypes.value = [
+            { code: 'server', name: '服务器' },
+            { code: 'workstation', name: '工作站' },
+            { code: 'switch', name: '网络交换机' },
+            { code: 'router', name: '路由器' },
+            { code: 'printer', name: '打印机' },
+            { code: 'firewall', name: '防火墙' },
+            { code: 'other', name: '其他' }
+          ]
+        }
+      } catch (error) {
+        console.error('加载设备类型列表失败：', error)
+        // 如果获取失败，使用静态列表
+        deviceTypes.value = [
+          { code: 'server', name: '服务器' },
+          { code: 'workstation', name: '工作站' },
+          { code: 'switch', name: '网络交换机' },
+          { code: 'router', name: '路由器' },
+          { code: 'printer', name: '打印机' },
+          { code: 'firewall', name: '防火墙' },
+          { code: 'other', name: '其他' }
+        ]
+      }
+    }
+    
     const loadStatistics = async () => {
       try {
         const response = await ipAPI.getStatistics(subnetFilter.value || undefined)
@@ -547,29 +837,67 @@ export default {
       loadStatistics()
     }
     
-    const handleAdvancedSearch = async (searchParams) => {
+    const handleSimpleSearch = async (searchParams) => {
       loading.value = true
       try {
         // 存储当前搜索参数
         currentSearchParams.value = searchParams
         
+        // 更新内部筛选状态
+        searchQuery.value = searchParams.query || ''
+        statusFilter.value = searchParams.status || ''
+        subnetFilter.value = searchParams.subnet_id || ''
+        
+        // 重置分页到第一页
+        currentPage.value = 1
+        
         // 添加分页参数
         const params = {
           ...searchParams,
-          skip: (currentPage.value - 1) * pageSize.value,
+          skip: 0, // 搜索时总是从第一页开始
           limit: pageSize.value
         }
         
-        // 使用高级搜索API
-        const response = await ipAPI.advancedSearchIPs(params)
-        const result = response.data
+
         
-        ipList.value = result.items || []
-        total.value = result.total || 0
+        // 使用简单搜索API
+        const response = await ipAPI.searchIPs(params)
+
+        
+        // 处理新的响应格式
+        if (response.data && Array.isArray(response.data)) {
+          // 新格式：{data: [...], total: number}
+          ipList.value = response.data
+          total.value = response.total || response.data.length
+        } else if (Array.isArray(response.data)) {
+          // 备用格式：response.data是数组
+          ipList.value = response.data
+          total.value = response.data.length
+        } else if (Array.isArray(response)) {
+          // 旧格式：response直接是数组
+          ipList.value = response
+          total.value = response.length
+        } else {
+          // 未知格式
+
+          ipList.value = []
+          total.value = 0
+        }
+        
+
+        
+        // 显示搜索结果提示
+        if (Object.keys(searchParams).length > 0) {
+          const hasQuery = searchParams.query
+          const hasFilters = searchParams.subnet_id || searchParams.status || searchParams.assigned_to
+          
+          // 搜索结果提示已禁用
+        }
         
         // 更新统计信息
         loadStatistics()
       } catch (error) {
+
         ElMessage.error('搜索失败：' + error.message)
       } finally {
         loading.value = false
@@ -589,13 +917,17 @@ export default {
     // 存储当前搜索参数
     const currentSearchParams = ref(null)
     
+    // 表单引用
+    const allocationFormRef = ref(null)
+    const editFormRef = ref(null)
+    
     const handleSizeChange = (size) => {
       pageSize.value = size
       currentPage.value = 1
       
-      // 如果有当前搜索参数，使用高级搜索，否则使用普通加载
+      // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleAdvancedSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value)
       } else {
         loadIPList()
       }
@@ -604,9 +936,9 @@ export default {
     const handleCurrentChange = (page) => {
       currentPage.value = page
       
-      // 如果有当前搜索参数，使用高级搜索，否则使用普通加载
+      // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleAdvancedSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value)
       } else {
         loadIPList()
       }
@@ -629,6 +961,15 @@ export default {
         allocationForm.subnet_id = row.subnet_id
         allocationForm.preferred_ip = row.ip_address
       }
+      // 默认设置当前时间为分配时间，格式化为字符串以匹配日期选择器的格式
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const seconds = String(now.getSeconds()).padStart(2, '0')
+      allocationForm.allocated_at = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
       showAllocationDialog.value = true
     }
     
@@ -640,6 +981,96 @@ export default {
     const releaseIP = (row) => {
       releaseForm.ip_address = row.ip_address
       showReleaseDialog.value = true
+    }
+    
+    const deleteIP = (row) => {
+      deleteForm.ip_address = row.ip_address
+      showDeleteDialog.value = true
+    }
+    
+    const editIP = (row) => {
+      // 填充编辑表单数据
+      editForm.ip_address = row.ip_address
+      editForm.mac_address = row.mac_address || ''
+      editForm.user_name = row.user_name || ''
+      editForm.device_type = row.device_type || ''
+      editForm.assigned_to = row.assigned_to || ''
+      editForm.description = row.description || ''
+      editForm.allocated_at = row.allocated_at || null
+      showEditDialog.value = true
+      
+      // 延迟修复下拉框样式
+      setTimeout(() => {
+        fixDropdownStyles()
+      }, 100)
+    }
+    
+    // 处理下拉框可见性变化
+    const handleSelectVisibleChange = (visible) => {
+      if (visible) {
+        // 下拉框打开时，延迟应用样式修复
+        setTimeout(() => {
+          fixDropdownStyles()
+        }, 50)
+      }
+    }
+    
+    // 修复下拉框样式的函数
+    const fixDropdownStyles = () => {
+      // 检查多种暗黑模式标识
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+                     document.body.classList.contains('dark') ||
+                     document.documentElement.classList.contains('dark')
+      
+      // 延迟执行以确保DOM已渲染
+      setTimeout(() => {
+        // 查找IP管理页面的下拉框
+        const dropdowns = document.querySelectorAll('.ip-management-select-dropdown, .el-select-dropdown')
+        
+        dropdowns.forEach(dropdown => {
+          if (isDark) {
+            // 应用暗黑模式样式
+            dropdown.style.setProperty('background-color', '#1d1e1f', 'important')
+            dropdown.style.setProperty('border-color', '#414243', 'important')
+            dropdown.style.setProperty('color', '#e5eaf3', 'important')
+            
+            // 修复选项样式
+            const items = dropdown.querySelectorAll('.el-select-dropdown__item')
+            items.forEach(item => {
+              item.style.setProperty('color', '#e5eaf3', 'important')
+              item.style.setProperty('background-color', 'transparent', 'important')
+              
+              // 移除旧的事件监听器（如果存在）
+              item.removeEventListener('mouseenter', item._darkModeEnterHandler)
+              item.removeEventListener('mouseleave', item._darkModeLeaveHandler)
+              
+              // 添加新的悬停事件处理器
+              item._darkModeEnterHandler = () => {
+                if (isDark && !item.classList.contains('selected')) {
+                  item.style.setProperty('background-color', '#262727', 'important')
+                  item.style.setProperty('color', '#e5eaf3', 'important')
+                }
+              }
+              
+              item._darkModeLeaveHandler = () => {
+                if (isDark && !item.classList.contains('selected')) {
+                  item.style.setProperty('background-color', 'transparent', 'important')
+                  item.style.setProperty('color', '#e5eaf3', 'important')
+                }
+              }
+              
+              item.addEventListener('mouseenter', item._darkModeEnterHandler)
+              item.addEventListener('mouseleave', item._darkModeLeaveHandler)
+              
+              // 处理选中状态
+              if (item.classList.contains('selected')) {
+                item.style.setProperty('background-color', '#409eff', 'important')
+                item.style.setProperty('color', '#ffffff', 'important')
+              }
+            })
+          }
+        })
+      }, 10)
     }
     
     const viewHistory = async (row) => {
@@ -657,13 +1088,34 @@ export default {
     
     // 表单提交方法
     const submitAllocation = async () => {
+      // 先进行表单验证
+      if (!allocationFormRef.value) return
+      
+      try {
+        await allocationFormRef.value.validate()
+      } catch (error) {
+        ElMessage.warning('请填写完整的必填信息')
+        return
+      }
+      
       submitting.value = true
       try {
-        await ipAPI.allocateIP(allocationForm)
+        // 准备提交数据，确保时间格式正确
+        const submitData = { ...allocationForm }
+        if (submitData.allocated_at) {
+          // 确保时间格式为ISO格式
+          const date = new Date(submitData.allocated_at)
+          submitData.allocated_at = date.toISOString()
+        }
+        
+        console.log('提交分配数据:', submitData) // 调试日志
+        
+        await ipAPI.allocateIP(submitData)
         ElMessage.success('IP地址分配成功')
         showAllocationDialog.value = false
         refreshData()
       } catch (error) {
+        console.error('分配失败:', error) // 调试日志
         ElMessage.error('分配失败：' + error.message)
       } finally {
         submitting.value = false
@@ -698,6 +1150,19 @@ export default {
       }
     }
     
+    const getBulkOperationButtonType = () => {
+      switch (bulkForm.operation) {
+        case 'reserve':
+          return 'warning'  // 🟠 保留操作使用橙色
+        case 'release':
+          return 'danger'   // 🔴 释放操作使用红色
+        case 'delete':
+          return 'danger'   // 🔴 删除操作使用红色
+        default:
+          return 'primary'  // 默认使用蓝色
+      }
+    }
+    
     const submitBulkOperation = async () => {
       if (selectedIPs.value.length === 0) {
         ElMessage.warning('请选择要操作的IP地址')
@@ -714,7 +1179,7 @@ export default {
         }
         
         const response = await ipAPI.bulkOperation(data)
-        const result = response.data
+        const result = response.data || response
         
         ElMessage.success(`批量操作完成：成功${result.success_count}个，失败${result.failed_count}个`)
         showBulkDialog.value = false
@@ -733,11 +1198,12 @@ export default {
         subnet_id: '',
         preferred_ip: '',
         mac_address: '',
-        hostname: '',
+        user_name: '',
         device_type: '',
         location: '',
         assigned_to: '',
-        description: ''
+        description: '',
+        allocated_at: null
       })
     }
     
@@ -773,10 +1239,40 @@ export default {
       return typeMap[status] || 'info'
     }
     
+    const getStatusStyle = (status) => {
+      const styleMap = {
+        available: {
+          backgroundColor: '#f0f9ff',
+          borderColor: '#67c23a',
+          color: '#67c23a'
+        },
+        allocated: {
+          backgroundColor: '#ecf5ff',
+          borderColor: '#409eff',
+          color: '#409eff'
+        },
+        reserved: {
+          backgroundColor: '#fdf6ec',
+          borderColor: '#e6a23c',
+          color: '#e6a23c'
+        },
+        conflict: {
+          backgroundColor: '#fef0f0',
+          borderColor: '#f56c6c',
+          color: '#f56c6c'
+        }
+      }
+      return styleMap[status] || {
+        backgroundColor: '#f4f4f5',
+        borderColor: '#909399',
+        color: '#909399'
+      }
+    }
+    
     const getStatusText = (status) => {
       const textMap = {
         available: '可用',
-        allocated: '已分配',
+        allocated: '使用中',
         reserved: '保留',
         conflict: '冲突'
       }
@@ -788,20 +1284,159 @@ export default {
       return new Date(dateString).toLocaleString('zh-CN')
     }
     
+    const getDeviceTypeName = (deviceTypeCode) => {
+      if (!deviceTypeCode) return '-'
+      
+      // 使用默认的设备类型映射作为主要方案
+      const defaultMapping = {
+        'server': '服务器',
+        'workstation': '工作站',
+        'switch': '网络交换机',
+        'router': '路由器',
+        'printer': '打印机',
+        'firewall': '防火墙',
+        'other': '其他',
+        'desktop': '台式机',
+        'laptop': '笔记本电脑',
+        'tablet': '平板电脑',
+        'phone': '手机',
+        'camera': '摄像头',
+        'access_point': '无线接入点',
+        'storage': '存储设备',
+        'monitor': '显示器',
+        'projector': '投影仪'
+      }
+      
+      // 首先尝试从默认映射中获取
+      if (defaultMapping[deviceTypeCode]) {
+        return defaultMapping[deviceTypeCode]
+      }
+      
+      // 如果设备类型列表已加载，尝试从中查找
+      if (deviceTypes.value && deviceTypes.value.length > 0) {
+        const deviceType = deviceTypes.value.find(type => type.code === deviceTypeCode)
+        if (deviceType && deviceType.name) {
+          return deviceType.name
+        }
+      }
+      
+      // 如果都找不到，返回代码本身
+      return deviceTypeCode
+    }
+    
     // 生命周期
-    onMounted(() => {
-      loadSubnets()
+    onMounted(async () => {
+      // 先加载基础数据
+      await Promise.all([
+        loadSubnets(),
+        loadDepartments(),
+        loadDeviceTypes()
+      ])
+      
+      // 然后加载IP列表和统计信息
       loadIPList()
       loadStatistics()
     })
     
+    // 删除IP地址的提交方法
+    const submitDelete = async () => {
+      submitting.value = true
+      try {
+        await ipAPI.deleteIP(deleteForm)
+        ElMessage.success('IP地址删除成功')
+        showDeleteDialog.value = false
+        refreshData()
+      } catch (error) {
+        ElMessage.error('删除失败：' + error.message)
+      } finally {
+        submitting.value = false
+      }
+    }
+    
+    // 删除表单重置方法
+    const resetDeleteForm = () => {
+      Object.assign(deleteForm, {
+        ip_address: '',
+        reason: ''
+      })
+    }
+    
+    // 编辑IP地址的提交方法
+    const submitEdit = async () => {
+      console.log('submitEdit 方法被调用')
+      console.log('editFormRef.value:', editFormRef.value)
+      console.log('editForm 数据:', editForm)
+      
+      // 先进行表单验证
+      if (!editFormRef.value) {
+        console.log('editFormRef.value 为空，返回')
+        return
+      }
+      
+      try {
+        console.log('开始表单验证')
+        await editFormRef.value.validate()
+        console.log('表单验证通过')
+      } catch (error) {
+        console.log('表单验证失败:', error)
+        ElMessage.warning('请填写完整的必填信息')
+        return
+      }
+      
+      submitting.value = true
+      try {
+        // 准备提交数据
+        const submitData = { ...editForm }
+        if (submitData.allocated_at) {
+          // 确保时间格式为MySQL兼容格式 YYYY-MM-DD HH:mm:ss
+          const date = new Date(submitData.allocated_at)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          const hours = String(date.getHours()).padStart(2, '0')
+          const minutes = String(date.getMinutes()).padStart(2, '0')
+          const seconds = String(date.getSeconds()).padStart(2, '0')
+          submitData.allocated_at = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+        
+        await ipAPI.updateIP(editForm.ip_address, submitData)
+        ElMessage.success('IP地址修改成功')
+        showEditDialog.value = false
+        refreshData()
+      } catch (error) {
+        ElMessage.error('修改失败：' + error.message)
+      } finally {
+        submitting.value = false
+      }
+    }
+    
+    // 编辑表单重置方法
+    const resetEditForm = () => {
+      Object.assign(editForm, {
+        ip_address: '',
+        mac_address: '',
+        user_name: '',
+        device_type: '',
+        assigned_to: '',
+        description: '',
+        allocated_at: null
+      })
+    }
+
     return {
+      // 用户权限
+      currentUser,
+      userRole,
+      isAdmin,
+      
       // 响应式数据
       loading,
       submitting,
       historyLoading,
       ipList,
       subnets,
+      departments,
+      deviceTypes,
       selectedIPs,
       historyData,
       searchQuery,
@@ -819,24 +1454,34 @@ export default {
       showReleaseDialog,
       showBulkDialog,
       showHistoryDialog,
+      showDeleteDialog,
+      showEditDialog,
       
       // 表单数据
       allocationForm,
       reservationForm,
       releaseForm,
       bulkForm,
+      deleteForm,
+      editForm,
       
       // 验证规则
       allocationRules,
       reservationRules,
       releaseRules,
       bulkRules,
+      deleteRules,
+      editRules,
+      
+      // 表单引用
+      allocationFormRef,
+      editFormRef,
       
       // 方法
       refreshData,
       handleSearch,
       handleFilter,
-      handleAdvancedSearch,
+      handleSimpleSearch,
       handleSearchReset,
       handleSizeChange,
       handleCurrentChange,
@@ -845,18 +1490,29 @@ export default {
       allocateIP,
       reserveIP,
       releaseIP,
+      deleteIP,
+      editIP,
+      fixDropdownStyles,
+      handleSelectVisibleChange,
       viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
       submitBulkOperation,
+      submitDelete,
+      submitEdit,
       resetAllocationForm,
       resetReservationForm,
       resetReleaseForm,
       resetBulkForm,
+      resetDeleteForm,
+      resetEditForm,
+      getBulkOperationButtonType,
       getStatusTagType,
+      getStatusStyle,
       getStatusText,
-      formatDate
+      formatDate,
+      getDeviceTypeName
     }
   }
 }
@@ -865,8 +1521,8 @@ export default {
 <style scoped>
 .ip-management {
   padding: 20px;
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 
 .header-section {
@@ -877,7 +1533,7 @@ export default {
 }
 
 .header-section h1 {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -889,10 +1545,10 @@ export default {
 .filter-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: var(--fill-color);
-  border: 1px solid var(--border-color);
+  background: var(--fill-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .stats-section {
@@ -901,14 +1557,14 @@ export default {
 
 .stats-card {
   text-align: center;
-  background: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
   transition: all 0.3s ease !important;
 }
 
 .stats-card:hover {
-  border-color: var(--primary-color) !important;
-  box-shadow: var(--box-shadow-light) !important;
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-light-light) !important;
 }
 
 .stats-item {
@@ -918,21 +1574,21 @@ export default {
 .stats-value {
   font-size: 24px;
   font-weight: bold;
-  color: var(--primary-color) !important;
+  color: var(--primary) !important;
   margin-bottom: 5px;
 }
 
 .stats-label {
   font-size: 14px;
-  color: var(--text-color-secondary) !important;
+  color: var(--text-tertiary) !important;
 }
 
 .table-section {
-  background: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
   border-radius: 8px;
   padding: 20px;
-  color: var(--text-color-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 .pagination-section {
@@ -949,7 +1605,7 @@ export default {
 }
 
 .no-selection {
-  color: #999;
+  color: var(--text-quaternary);
   font-style: italic;
 }
 
@@ -958,5 +1614,406 @@ pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-all;
+}
+</style>
+<style sc
+oped>
+/* 表单提示样式 */
+.form-tip {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* 页面布局样式 */
+.ip-management {
+  padding: 0;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light-base);
+}
+
+.header-section h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-section {
+  margin-bottom: 20px;
+}
+
+.stats-card {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: var(--shadow-light-base);
+}
+
+.stats-item {
+  padding: 20px;
+}
+
+.stats-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.table-section {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-light-base);
+}
+
+.search-status {
+  margin-bottom: 16px;
+}
+
+.pagination-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.selected-ips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  align-items: center;
+}
+
+.no-selection {
+  color: var(--text-quaternary);
+  font-size: 14px;
+}
+
+/* 操作按钮样式 */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  min-width: 280px;
+}
+
+.action-buttons .el-button {
+  margin: 0;
+  min-width: 50px;
+  height: 28px;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* 强制修复按钮颜色 - 覆盖全局样式 */
+.ip-management .action-buttons .el-button--primary {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: #ffffff !important;
+}
+
+/* 修复暗黑模式下下拉框选项显示问题 */
+:deep(.el-select-dropdown) {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item) {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item:hover) {
+  background-color: var(--fill-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown .el-select-dropdown__item.selected) {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* 修复下拉框输入框在暗黑模式下的显示 */
+:deep(.el-select .el-input__inner) {
+  background-color: var(--fill-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select .el-input__inner:focus) {
+  border-color: var(--primary) !important;
+}
+
+/* 修复下拉箭头颜色 */
+:deep(.el-select .el-input__suffix .el-input__suffix-inner .el-select__caret) {
+  color: var(--text-primary) !important;
+}
+
+.ip-management .action-buttons .el-button--primary:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--warning {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--warning:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--danger.is-plain {
+  background-color: transparent !important;
+  border-color: #f56c6c !important;
+  color: #f56c6c !important;
+}
+
+.ip-management .action-buttons .el-button--danger.is-plain:hover {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: #ffffff !important;
+}
+.ip-management .action-buttons .el-button--info {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: #ffffff !important;
+}
+
+.ip-management .action-buttons .el-button--info:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+  color: #ffffff !important;
+}
+
+/* 表格单元格对齐 */
+.el-table .cell {
+  text-align: center;
+}
+
+/* 状态标签样式 */
+.el-tag {
+  font-weight: 500;
+}
+
+/* 确保状态标签颜色正确显示 */
+.ip-management .el-tag.el-tag--success,
+.ip-management .status-available {
+  background-color: #f0f9ff !important;
+  border-color: #67c23a !important;
+  color: #67c23a !important;
+}
+
+.ip-management .el-tag.el-tag--primary,
+.ip-management .status-allocated {
+  background-color: #ecf5ff !important;
+  border-color: #409eff !important;
+  color: #409eff !important;
+}
+
+.ip-management .el-tag.el-tag--warning,
+.ip-management .status-reserved {
+  background-color: #fdf6ec !important;
+  border-color: #e6a23c !important;
+  color: #e6a23c !important;
+}
+
+.ip-management .el-tag.el-tag--danger,
+.ip-management .status-conflict {
+  background-color: #fef0f0 !important;
+  border-color: #f56c6c !important;
+  color: #f56c6c !important;
+}
+
+.ip-management .el-tag.el-tag--info {
+  background-color: #f4f4f5 !important;
+  border-color: #909399 !important;
+  color: #909399 !important;
+}
+
+/* 基础样式 */
+.ip-management {
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-section h1 {
+  margin: 0;
+  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-section {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stats-item {
+  padding: 20px;
+}
+
+.stats-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #409eff;
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 14px;
+  color: #909399;
+}
+
+.table-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-status {
+  margin-bottom: 16px;
+}
+
+.pagination-section {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selected-ips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+  align-items: center;
+}
+
+.no-selection {
+  color: #c0c4cc;
+  font-style: italic;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ip-management {
+    padding: 16px;
+  }
+  
+  .header-section {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .stats-section .el-col {
+    margin-bottom: 16px;
+  }
+  
+  .table-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-section {
+    padding: 16px;
+  }
+  
+  .header-section h1 {
+    font-size: 20px;
+  }
+  
+  .stats-value {
+    font-size: 24px;
+  }
+  
+  .table-section {
+    padding: 12px;
+  }
 }
 </style>

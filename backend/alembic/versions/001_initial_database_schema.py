@@ -65,7 +65,7 @@ def upgrade() -> None:
         sa.Column('subnet_id', sa.Integer(), nullable=False),
         sa.Column('status', sa.Enum('available', 'allocated', 'reserved', 'conflict', name='ipstatus'), nullable=True),
         sa.Column('mac_address', sa.String(length=17), nullable=True),
-        sa.Column('hostname', sa.String(length=255), nullable=True),
+        sa.Column('user_name', sa.String(length=255), nullable=True),
         sa.Column('device_type', sa.String(length=50), nullable=True),
         sa.Column('location', sa.String(length=100), nullable=True),
         sa.Column('assigned_to', sa.String(length=100), nullable=True),
@@ -84,7 +84,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_ip_addresses_subnet_id'), 'ip_addresses', ['subnet_id'], unique=False)
     op.create_index(op.f('ix_ip_addresses_status'), 'ip_addresses', ['status'], unique=False)
     op.create_index(op.f('ix_ip_addresses_mac_address'), 'ip_addresses', ['mac_address'], unique=False)
-    op.create_index(op.f('ix_ip_addresses_hostname'), 'ip_addresses', ['hostname'], unique=False)
+    op.create_index(op.f('ix_ip_addresses_user_name'), 'ip_addresses', ['user_name'], unique=False)
 
     # Create custom_fields table
     op.create_table('custom_fields',

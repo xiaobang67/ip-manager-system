@@ -125,7 +125,7 @@
                 <span class="rank">{{ index + 1 }}</span>
                 <span class="ip">{{ ip.ip }}</span>
                 <span class="count">{{ ip.threat_count }} 次威胁</span>
-                <el-button size="small" type="danger" @click="blockIP(ip.ip)">
+                <el-button size="small" class="btn-delete" @click="blockIP(ip.ip)">
                   阻止
                 </el-button>
               </div>
@@ -617,7 +617,7 @@ export default {
 
 .dashboard-header h1 {
   margin: 0;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .header-actions {
@@ -687,34 +687,34 @@ export default {
 .card-info h3 {
   margin: 0 0 5px 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--text-tertiary);
 }
 
 .card-value {
   margin: 0;
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .card-value.threat-low {
-  color: #67C23A;
+  color: var(--success);
 }
 
 .card-value.threat-medium {
-  color: #E6A23C;
+  color: var(--warning);
 }
 
 .card-value.threat-high {
-  color: #F56C6C;
+  color: var(--danger);
 }
 
 .card-value.threat-critical {
-  color: #909399;
+  color: var(--info);
 }
 
 .card-value.alert-count {
-  color: #F56C6C;
+  color: var(--danger);
 }
 
 .charts-section {
@@ -741,18 +741,19 @@ export default {
   width: 30px;
   text-align: center;
   font-weight: bold;
-  color: #409EFF;
+  color: var(--primary);
 }
 
 .threat-ip-item .ip {
   flex: 1;
   margin-left: 10px;
   font-family: monospace;
+  color: var(--text-primary);
 }
 
 .threat-ip-item .count {
   margin-right: 10px;
-  color: #F56C6C;
+  color: var(--danger);
   font-size: 12px;
 }
 
@@ -773,7 +774,7 @@ export default {
 }
 
 .acknowledged {
-  color: #67C23A;
+  color: var(--success);
   font-size: 12px;
 }
 

@@ -4,7 +4,7 @@
     <div class="search-bar">
       <el-input
         v-model="searchForm.query"
-        placeholder="搜索IP地址、主机名、MAC地址、设备类型..."
+        placeholder="搜索IP地址、使用人、MAC地址、设备类型..."
         @input="handleRealTimeSearch"
         @keyup.enter="handleSearch"
         clearable
@@ -92,7 +92,7 @@
                 <el-form-item label="状态">
                   <el-select v-model="searchForm.status" placeholder="选择状态" clearable>
                     <el-option label="可用" value="available" />
-                    <el-option label="已分配" value="allocated" />
+                    <el-option label="使用中" value="allocated" />
                     <el-option label="保留" value="reserved" />
                     <el-option label="冲突" value="conflict" />
                   </el-select>
@@ -114,20 +114,18 @@
             
             <el-row :gutter="20">
               <el-col :span="8">
-                <el-form-item label="位置">
-                  <el-input v-model="searchForm.location" placeholder="设备位置" clearable />
+
+              </el-col>
+              
+              <el-col :span="8">
+                <el-form-item label="所属部门">
+                  <el-input v-model="searchForm.assigned_to" placeholder="所属部门" clearable />
                 </el-form-item>
               </el-col>
               
               <el-col :span="8">
-                <el-form-item label="分配给">
-                  <el-input v-model="searchForm.assigned_to" placeholder="负责人或部门" clearable />
-                </el-form-item>
-              </el-col>
-              
-              <el-col :span="8">
-                <el-form-item label="主机名">
-                  <el-input v-model="searchForm.hostname" placeholder="主机名" clearable />
+                <el-form-item label="使用人">
+                  <el-input v-model="searchForm.user_name" placeholder="使用人" clearable />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -276,7 +274,7 @@
                   <el-select v-model="searchForm.sort_by" placeholder="排序字段">
                     <el-option label="IP地址" value="ip_address" />
                     <el-option label="状态" value="status" />
-                    <el-option label="主机名" value="hostname" />
+                    <el-option label="使用人" value="user_name" />
                     <el-option label="分配时间" value="allocated_at" />
                     <el-option label="创建时间" value="created_at" />
                   </el-select>
@@ -498,7 +496,7 @@ export default {
       device_type: null,
       location: '',
       assigned_to: '',
-      hostname: '',
+      user_name: '',
       mac_address: '',
       ip_range_start: '',
       ip_range_end: '',
@@ -747,7 +745,7 @@ export default {
       if (params.query) conditions.push(`关键词: ${params.query}`)
       if (params.status) conditions.push(`状态: ${params.status}`)
       if (params.device_type) conditions.push(`设备类型: ${params.device_type}`)
-      if (params.location) conditions.push(`位置: ${params.location}`)
+
       
       return conditions.length > 0 ? conditions.join(', ') : '无特定条件'
     }
@@ -813,8 +811,8 @@ export default {
 <style scoped>
 .advanced-search {
   margin-bottom: 20px;
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 
 .search-bar {
@@ -834,7 +832,7 @@ export default {
 }
 
 .search-actions .el-button.active {
-  color: var(--primary-color) !important;
+  color: var(--primary) !important;
 }
 
 .quick-search-tags {
@@ -846,21 +844,21 @@ export default {
 }
 
 .tags-label {
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
   font-size: 14px;
 }
 
 .quick-tag {
   cursor: pointer;
   transition: all 0.3s;
-  background-color: var(--fill-color) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color-regular) !important;
+  background-color: var(--fill-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-secondary) !important;
 }
 
 .quick-tag:hover {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
   color: #ffffff !important;
 }
 
@@ -869,16 +867,16 @@ export default {
 }
 
 .advanced-filters .el-card {
-  background-color: var(--bg-color) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color-primary) !important;
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 .filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .filter-form .el-form-item {
@@ -890,16 +888,16 @@ export default {
 }
 
 .search-history .el-card {
-  background-color: var(--bg-color) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color-primary) !important;
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .history-list {
@@ -912,23 +910,23 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border: 1px solid var(--border-color-lighter);
+  border: 1px solid var(--border-primary-lighter);
   border-radius: 6px;
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  background-color: var(--bg-color);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .history-item:hover {
-  background-color: var(--fill-color) !important;
-  border-color: var(--primary-color) !important;
+  background-color: var(--fill-primary) !important;
+  border-color: var(--primary) !important;
 }
 
 .favorite-item {
-  border-color: var(--danger-color) !important;
-  background-color: var(--fill-color-light) !important;
+  border-color: var(--danger) !important;
+  background-color: var(--fill-primary-light) !important;
 }
 
 .history-content {
@@ -941,18 +939,18 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .history-params {
   font-size: 12px;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
   margin-bottom: 4px;
 }
 
 .history-meta {
   font-size: 11px;
-  color: var(--text-color-placeholder);
+  color: var(--text-quaternary);
   display: flex;
   gap: 15px;
 }
@@ -963,21 +961,21 @@ export default {
 }
 
 .history-actions .el-button.favorite {
-  color: var(--danger-color) !important;
+  color: var(--danger) !important;
 }
 
 .history-actions .el-button.unfavorite-btn {
-  color: var(--danger-color) !important;
+  color: var(--danger) !important;
 }
 
 .history-actions .el-button.delete-btn {
-  color: var(--danger-color) !important;
+  color: var(--danger) !important;
 }
 
 .empty-history {
   text-align: center;
   padding: 40px 0;
-  color: var(--text-color-secondary);
+  color: var(--text-tertiary);
 }
 
 .history-tabs .el-tabs__content {

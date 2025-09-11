@@ -14,12 +14,13 @@ class IPQueryBuilder:
     
     def __init__(self, db: Session):
         self.db = db
-        self.base_query = db.query(IPAddress).options(joinedload(IPAddress.subnet))
+        self.base_query = db.query(IPAddress).join(Subnet, IPAddress.subnet_id == Subnet.id).options(joinedload(IPAddress.subnet))
     
     def build_search_query(self, search_request: IPSearchRequest) -> Tuple[Query, Query]:
         """构建搜索查询和计数查询"""
         query = self.base_query
-        count_query = self.db.query(func.count(IPAddress.id))
+        # 确保count_query也包含必要的联接
+        count_query = self.db.query(func.count(IPAddress.id)).join(Subnet, IPAddress.subnet_id == Subnet.id)
         
         # 应用过滤条件
         filters = self._build_filters(search_request)
@@ -61,17 +62,17 @@ class IPQueryBuilder:
         if search_request.location:
             filters.append(IPAddress.location.ilike(f"%{search_request.location}%"))
         
-        # 分配给过滤
+        # 分配部门过滤（精确匹配）
         if search_request.assigned_to:
-            filters.append(IPAddress.assigned_to.ilike(f"%{search_request.assigned_to}%"))
+            filters.append(IPAddress.assigned_to == search_request.assigned_to)
         
         # MAC地址过滤
         if search_request.mac_address:
             filters.append(IPAddress.mac_address.ilike(f"%{search_request.mac_address}%"))
         
-        # 主机名过滤
-        if search_request.hostname:
-            filters.append(IPAddress.hostname.ilike(f"%{search_request.hostname}%"))
+        # 使用人过滤
+        if search_request.user_name:
+            filters.append(IPAddress.user_name.ilike(f"%{search_request.user_name}%"))
         
         # IP地址范围过滤
         if search_request.ip_range_start and search_request.ip_range_end:
@@ -107,10 +108,14 @@ class IPQueryBuilder:
         for term in search_terms:
             term_filters = [
                 IPAddress.ip_address.ilike(f"%{term}%"),
-                IPAddress.hostname.ilike(f"%{term}%"),
+                IPAddress.user_name.ilike(f"%{term}%"),
                 IPAddress.mac_address.ilike(f"%{term}%"),
                 IPAddress.device_type.ilike(f"%{term}%"),
-                IPAddress.assigned_to.ilike(f"%{term}%"),
+                # 对于部门字段，优先精确匹配，然后模糊匹配
+                or_(
+                    IPAddress.assigned_to == term,  # 精确匹配
+                    IPAddress.assigned_to.ilike(f"%{term}%")  # 模糊匹配作为备选
+                ),
                 IPAddress.location.ilike(f"%{term}%"),
                 IPAddress.description.ilike(f"%{term}%"),
                 # 支持网段搜索

@@ -11,7 +11,7 @@
     </div>
 
     <!-- 搜索和过滤 -->
-    <div class="search-section">
+    <div class="theme-search-section">
       <el-row :gutter="20">
         <el-col :span="8">
           <el-input
@@ -32,7 +32,7 @@
           />
         </el-col>
         <el-col :span="4">
-          <el-button @click="resetFilters">重置</el-button>
+          <el-button type="info" @click="resetFilters">重置</el-button>
         </el-col>
       </el-row>
     </div>
@@ -76,17 +76,35 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="scope">
-            <el-button size="small" @click="viewSubnet(scope.row)">
+            <el-button 
+              size="small" 
+              type="info"
+              @click="viewSubnet(scope.row)"
+            >
               查看
             </el-button>
-            <el-button size="small" type="primary" @click="editSubnet(scope.row)">
+            <el-button 
+              size="small" 
+              type="primary"
+              @click="editSubnet(scope.row)"
+            >
               编辑
             </el-button>
+            <el-button 
+              size="small" 
+              type="warning"
+              @click="syncSubnetIPs(scope.row)"
+              :loading="scope.row.syncing"
+            >
+              同步IP
+            </el-button>
             <el-button
+              v-if="isAdmin"
               size="small"
               type="danger"
+              plain
               @click="deleteSubnet(scope.row)"
               :disabled="scope.row.allocated_count > 0"
             >
@@ -136,6 +154,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import SubnetDialog from '@/components/subnet/SubnetDialog.vue'
 import SubnetDetailDialog from '@/components/subnet/SubnetDetailDialog.vue'
 import { debounce } from '@/utils/debounce'
+import { useStore } from 'vuex'
 
 export default {
   name: 'SubnetManagement',
@@ -145,6 +164,14 @@ export default {
     SubnetDetailDialog
   },
   setup() {
+    // Vuex store
+    const store = useStore()
+    
+    // 用户权限相关
+    const currentUser = computed(() => store.getters['auth/currentUser'])
+    const userRole = computed(() => store.getters['auth/userRole'])
+    const isAdmin = computed(() => userRole.value?.toLowerCase() === 'admin')
+    
     // 响应式数据
     const loading = ref(false)
     const subnets = ref([])
@@ -232,7 +259,14 @@ export default {
       if (vlanFilter.value) {
         loading.value = true
         try {
-          const response = await subnetApi.getSubnetsByVlan(vlanFilter.value)
+          // 使用搜索API进行VLAN过滤
+          const params = {
+            vlan_id: parseInt(vlanFilter.value),
+            skip: (currentPage.value - 1) * pageSize.value,
+            limit: pageSize.value
+          }
+          
+          const response = await subnetApi.searchSubnets(params)
           
           if (!response) {
             subnets.value = []
@@ -241,19 +275,27 @@ export default {
           }
 
           let subnetData = []
-          
-          if (Array.isArray(response)) {
+          let totalCount = 0
+
+          if (response.subnets && Array.isArray(response.subnets)) {
+            subnetData = response.subnets
+            totalCount = response.total || 0
+          } else if (response.data?.subnets && Array.isArray(response.data.subnets)) {
+            subnetData = response.data.subnets
+            totalCount = response.data.total || 0
+          } else if (Array.isArray(response)) {
             subnetData = response
+            totalCount = response.length
           } else if (response.data && Array.isArray(response.data)) {
             subnetData = response.data
-          } else if (response.subnets && Array.isArray(response.subnets)) {
-            subnetData = response.subnets
+            totalCount = response.data.length
           } else {
             subnetData = []
+            totalCount = 0
           }
 
           subnets.value = subnetData
-          total.value = subnetData.length
+          total.value = totalCount
         } catch (error) {
           subnets.value = []
           total.value = 0
@@ -315,7 +357,7 @@ export default {
     // 删除网段
     const deleteSubnet = async (subnet) => {
       if (subnet.allocated_count > 0) {
-        ElMessage.warning('该网段存在已分配的IP地址，无法删除')
+        ElMessage.warning('该网段存在使用中的IP地址，无法删除')
         return
       }
 
@@ -337,6 +379,42 @@ export default {
         if (error !== 'cancel') {
           ElMessage.error('删除网段失败: ' + (error.response?.data?.detail || error.message))
         }
+      }
+    }
+
+    // 同步网段IP地址
+    const syncSubnetIPs = async (subnet) => {
+      try {
+        await ElMessageBox.confirm(
+          `确定要同步网段 ${subnet.network} 的IP地址吗？\n\n此操作将：\n• 根据CIDR格式重新生成正确的IP地址范围\n• 添加缺失的IP地址\n• 删除不属于该网段的未分配IP地址\n• 保留使用中的IP地址`,
+          '确认同步IP地址',
+          {
+            confirmButtonText: '确定同步',
+            cancelButtonText: '取消',
+            type: 'warning',
+            dangerouslyUseHTMLString: false
+          }
+        )
+
+        // 设置同步状态
+        subnet.syncing = true
+        
+        const response = await subnetApi.syncSubnetIPs(subnet.id)
+        
+        ElMessage.success({
+          message: `IP地址同步完成！新增 ${response.stats.added} 个，删除 ${response.stats.removed} 个，保持 ${response.stats.kept} 个`,
+          duration: 5000
+        })
+        
+        // 刷新网段列表以显示最新的IP统计
+        fetchSubnets()
+      } catch (error) {
+        if (error !== 'cancel') {
+          ElMessage.error('同步IP地址失败: ' + (error.response?.data?.detail || error.message))
+        }
+      } finally {
+        // 清除同步状态
+        subnet.syncing = false
       }
     }
 
@@ -372,6 +450,11 @@ export default {
       Plus,
       Search,
       
+      // 用户权限
+      currentUser,
+      userRole,
+      isAdmin,
+      
       // 数据
       loading,
       subnets,
@@ -399,6 +482,7 @@ export default {
       viewSubnet,
       editSubnet,
       deleteSubnet,
+      syncSubnetIPs,
       handleDialogSuccess,
       formatDate,
       getUsagePercentage,
@@ -411,8 +495,8 @@ export default {
 <style scoped>
 .subnet-management {
   padding: 20px;
-  background-color: var(--bg-color-page);
-  color: var(--text-color-primary);
+  background-color: var(--bg-primary-page);
+  color: var(--text-primary);
 }
 
 .page-header {
@@ -424,23 +508,23 @@ export default {
 
 .page-header h1 {
   margin: 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .search-section {
   margin-bottom: 20px;
   padding: 20px;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light);
 }
 
 .subnet-list {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light);
   padding: 20px;
 }
 
@@ -452,7 +536,7 @@ export default {
 
 .usage-text {
   font-size: 12px;
-  color: #606266;
+  color: var(--text-tertiary);
   text-align: center;
 }
 
@@ -460,5 +544,58 @@ export default {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+/* 按钮颜色统一样式 */
+.btn-allocation, .btn-edit {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: white !important;
+}
+
+.btn-allocation:hover, .btn-edit:hover {
+  background-color: #66b1ff !important;
+  border-color: #66b1ff !important;
+}
+
+.btn-reservation, .btn-sync {
+  background-color: #e6a23c !important;
+  border-color: #e6a23c !important;
+  color: white !important;
+}
+
+.btn-reservation:hover, .btn-sync:hover {
+  background-color: #ebb563 !important;
+  border-color: #ebb563 !important;
+}
+
+.btn-release, .btn-delete {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: white !important;
+}
+
+.btn-release:hover, .btn-delete:hover {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
+}
+
+.btn-history, .btn-view {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-history:hover, .btn-view:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
+}
+
+/* 暗黑主题适配 */
+.dark .btn-allocation, .dark .btn-edit,
+.dark .btn-reservation, .dark .btn-sync,
+.dark .btn-release, .dark .btn-delete,
+.dark .btn-history, .dark .btn-view {
+  opacity: 0.9;
 }
 </style>

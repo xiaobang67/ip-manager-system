@@ -14,16 +14,14 @@ export class CustomFieldsDebugger {
      * 调试日志
      */
     log(message, data = null) {
-        if (this.debugMode) {
-            console.log(`[CustomFields Debug] ${message}`, data)
-        }
+        // Debug logging disabled
     }
 
     /**
      * 错误日志
      */
     error(message, error = null) {
-        console.error(`[CustomFields Error] ${message}`, error)
+        // Error logging disabled for production
     }
 
     /**

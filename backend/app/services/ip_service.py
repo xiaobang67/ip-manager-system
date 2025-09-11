@@ -9,11 +9,12 @@ from app.schemas.ip_address import (
     IPAllocationRequest, IPReservationRequest, IPReleaseRequest,
     IPSearchRequest, IPStatisticsResponse, IPSyncResponse,
     IPConflictResponse, IPRangeStatusRequest, IPRangeStatusResponse,
-    BulkIPOperationRequest, BulkIPOperationResponse
+    BulkIPOperationRequest, BulkIPOperationResponse, IPDeleteRequest
 )
 from app.core.exceptions import ValidationError, NotFoundError, ConflictError
 import ipaddress
 from datetime import datetime
+from app.core.timezone_config import now_beijing
 
 
 class IPService:
@@ -87,6 +88,10 @@ class IPService:
 
     def allocate_ip(self, request: IPAllocationRequest, allocated_by: int) -> IPAddressResponse:
         """分配IP地址"""
+        print(f"[DEBUG] 开始分配IP，请求数据: {request}")
+        print(f"[DEBUG] 分配时间: {request.allocated_at}")
+        print(f"[DEBUG] 分配人ID: {allocated_by}")
+        
         # 如果指定了首选IP，尝试分配
         if request.preferred_ip:
             preferred_ip = self.ip_repo.get_by_ip_address(request.preferred_ip)
@@ -97,22 +102,27 @@ class IPService:
                     raise ConflictError(f"IP地址 {request.preferred_ip} 不可用，当前状态: {preferred_ip.status}")
                 
                 # 分配指定IP
+                allocated_time = request.allocated_at if request.allocated_at else now_beijing()
+                
                 update_data = IPAddressUpdate(
                     mac_address=request.mac_address,
-                    hostname=request.hostname,
+                    user_name=request.user_name,
                     device_type=request.device_type,
                     location=request.location,
                     assigned_to=request.assigned_to,
                     description=request.description,
-                    status=IPStatus.ALLOCATED
+                    status=IPStatus.ALLOCATED,
+                    allocated_at=allocated_time,
+                    allocated_by=allocated_by
                 )
                 
-                # 更新分配信息
-                preferred_ip.allocated_at = datetime.utcnow()
-                preferred_ip.allocated_by = allocated_by
-                
+                print(f"[DEBUG] 更新数据: {update_data}")
                 updated_ip = self.ip_repo.update(preferred_ip.id, update_data)
-                return self._ip_to_response(updated_ip)
+                print(f"[DEBUG] 更新后的IP对象: {updated_ip}")
+                print(f"[DEBUG] 更新后的分配时间: {updated_ip.allocated_at}")
+                result = self._ip_to_response(updated_ip)
+                print(f"[DEBUG] 响应数据: {result}")
+                return result
         
         # 自动分配可用IP
         available_ips = self.ip_repo.get_available_ips(request.subnet_id, limit=1)
@@ -121,19 +131,20 @@ class IPService:
         
         ip_to_allocate = available_ips[0]
         
+        # 更新分配信息
+        allocated_time = request.allocated_at if request.allocated_at else now_beijing()
+        
         update_data = IPAddressUpdate(
             mac_address=request.mac_address,
-            hostname=request.hostname,
+            user_name=request.user_name,
             device_type=request.device_type,
             location=request.location,
             assigned_to=request.assigned_to,
             description=request.description,
-            status=IPStatus.ALLOCATED
+            status=IPStatus.ALLOCATED,
+            allocated_at=allocated_time,
+            allocated_by=allocated_by
         )
-        
-        # 更新分配信息
-        ip_to_allocate.allocated_at = datetime.utcnow()
-        ip_to_allocate.allocated_by = allocated_by
         
         updated_ip = self.ip_repo.update(ip_to_allocate.id, update_data)
         return self._ip_to_response(updated_ip)
@@ -157,7 +168,7 @@ class IPService:
         )
         
         # 更新保留信息
-        ip_record.allocated_at = datetime.utcnow()
+        ip_record.allocated_at = now_beijing()
         ip_record.allocated_by = reserved_by
         
         updated_ip = self.ip_repo.update(ip_record.id, update_data)
@@ -175,7 +186,7 @@ class IPService:
         update_data = IPAddressUpdate(
             status=IPStatus.AVAILABLE,
             mac_address=None,
-            hostname=None,
+            user_name=None,
             device_type=None,
             assigned_to=None,
             description=request.reason
@@ -187,6 +198,27 @@ class IPService:
         
         updated_ip = self.ip_repo.update(ip_record.id, update_data)
         return self._ip_to_response(updated_ip)
+
+    def delete_ip(self, request: IPDeleteRequest, deleted_by: int) -> dict:
+        """删除IP地址"""
+        ip_record = self.ip_repo.get_by_ip_address(request.ip_address)
+        if not ip_record:
+            raise NotFoundError(f"IP地址 {request.ip_address} 不存在")
+        
+        # 检查IP地址是否可以删除
+        if ip_record.status == IPStatus.ALLOCATED:
+            raise ValidationError(f"IP地址 {request.ip_address} 已分配，无法删除。请先释放该IP地址")
+        
+        # 删除IP地址记录
+        success = self.ip_repo.delete(ip_record.id)
+        if not success:
+            raise ValidationError(f"删除IP地址 {request.ip_address} 失败")
+        
+        return {
+            "ip_address": request.ip_address,
+            "message": f"IP地址 {request.ip_address} 删除成功",
+            "reason": request.reason
+        }
 
     def detect_ip_conflicts(self, subnet_id: Optional[int] = None) -> List[IPConflictResponse]:
         """检测IP地址冲突"""
@@ -277,7 +309,7 @@ class IPService:
         
         # 保存搜索历史（如果有搜索条件）
         if any([request.query, request.subnet_id, request.status, request.device_type, 
-                request.location, request.assigned_to, request.mac_address, request.hostname,
+                request.location, request.assigned_to, request.mac_address, request.user_name,
                 request.ip_range_start, request.tags]):
             search_history_service = SearchHistoryService(self.db)
             search_params = request.model_dump(exclude_unset=True, exclude={'skip', 'limit'})
@@ -302,7 +334,7 @@ class IPService:
             IPRangeStatusResponse(
                 ip_address=item['ip_address'],
                 status=item['status'],
-                hostname=item['hostname'],
+                user_name=item['hostname'],
                 mac_address=item['mac_address'],
                 assigned_to=item['assigned_to']
             )
@@ -321,7 +353,7 @@ class IPService:
                     ip_record = self.ip_repo.get_by_ip_address(ip_address)
                     if ip_record and ip_record.status == IPStatus.AVAILABLE:
                         update_data = IPAddressUpdate(status=IPStatus.ALLOCATED)
-                        ip_record.allocated_at = datetime.utcnow()
+                        ip_record.allocated_at = now_beijing()
                         ip_record.allocated_by = user_id
                         self.ip_repo.update(ip_record.id, update_data)
                         success_ips.append(ip_address)
@@ -336,6 +368,11 @@ class IPService:
                 elif request.operation == 'release':
                     release_req = IPReleaseRequest(ip_address=ip_address, reason=request.reason)
                     self.release_ip(release_req, user_id)
+                    success_ips.append(ip_address)
+                
+                elif request.operation == 'delete':
+                    delete_req = IPDeleteRequest(ip_address=ip_address, reason=request.reason)
+                    self.delete_ip(delete_req, user_id)
                     success_ips.append(ip_address)
                 
             except Exception as e:
@@ -379,6 +416,33 @@ class IPService:
                 f"最大允许保留 {max_allowed} 个IP地址"
             )
 
+    def get_departments(self) -> List[str]:
+        """获取所有分配部门列表"""
+        try:
+            # 查询所有已分配IP的assigned_to字段
+            departments = (
+                self.db.query(IPAddress.assigned_to)
+                .filter(
+                    and_(
+                        IPAddress.assigned_to.isnot(None),
+                        IPAddress.assigned_to != '',
+                        IPAddress.status == IPStatus.ALLOCATED
+                    )
+                )
+                .distinct()
+                .all()
+            )
+            
+            # 提取部门名称并排序
+            dept_list = [dept[0] for dept in departments if dept[0] and dept[0].strip()]
+            dept_list.sort()
+            
+            return dept_list
+            
+        except Exception as e:
+            # 如果查询失败，返回空列表
+            return []
+
     def _ip_to_response(self, ip: IPAddress) -> IPAddressResponse:
         """将IP模型转换为响应模型"""
         return IPAddressResponse(
@@ -387,7 +451,7 @@ class IPService:
             subnet_id=ip.subnet_id,
             status=ip.status,
             mac_address=ip.mac_address,
-            hostname=ip.hostname,
+            user_name=ip.user_name,
             device_type=ip.device_type,
             location=ip.location,
             assigned_to=ip.assigned_to,

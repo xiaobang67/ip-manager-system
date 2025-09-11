@@ -18,8 +18,8 @@ RUN npm install
 # 复制源代码
 COPY . .
 
-# 构建应用
-RUN npm run build
+# 确保 vite 可执行并构建应用
+RUN node node_modules/vite/bin/vite.js build
 
 # 使用Nginx提供静态文件服务
 FROM nginx:alpine

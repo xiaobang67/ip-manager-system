@@ -384,7 +384,7 @@ class ErrorHandler {
     try {
       // 这里可以调用API发送错误日志
       // await api.post('/api/logs/error', logData)
-      console.log('Error logged:', logData)
+
     } catch (error) {
       // 发送失败时存储到本地
       this.storeErrorLocally(logData)
