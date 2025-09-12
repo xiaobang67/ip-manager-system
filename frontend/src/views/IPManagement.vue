@@ -5,11 +5,7 @@
     <div class="header-section">
       <h1>IP地址管理</h1>
       <div class="header-actions">
-        <el-button type="primary" @click="showAllocationDialog = true">
-          <el-icon><Plus /></el-icon>
-          分配地址
-        </el-button>
-        <el-button v-if="isAdmin" type="primary" @click="showBulkDialog = true">
+        <el-button type="primary" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
@@ -172,8 +168,6 @@
               >
                 删除
               </el-button>
-
-
             </div>
           </template>
         </el-table-column>
