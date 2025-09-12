@@ -862,6 +862,164 @@ async def get_statistics():
     finally:
         connection.close()
 
+# 监控相关API端点
+@app.get("/api/monitoring/dashboard")
+async def get_dashboard_summary():
+    """获取仪表盘汇总数据"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 网段统计
+            cursor.execute("SELECT COUNT(*) as count FROM subnets")
+            subnet_count = cursor.fetchone()['count']
+            
+            # IP地址统计
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses")
+            total_ips = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses WHERE status = 'allocated'")
+            allocated_ips = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses WHERE status = 'available'")
+            available_ips = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses WHERE status = 'reserved'")
+            reserved_ips = cursor.fetchone()['count']
+            
+            cursor.execute("SELECT COUNT(*) as count FROM ip_addresses WHERE status = 'conflict'")
+            conflict_ips = cursor.fetchone()['count']
+            
+            # 用户统计
+            cursor.execute("SELECT COUNT(*) as count FROM users")
+            user_count = cursor.fetchone()['count']
+            
+            return {
+                "total_subnets": subnet_count,
+                "ip_statistics": {
+                    "total_ips": total_ips,
+                    "allocated_ips": allocated_ips,
+                    "available_ips": available_ips,
+                    "reserved_ips": reserved_ips,
+                    "conflict_ips": conflict_ips,
+                    "utilization_rate": round((allocated_ips / total_ips * 100) if total_ips > 0 else 0, 2)
+                },
+                "users": {
+                    "total": user_count
+                },
+                "alert_statistics": {
+                    "unresolved_alerts": 0
+                }
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch dashboard summary: {str(e)}")
+    finally:
+        connection.close()
+
+@app.get("/api/monitoring/allocation-trends")
+async def get_allocation_trends(days: int = 30):
+    """获取IP分配趋势数据"""
+    from datetime import datetime, timedelta
+    
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # 生成最近N天的日期范围
+            sql = """
+            SELECT 
+                DATE(allocated_at) as date,
+                COUNT(*) as allocations
+            FROM ip_addresses 
+            WHERE allocated_at >= DATE_SUB(CURDATE(), INTERVAL %s DAY)
+                AND allocated_at IS NOT NULL
+            GROUP BY DATE(allocated_at)
+            ORDER BY date ASC
+            """
+            cursor.execute(sql, (days,))
+            results = cursor.fetchall()
+            
+            # 创建完整的日期范围
+            trends = []
+            base_date = datetime.now() - timedelta(days=days-1)
+            
+            # 将数据库结果转换为字典，便于查找
+            db_data = {}
+            for row in results:
+                date_str = row['date'].strftime("%Y-%m-%d")
+                db_data[date_str] = row['allocations']
+            
+            # 生成完整的日期序列
+            for i in range(days):
+                current_date = base_date + timedelta(days=i)
+                date_str = current_date.strftime("%Y-%m-%d")
+                
+                # 如果数据库中有该日期的数据，使用实际数据；否则使用0
+                allocations = db_data.get(date_str, 0)
+                
+                trends.append({
+                    "date": date_str,
+                    "allocations": allocations
+                })
+            
+            return trends
+            
+    except Exception as e:
+        logger.error(f"Failed to fetch allocation trends: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch allocation trends: {str(e)}")
+    finally:
+        connection.close()
+
+@app.get("/api/monitoring/top-utilized-subnets")
+async def get_top_utilized_subnets(limit: int = 10):
+    """获取使用率最高的网段"""
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT 
+                s.id,
+                s.network,
+                s.netmask,
+                s.description,
+                s.vlan_id,
+                s.location,
+                COUNT(ip.id) as total_ips,
+                SUM(CASE WHEN ip.status = 'allocated' THEN 1 ELSE 0 END) as allocated_ips,
+                ROUND(
+                    (SUM(CASE WHEN ip.status = 'allocated' THEN 1 ELSE 0 END) * 100.0 / COUNT(ip.id)), 
+                    2
+                ) as utilization_rate
+            FROM subnets s
+            LEFT JOIN ip_addresses ip ON s.id = ip.subnet_id
+            GROUP BY s.id, s.network, s.netmask, s.description, s.vlan_id, s.location
+            HAVING total_ips > 0
+            ORDER BY utilization_rate DESC
+            LIMIT %s
+            """
+            cursor.execute(sql, (limit,))
+            results = cursor.fetchall()
+            
+            subnets = []
+            for row in results:
+                subnets.append({
+                    "id": row['id'],
+                    "network": row['network'],
+                    "netmask": row['netmask'],
+                    "description": row['description'] or 'N/A',
+                    "vlan_id": row['vlan_id'],
+                    "location": row['location'] or 'N/A',
+                    "total_ips": row['total_ips'],
+                    "allocated_ips": row['allocated_ips'],
+                    "utilization_rate": float(row['utilization_rate']) if row['utilization_rate'] else 0.0
+                })
+            
+            return subnets
+            
+    except Exception as e:
+        logger.error(f"Failed to fetch top utilized subnets: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch top utilized subnets: {str(e)}")
+    finally:
+        connection.close()
+
 # 设备类型管理端点
 @app.get("/api/device-types")
 async def get_device_types(skip: int = 0, limit: int = 100, search: Optional[str] = None):
@@ -1276,34 +1434,7 @@ async def get_subnet_utilization_stats():
     finally:
         connection.close()
 
-@app.get("/api/monitoring/allocation-trends")
-async def get_allocation_trends(days: int = 30):
-    """获取IP分配趋势"""
-    connection = get_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT 
-                    DATE(allocated_at) as date,
-                    COUNT(*) as allocations
-                FROM ip_addresses 
-                WHERE allocated_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
-                AND allocated_at IS NOT NULL
-                GROUP BY DATE(allocated_at)
-                ORDER BY date
-            """, (days,))
-            results = cursor.fetchall()
-            
-            return [
-                {
-                    "date": str(row['date']),
-                    "allocations": row['allocations']
-                } for row in results
-            ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch allocation trends: {str(e)}")
-    finally:
-        connection.close()
+
 
 @app.get("/api/monitoring/top-utilized-subnets")
 async def get_top_utilized_subnets(limit: int = 10):
