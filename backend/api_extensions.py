@@ -562,6 +562,7 @@ def add_missing_endpoints(app, get_db_connection):
                         params.append(query)
                     else:
                         # 其他情况：进行模糊匹配，但对assigned_to优先精确匹配
+                        # 注意：不在device_type字段中搜索，避免误匹配
                         where_conditions.append("""(
                             ip_address LIKE %s OR 
                             user_name LIKE %s OR 

@@ -142,17 +142,7 @@ export const ipAPI = {
     })
   },
 
-  /**
-   * 获取IP地址历史记录
-   * @param {string} ipAddress - IP地址
-   * @returns {Promise}
-   */
-  getIPHistory(ipAddress) {
-    return request({
-      url: `/ips/${ipAddress}/history`,
-      method: 'get'
-    })
-  },
+
 
   /**
    * 同步网段IP地址

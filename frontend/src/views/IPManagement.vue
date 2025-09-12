@@ -141,7 +141,7 @@
                 分配
               </el-button>
               <el-button
-                type="primary"
+                type="info"
                 size="small"
                 @click="editIP(row)"
               >
@@ -172,6 +172,7 @@
               >
                 删除
               </el-button>
+
 
             </div>
           </template>
@@ -560,21 +561,19 @@ export default {
     // 响应式数据
     const loading = ref(false)
     const submitting = ref(false)
-    const historyLoading = ref(false)
     
     const ipList = ref([])
     const subnets = ref([])
     const departments = ref([])
     const deviceTypes = ref([])
     const selectedIPs = ref([])
-    const historyData = ref([])
     
     const searchQuery = ref('')
     const statusFilter = ref('')
     const subnetFilter = ref('')
     
     const currentPage = ref(1)
-    const pageSize = ref(50)
+    const pageSize = ref(20)
     const total = ref(0)
     
     const statistics = ref({
@@ -590,7 +589,6 @@ export default {
     const showReservationDialog = ref(false)
     const showReleaseDialog = ref(false)
     const showBulkDialog = ref(false)
-    const showHistoryDialog = ref(false)
     const showDeleteDialog = ref(false)
     const showEditDialog = ref(false)
     
@@ -781,7 +779,8 @@ export default {
           // 如果获取失败，使用静态列表作为备选
           deviceTypes.value = [
             { code: 'server', name: '服务器' },
-            { code: 'workstation', name: '工作站' },
+            { code: 'desktop', name: '台式机' },
+            { code: 'laptop', name: '笔记本电脑' },
             { code: 'switch', name: '网络交换机' },
             { code: 'router', name: '路由器' },
             { code: 'printer', name: '打印机' },
@@ -794,7 +793,8 @@ export default {
         // 如果获取失败，使用静态列表
         deviceTypes.value = [
           { code: 'server', name: '服务器' },
-          { code: 'workstation', name: '工作站' },
+          { code: 'desktop', name: '台式机' },
+          { code: 'laptop', name: '笔记本电脑' },
           { code: 'switch', name: '网络交换机' },
           { code: 'router', name: '路由器' },
           { code: 'printer', name: '打印机' },
@@ -837,7 +837,7 @@ export default {
       loadStatistics()
     }
     
-    const handleSimpleSearch = async (searchParams) => {
+    const handleSimpleSearch = async (searchParams, resetPage = true) => {
       loading.value = true
       try {
         // 存储当前搜索参数
@@ -848,13 +848,15 @@ export default {
         statusFilter.value = searchParams.status || ''
         subnetFilter.value = searchParams.subnet_id || ''
         
-        // 重置分页到第一页
-        currentPage.value = 1
+        // 只在新搜索时重置分页到第一页
+        if (resetPage) {
+          currentPage.value = 1
+        }
         
         // 添加分页参数
         const params = {
           ...searchParams,
-          skip: 0, // 搜索时总是从第一页开始
+          skip: (currentPage.value - 1) * pageSize.value,
           limit: pageSize.value
         }
         
@@ -927,7 +929,7 @@ export default {
       
       // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleSimpleSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value, false) // 不重置页码
       } else {
         loadIPList()
       }
@@ -938,7 +940,7 @@ export default {
       
       // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
       if (currentSearchParams.value) {
-        handleSimpleSearch(currentSearchParams.value)
+        handleSimpleSearch(currentSearchParams.value, false) // 不重置页码
       } else {
         loadIPList()
       }
@@ -1073,18 +1075,7 @@ export default {
       }, 10)
     }
     
-    const viewHistory = async (row) => {
-      historyLoading.value = true
-      showHistoryDialog.value = true
-      try {
-        const response = await ipAPI.getIPHistory(row.ip_address)
-        historyData.value = response.data || []
-      } catch (error) {
-        ElMessage.error('加载历史记录失败：' + error.message)
-      } finally {
-        historyLoading.value = false
-      }
-    }
+
     
     // 表单提交方法
     const submitAllocation = async () => {
@@ -1290,18 +1281,18 @@ export default {
       // 使用默认的设备类型映射作为主要方案
       const defaultMapping = {
         'server': '服务器',
-        'workstation': '工作站',
+        'desktop': '台式机',
+        'laptop': '笔记本电脑',
         'switch': '网络交换机',
         'router': '路由器',
         'printer': '打印机',
         'firewall': '防火墙',
+        'access_point': '无线接入点',
+        'scanner': '扫描仪',
         'other': '其他',
-        'desktop': '台式机',
-        'laptop': '笔记本电脑',
         'tablet': '平板电脑',
         'phone': '手机',
         'camera': '摄像头',
-        'access_point': '无线接入点',
         'storage': '存储设备',
         'monitor': '显示器',
         'projector': '投影仪'
@@ -1432,13 +1423,11 @@ export default {
       // 响应式数据
       loading,
       submitting,
-      historyLoading,
       ipList,
       subnets,
       departments,
       deviceTypes,
       selectedIPs,
-      historyData,
       searchQuery,
       statusFilter,
       subnetFilter,
@@ -1453,7 +1442,6 @@ export default {
       showReservationDialog,
       showReleaseDialog,
       showBulkDialog,
-      showHistoryDialog,
       showDeleteDialog,
       showEditDialog,
       
@@ -1494,7 +1482,6 @@ export default {
       editIP,
       fixDropdownStyles,
       handleSelectVisibleChange,
-      viewHistory,
       submitAllocation,
       submitReservation,
       submitRelease,
