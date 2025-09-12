@@ -14,7 +14,6 @@ const mockApi = {
   reserveIP: vi.fn(),
   releaseIP: vi.fn(),
   searchIPs: vi.fn(),
-  getIPHistory: vi.fn(),
   conflictCheck: vi.fn()
 }
 
@@ -24,7 +23,6 @@ vi.mock('@/api/ip', () => ({
   reserveIP: (...args) => mockApi.reserveIP(...args),
   releaseIP: (...args) => mockApi.releaseIP(...args),
   searchIPs: (...args) => mockApi.searchIPs(...args),
-  getIPHistory: (...args) => mockApi.getIPHistory(...args),
   conflictCheck: (...args) => mockApi.conflictCheck(...args)
 }))
 
@@ -393,58 +391,7 @@ describe('IPManagement.vue', () => {
     })
   })
 
-  describe('IP历史记录查看', () => {
-    beforeEach(async () => {
-      mockApi.getIPHistory.mockResolvedValue({
-        data: [
-          {
-            id: 1,
-            action: 'allocate',
-            user_id: 1,
-            username: 'admin',
-            old_values: null,
-            new_values: { status: 'allocated', hostname: 'server-01' },
-            created_at: '2023-01-01T10:00:00Z'
-          },
-          {
-            id: 2,
-            action: 'update',
-            user_id: 1,
-            username: 'admin',
-            old_values: { hostname: 'server-01' },
-            new_values: { hostname: 'web-server-01' },
-            created_at: '2023-01-02T14:30:00Z'
-          }
-        ]
-      })
 
-      wrapper = mount(IPManagement, {
-        global: {
-          plugins: [store]
-        }
-      })
-      await flushPromises()
-    })
-
-    it('应该打开IP历史记录对话框', async () => {
-      const historyBtn = wrapper.find('.view-history-btn')
-      await historyBtn.trigger('click')
-
-      expect(wrapper.find('.history-dialog').exists()).toBe(true)
-      expect(mockApi.getIPHistory).toHaveBeenCalledWith('192.168.1.10')
-    })
-
-    it('应该显示历史记录列表', async () => {
-      const historyBtn = wrapper.find('.view-history-btn')
-      await historyBtn.trigger('click')
-      await flushPromises()
-
-      expect(wrapper.find('.history-list').exists()).toBe(true)
-      expect(wrapper.text()).toContain('allocate')
-      expect(wrapper.text()).toContain('update')
-      expect(wrapper.text()).toContain('admin')
-    })
-  })
 
   describe('冲突检测', () => {
     beforeEach(async () => {

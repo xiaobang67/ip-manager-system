@@ -127,6 +127,7 @@
                   编辑
                 </el-button>
                 <el-button
+                  v-if="isAdmin"
                   type="danger"
                   plain
                   size="small"

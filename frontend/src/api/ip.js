@@ -142,17 +142,7 @@ export const ipAPI = {
     })
   },
 
-  /**
-   * 获取IP地址历史记录
-   * @param {string} ipAddress - IP地址
-   * @returns {Promise}
-   */
-  getIPHistory(ipAddress) {
-    return request({
-      url: `/ips/${ipAddress}/history`,
-      method: 'get'
-    })
-  },
+
 
   /**
    * 同步网段IP地址
@@ -229,35 +219,9 @@ export const ipAPI = {
     })
   },
 
-  /**
-   * 导出IP地址列表
-   * @param {Object} params - 导出参数
-   * @returns {Promise}
-   */
-  exportIPs(params = {}) {
-    return request({
-      url: '/ips/export',
-      method: 'get',
-      params,
-      responseType: 'blob'
-    })
-  },
 
-  /**
-   * 导入IP地址
-   * @param {FormData} formData - 文件数据
-   * @returns {Promise}
-   */
-  importIPs(formData) {
-    return request({
-      url: '/ips/import',
-      method: 'post',
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-  },
+
+
 
   /**
    * 获取搜索历史

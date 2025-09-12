@@ -102,11 +102,12 @@
               <el-col :span="8">
                 <el-form-item label="设备类型">
                   <el-select v-model="searchForm.device_type" placeholder="选择设备类型" clearable>
-                    <el-option label="服务器" value="server" />
-                    <el-option label="工作站" value="workstation" />
-                    <el-option label="网络设备" value="network" />
-                    <el-option label="打印机" value="printer" />
-                    <el-option label="其他" value="other" />
+                    <el-option
+                      v-for="deviceType in availableDeviceTypes"
+                      :key="deviceType.code"
+                      :label="deviceType.name"
+                      :value="deviceType.code"
+                    />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -487,6 +488,7 @@ export default {
     const quickSearchTags = ref([])
     const availableTags = ref([])
     const customFields = ref([])
+    const availableDeviceTypes = ref([])
     
     // 搜索表单
     const searchForm = reactive({
@@ -546,6 +548,47 @@ export default {
       } catch (error) {
         console.error('加载自定义字段失败：', error)
         // 错误信息已在safeGetCustomFields中处理
+      }
+    }
+
+    const loadDeviceTypes = async () => {
+      try {
+        // 从设备类型管理API获取设备类型列表
+        const { getDeviceTypeOptions } = await import('@/api/deviceTypes')
+        const response = await getDeviceTypeOptions()
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // 处理API响应格式：response.data
+          availableDeviceTypes.value = response.data.filter(type => type.status === 'active')
+        } else if (response && Array.isArray(response)) {
+          // 处理直接响应格式：response
+          availableDeviceTypes.value = response.filter(type => type.status === 'active')
+        } else {
+          // 如果获取失败，使用静态列表作为备选
+          availableDeviceTypes.value = [
+            { code: 'server', name: '服务器' },
+            { code: 'desktop', name: '台式机' },
+            { code: 'laptop', name: '笔记本电脑' },
+            { code: 'switch', name: '网络交换机' },
+            { code: 'router', name: '路由器' },
+            { code: 'printer', name: '打印机' },
+            { code: 'firewall', name: '防火墙' },
+            { code: 'other', name: '其他' }
+          ]
+        }
+      } catch (error) {
+        console.error('加载设备类型列表失败：', error)
+        // 如果获取失败，使用静态列表，但不包含workstation
+        availableDeviceTypes.value = [
+          { code: 'server', name: '服务器' },
+          { code: 'desktop', name: '台式机' },
+          { code: 'laptop', name: '笔记本电脑' },
+          { code: 'switch', name: '网络交换机' },
+          { code: 'router', name: '路由器' },
+          { code: 'printer', name: '打印机' },
+          { code: 'firewall', name: '防火墙' },
+          { code: 'other', name: '其他' }
+        ]
       }
     }
     
@@ -761,6 +804,7 @@ export default {
       loadSearchHistory()
       loadTags()
       loadCustomFields()
+      loadDeviceTypes()
     })
     
     // 监听搜索历史面板显示状态
@@ -784,6 +828,7 @@ export default {
       quickSearchTags,
       availableTags,
       customFields,
+      availableDeviceTypes,
       searchForm,
       saveForm,
       editForm,

@@ -14,9 +14,13 @@ const getStoredAuth = () => {
     }
   } catch (error) {
     console.error('Error parsing stored auth data:', error)
+    // 只有在解析用户数据失败时才清除数据
+    if (localStorage.getItem('user')) {
+      localStorage.removeItem('user')
+    }
     return {
-      accessToken: null,
-      refreshToken: null,
+      accessToken: localStorage.getItem('access_token'),
+      refreshToken: localStorage.getItem('refresh_token'),
       user: null
     }
   }
@@ -112,8 +116,22 @@ const actions = {
     commit('SET_LOGIN_LOADING', true)
     
     try {
+      // 登录前先清除所有认证信息，确保没有缓存问题
+      commit('CLEAR_AUTH')
+      
       const response = await authAPI.login(credentials)
       const { access_token, refresh_token, user } = response
+      
+      console.log('登录成功，用户信息:', user)
+      
+      // 验证返回的用户信息与请求的用户名是否一致
+      if (user.username !== credentials.username) {
+        console.error('登录返回的用户信息与请求不匹配')
+        return {
+          success: false,
+          message: '登录异常，请重试'
+        }
+      }
       
       // 存储认证信息
       commit('SET_ACCESS_TOKEN', access_token)
@@ -123,6 +141,8 @@ const actions = {
       return { success: true }
     } catch (error) {
       console.error('Login error:', error)
+      // 登录失败时也要清除可能的缓存
+      commit('CLEAR_AUTH')
       return {
         success: false,
         message: error.response?.data?.detail || '登录失败，请检查用户名和密码'
@@ -257,14 +277,41 @@ const actions = {
    * 应用启动时调用，验证存储的令牌是否有效
    * @param {Object} context - Vuex上下文
    */
-  async initAuth({ dispatch, state }) {
-    if (state.accessToken) {
-      const isValid = await dispatch('verifyToken')
-      if (isValid) {
-        // 令牌有效，获取最新的用户信息
-        await dispatch('fetchProfile')
+  async initAuth({ dispatch, state, commit }) {
+    console.log('初始化认证状态，当前用户:', state.user)
+    
+    if (state.accessToken && state.user) {
+      try {
+        // 简化验证逻辑：只验证token是否有效
+        const isValid = await dispatch('verifyToken')
+        if (!isValid) {
+          console.log('Token验证失败，清除认证信息')
+          commit('CLEAR_AUTH')
+        } else {
+          console.log('Token验证成功，保持当前认证状态')
+        }
+      } catch (error) {
+        console.error('认证初始化过程中发生错误:', error)
+        // 网络错误等情况，不清除认证信息，保持当前状态
+        console.log('由于网络错误，保持当前认证状态')
+      }
+    } else if (state.accessToken && !state.user) {
+      // 有token但没有用户信息，尝试获取用户信息
+      try {
+        const userProfile = await dispatch('fetchProfile')
+        if (userProfile) {
+          console.log('获取到用户信息:', userProfile)
+          commit('SET_USER', userProfile)
+        } else {
+          console.log('无法获取用户信息，清除认证信息')
+          commit('CLEAR_AUTH')
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+        commit('CLEAR_AUTH')
       }
     }
+    // 如果既没有token也没有用户信息，不需要做任何操作
   }
 }
 
