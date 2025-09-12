@@ -1377,36 +1377,7 @@ def add_missing_endpoints(app, get_db_connection):
         finally:
             connection.close()
     
-    @app.get("/api/users/statistics")
-    async def get_user_statistics_api():
-        """获取用户统计信息"""
-        connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as total_users,
-                        SUM(CASE WHEN is_active = TRUE THEN 1 ELSE 0 END) as active_users,
-                        SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admin_users,
-                        SUM(CASE WHEN role = 'manager' THEN 1 ELSE 0 END) as manager_users,
-                        SUM(CASE WHEN role = 'user' THEN 1 ELSE 0 END) as regular_users
-                    FROM users
-                """)
-                result = cursor.fetchone()
-                
-                return {
-                    "total_users": result['total_users'] or 0,
-                    "active_users": result['active_users'] or 0,
-                    "inactive_users": (result['total_users'] or 0) - (result['active_users'] or 0),
-                    "admin_users": result['admin_users'] or 0,
-                    "manager_users": result['manager_users'] or 0,
-                    "regular_users": result['regular_users'] or 0
-                }
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to get user statistics: {str(e)}")
-        finally:
-            connection.close()
-    
+
     @app.get("/api/users/roles/available")
     async def get_available_roles_api():
         """获取可用角色列表"""

@@ -116,10 +116,10 @@
         style="width: 100%"
         @sort-change="handleSortChange"
       >
-        <el-table-column prop="id" label="ID" width="80" sortable />
-        <el-table-column prop="username" label="用户名" min-width="120" sortable />
-        <el-table-column prop="email" label="邮箱" min-width="180" />
-        <el-table-column prop="role" label="角色" width="100">
+        <el-table-column prop="id" label="ID" align="center" width="80" sortable />
+        <el-table-column prop="username" label="用户名" align="center" min-width="120" sortable />
+        <el-table-column prop="email" label="邮箱" align="center" min-width="180" />
+        <el-table-column prop="role" label="角色" align="center"  width="100">
           <template #default="{ row }">
             <el-tag
               :type="getRoleTagType(row.role)"
@@ -129,7 +129,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="theme" label="主题" width="100">
+        <el-table-column prop="theme" label="主题"  align="center" width="100">
           <template #default="{ row }">
             <el-tag
               :type="row.theme === 'dark' ? 'info' : 'success'"
@@ -139,7 +139,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="is_active" label="状态" width="100">
+        <el-table-column prop="is_active" label="状态" align="center"  width="100">
           <template #default="{ row }">
             <el-tag
               :type="row.is_active ? 'success' : 'danger'"
@@ -149,12 +149,12 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间" width="180" sortable>
+        <el-table-column prop="created_at" label="创建时间"  align="center" width="180" sortable>
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="200"  align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               size="small"

@@ -459,8 +459,27 @@ class UserService:
             # 按角色统计
             all_users = self.user_repo.get_all(skip=0, limit=1000, active_only=False)
             role_stats = {}
+            
+            # 初始化所有角色计数为0
             for role in UserRole:
-                role_stats[role.value] = len([u for u in all_users if u.role == role])
+                role_stats[role.value] = 0
+            
+            # 统计每个用户的角色
+            for user in all_users:
+                user_role = user.role
+                # 处理角色可能是枚举对象或字符串的情况
+                if isinstance(user_role, UserRole):
+                    role_key = user_role.value
+                else:
+                    role_key = str(user_role)
+                
+                if role_key in role_stats:
+                    role_stats[role_key] += 1
+                else:
+                    # 如果遇到未知角色，也记录下来
+                    role_stats[role_key] = 1
+            
+            logger.info(f"User statistics: total={total_users}, active={active_users}, roles={role_stats}")
             
             return {
                 "total_users": total_users,
