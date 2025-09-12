@@ -298,7 +298,7 @@
           <template #header>
             <div class="history-header">
               <span>搜索历史</span>
-              <el-button type="text" @click="loadSearchHistory">
+              <el-button type="info" @click="loadSearchHistory">
                 <el-icon><Refresh /></el-icon>
                 刷新
               </el-button>

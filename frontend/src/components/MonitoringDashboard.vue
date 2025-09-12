@@ -68,7 +68,7 @@
           <template #header>
             <div class="card-header">
               <span>IP地址使用分布</span>
-              <el-button type="text" @click="refreshIPStats">
+              <el-button type="info" @click="refreshIPStats">
                 <el-icon><Refresh /></el-icon>
               </el-button>
             </div>
@@ -82,7 +82,7 @@
         <el-card class="chart-card">
           <template #header>
             <div class="card-header">
-              <span>IP分配趋势 (最近30天)</span>
+              <span>IP分配趋势 (最近{{ trendDays }}天)</span>
               <el-select v-model="trendDays" @change="refreshTrends" size="small" style="width: 100px">
                 <el-option label="7天" :value="7"></el-option>
                 <el-option label="30天" :value="30"></el-option>
@@ -102,33 +102,35 @@
           <template #header>
             <div class="card-header">
               <span>网段使用率排行</span>
-              <el-button type="text" @click="refreshSubnetStats">
+              <el-button type="info" @click="refreshSubnetStats">
                 <el-icon><Refresh /></el-icon>
               </el-button>
             </div>
           </template>
           
           <el-table :data="topSubnets" style="width: 100%" v-loading="loading">
-            <el-table-column prop="network" label="网段" width="150"></el-table-column>
-            <el-table-column prop="description" label="描述" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="vlan_id" label="VLAN ID" width="100">
+            <el-table-column prop="network" label="网段" width="150" align="center"></el-table-column>
+            <el-table-column prop="description" label="描述" show-overflow-tooltip align="center"></el-table-column>
+            <el-table-column prop="vlan_id" label="VLAN ID" width="100" align="center">
               <template #default="scope">
                 {{ scope.row.vlan_id || 'N/A' }}
               </template>
             </el-table-column>
-            <el-table-column prop="total_ips" label="总IP数" width="100"></el-table-column>
-            <el-table-column prop="allocated_ips" label="使用中" width="100"></el-table-column>
-            <el-table-column prop="utilization_rate" label="使用率" width="120">
+            <el-table-column prop="total_ips" label="总IP数" width="100" align="center"></el-table-column>
+            <el-table-column prop="allocated_ips" label="使用中" width="100" align="center"></el-table-column>
+            <el-table-column prop="utilization_rate" label="使用率" width="120" align="center">
               <template #default="scope">
-                <el-progress 
-                  :percentage="scope.row.utilization_rate" 
-                  :color="getUtilizationColor(scope.row.utilization_rate)"
-                  :show-text="true"
-                  :format="() => `${scope.row.utilization_rate}%`"
-                ></el-progress>
+                <div class="utilization-progress">
+                  <el-progress 
+                    :percentage="scope.row.utilization_rate" 
+                    :color="getUtilizationColor(scope.row.utilization_rate)"
+                    :show-text="true"
+                    :format="() => `${scope.row.utilization_rate}%`"
+                  ></el-progress>
+                </div>
               </template>
             </el-table-column>
-            <el-table-column prop="location" label="位置" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="location" label="位置" show-overflow-tooltip align="center"></el-table-column>
           </el-table>
         </el-card>
       </el-col>
@@ -664,6 +666,28 @@ export default {
 .el-progress-bar__inner {
   border-radius: 10px;
   transition: all 0.4s ease;
+}
+
+/* 网段使用率表格中的进度条居中样式 */
+.utilization-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 8px;
+}
+
+.utilization-progress .el-progress {
+  width: 100%;
+  max-width: 100px;
+}
+
+/* 确保表格单元格内容居中 */
+.table-card .el-table .cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 /* 标签样式优化 */
