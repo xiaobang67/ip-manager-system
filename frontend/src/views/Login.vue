@@ -37,6 +37,12 @@
         </el-form-item>
         
         <el-form-item>
+          <el-checkbox v-model="rememberPassword" class="remember-checkbox">
+            记住密码
+          </el-checkbox>
+        </el-form-item>
+        
+        <el-form-item>
           <el-button
             type="primary"
             size="large"
@@ -63,6 +69,7 @@ export default {
         username: '',
         password: ''
       },
+      rememberPassword: false,
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -81,6 +88,38 @@ export default {
   methods: {
     ...mapActions('auth', ['login']),
     
+    // 保存登录凭据到本地存储
+    saveCredentials() {
+      if (this.rememberPassword) {
+        const credentials = {
+          username: this.loginData.username,
+          password: this.loginData.password,
+          remember: true
+        }
+        localStorage.setItem('loginCredentials', JSON.stringify(credentials))
+      } else {
+        localStorage.removeItem('loginCredentials')
+      }
+    },
+    
+    // 从本地存储加载登录凭据
+    loadCredentials() {
+      try {
+        const saved = localStorage.getItem('loginCredentials')
+        if (saved) {
+          const credentials = JSON.parse(saved)
+          if (credentials.remember) {
+            this.loginData.username = credentials.username || ''
+            this.loginData.password = credentials.password || ''
+            this.rememberPassword = true
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load saved credentials:', error)
+        localStorage.removeItem('loginCredentials')
+      }
+    },
+    
     async handleLogin() {
       try {
         const valid = await this.$refs.loginForm.validate()
@@ -89,6 +128,9 @@ export default {
         const result = await this.login(this.loginData)
         
         if (result.success) {
+          // 保存凭据（如果用户选择记住密码）
+          this.saveCredentials()
+          
           this.$message.success('登录成功')
           // 跳转到之前访问的页面或默认页面
           const redirect = this.$route.query.redirect || '/dashboard'
@@ -107,6 +149,9 @@ export default {
   created() {
     if (this.$store.getters['auth/isAuthenticated']) {
       this.$router.push('/dashboard')
+    } else {
+      // 加载保存的登录凭据
+      this.loadCredentials()
     }
   }
 }
@@ -150,6 +195,16 @@ export default {
 
 .login-button {
   width: 100%;
+}
+
+.remember-checkbox {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.remember-checkbox :deep(.el-checkbox__label) {
+  color: #606266;
+  font-size: 14px;
 }
 
 /* 响应式设计 */
