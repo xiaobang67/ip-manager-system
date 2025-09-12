@@ -46,15 +46,15 @@
         style="width: 100%"
         @sort-change="handleSortChange"
       >
-        <el-table-column prop="network" label="网段" width="150" sortable />
-        <el-table-column prop="netmask" label="子网掩码" width="120" />
-        <el-table-column prop="gateway" label="网关" width="120" />
-        <el-table-column prop="vlan_id" label="VLAN ID" width="80" sortable />
-        <el-table-column prop="location" label="位置" width="120" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="network" label="网段" width="150" sortable align="center" />
+        <el-table-column prop="netmask" label="子网掩码" width="120" align="center" />
+        <el-table-column prop="gateway" label="网关" width="120" align="center" />
+        <el-table-column prop="vlan_id" label="VLAN ID" width="80" sortable align="center" />
+        <el-table-column prop="location" label="位置" width="120" align="center" />
+        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip align="center" />
         
         <!-- IP使用情况 -->
-        <el-table-column label="IP使用情况" width="200">
+        <el-table-column label="IP使用情况" width="200" align="center">
           <template #default="scope">
             <div class="ip-usage">
               <div class="usage-text">
@@ -70,13 +70,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="created_at" label="创建时间" width="160" sortable>
+        <el-table-column prop="created_at" label="创建时间" width="160" sortable align="center">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
@@ -511,7 +511,8 @@ export default {
   color: var(--text-primary);
 }
 
-.search-section {
+.search-section,
+.theme-search-section {
   margin-bottom: 20px;
   padding: 20px;
   background: var(--bg-primary);
@@ -532,12 +533,56 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .usage-text {
   font-size: 12px;
   color: var(--text-tertiary);
   text-align: center;
+  margin-bottom: 2px;
+}
+
+/* 确保进度条居中 */
+.ip-usage :deep(.el-progress) {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.ip-usage :deep(.el-progress-bar) {
+  width: 100%;
+}
+
+.ip-usage :deep(.el-progress-bar__outer) {
+  width: 100%;
+}
+
+/* 强制表格所有单元格内容居中 */
+.subnet-list :deep(.el-table .cell) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 确保表格头部也居中 */
+.subnet-list :deep(.el-table th .cell) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 操作按钮容器居中 */
+.subnet-list :deep(.el-table td:last-child .cell) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .pagination {
