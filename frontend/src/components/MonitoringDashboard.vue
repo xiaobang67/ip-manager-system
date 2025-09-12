@@ -34,12 +34,12 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon subnet-icon">
-              <el-icon><Grid /></el-icon>
+            <div class="stat-icon utilization-icon">
+              <el-icon><PieChart /></el-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ dashboardData.total_subnets || 0 }}</div>
-              <div class="stat-label">网段数量</div>
+              <div class="stat-value">{{ dashboardData.ip_statistics?.utilization_rate || 0 }}%</div>
+              <div class="stat-label">使用率</div>
             </div>
           </div>
         </el-card>
@@ -48,12 +48,12 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon utilization-icon">
-              <el-icon><PieChart /></el-icon>
+            <div class="stat-icon subnet-icon">
+              <el-icon><Grid /></el-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ dashboardData.ip_statistics?.utilization_rate || 0 }}%</div>
-              <div class="stat-label">使用率</div>
+              <div class="stat-value">{{ dashboardData.total_subnets || 0 }}</div>
+              <div class="stat-label">网段数量</div>
             </div>
           </div>
         </el-card>
