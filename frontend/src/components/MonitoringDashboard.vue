@@ -20,12 +20,12 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon utilization-icon">
-              <el-icon><PieChart /></el-icon>
+            <div class="stat-icon used-ip-icon">
+              <el-icon><Connection /></el-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ dashboardData.ip_statistics?.utilization_rate || 0 }}%</div>
-              <div class="stat-label">使用率</div>
+              <div class="stat-value">{{ dashboardData.ip_statistics?.allocated_ips || 0 }}</div>
+              <div class="stat-label">已使用的IP总数</div>
             </div>
           </div>
         </el-card>
@@ -48,12 +48,12 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon alert-icon">
-              <el-icon><Warning /></el-icon>
+            <div class="stat-icon utilization-icon">
+              <el-icon><PieChart /></el-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ dashboardData.alert_statistics?.unresolved_alerts || 0 }}</div>
-              <div class="stat-label">未解决警报</div>
+              <div class="stat-value">{{ dashboardData.ip_statistics?.utilization_rate || 0 }}%</div>
+              <div class="stat-label">使用率</div>
             </div>
           </div>
         </el-card>
@@ -488,6 +488,10 @@ export default {
 
 .alert-icon {
   background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.used-ip-icon {
+  background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
 }
 
 .stat-info {
