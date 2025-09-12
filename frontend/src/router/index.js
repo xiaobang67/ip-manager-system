@@ -73,43 +73,56 @@ let authInitialized = false
 
 // Navigation guard for authentication
 router.beforeEach(async (to, from, next) => {
-  const isAuthenticated = store.getters['auth/isAuthenticated']
-  const userRole = store.getters['auth/userRole']
-  
-  // 如果访问登录页面且已经登录，重定向到仪表盘
-  if (to.path === '/login' && isAuthenticated) {
-    next('/dashboard')
-    return
-  }
-  
-  // 如果需要认证但未登录
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({
-      path: '/login',
-      query: { redirect: to.fullPath } // 保存原始访问路径
-    })
-    return
-  }
-  
-  // 如果需要管理员权限但不是管理员
-  if (to.meta.requiresAdmin && userRole?.toLowerCase() !== 'admin') {
-    next('/dashboard')
-    return
-  }
-  
-  // 仅在应用首次加载时验证token有效性
-  if (isAuthenticated && !authInitialized) {
+  // 仅在应用首次加载或刷新时验证token有效性
+  if (!authInitialized) {
     authInitialized = true
     try {
       await store.dispatch('auth/initAuth')
     } catch (error) {
       console.error('Auth initialization error:', error)
       authInitialized = false // 重置标记，允许重试
-      next('/login')
-      return
     }
   }
-  
+
+  // 重新获取认证状态（可能在initAuth中被更新）
+  const isAuthenticated = store.getters['auth/isAuthenticated']
+  const userRole = store.getters['auth/userRole']
+  const currentUser = store.getters['auth/currentUser']
+
+  console.log('路由守卫:', {
+    to: to.path,
+    from: from.path,
+    isAuthenticated,
+    userRole,
+    currentUser: currentUser?.username,
+    requiresAuth: to.meta.requiresAuth,
+    requiresAdmin: to.meta.requiresAdmin
+  })
+
+  // 如果访问登录页面且已经登录，重定向到仪表盘
+  if (to.path === '/login' && isAuthenticated) {
+    console.log('已登录用户访问登录页，重定向到仪表盘')
+    next('/dashboard')
+    return
+  }
+
+  // 如果需要认证但未登录
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    console.log('需要认证但未登录，重定向到登录页')
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath } // 保存原始访问路径
+    })
+    return
+  }
+
+  // 如果需要管理员权限但不是管理员
+  if (to.meta.requiresAdmin && userRole?.toLowerCase() !== 'admin') {
+    console.log('需要管理员权限但不是管理员，重定向到仪表盘')
+    next('/dashboard')
+    return
+  }
+
   next()
 })
 

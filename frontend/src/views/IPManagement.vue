@@ -9,14 +9,14 @@
           <el-icon><Plus /></el-icon>
           分配地址
         </el-button>
-        <el-button v-if="isAdmin" type="info" @click="showBulkDialog = true">
+        <el-button v-if="isAdmin" type="primary" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-        <el-button type="info" @click="refreshData">
-          <el-icon><Refresh /></el-icon>
-          刷新
-        </el-button>
+          <el-button type="primary" @click="refreshData">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
       </div>
     </div>
 
@@ -822,8 +822,34 @@ export default {
     }
     
     const refreshData = () => {
+      console.log('=== 刷新按钮被点击 ===')
+      ElMessage.info('正在刷新数据...')
+      
+      console.log('当前用户角色:', userRole.value)
+      console.log('当前用户名:', currentUser.value?.username)
+      console.log('当前路由:', window.location.pathname)
+      console.log('认证状态:', store.getters['auth/isAuthenticated'])
+      
+      // 检查用户信息是否正确
+      if (!currentUser.value) {
+        console.error('用户信息丢失，可能需要重新登录')
+        ElMessage.error('用户信息丢失，请重新登录')
+        store.dispatch('auth/logout')
+        return
+      }
+      
+      // 重置到第一页
+      currentPage.value = 1
+      
+      // 清除搜索参数
+      currentSearchParams.value = null
+      
+      // 重新加载数据
       loadIPList()
       loadStatistics()
+      
+      console.log('=== 刷新数据完成 ===')
+      ElMessage.success('数据刷新完成')
     }
     
     const handleSearch = () => {

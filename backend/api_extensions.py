@@ -1,7 +1,7 @@
 """
 API扩展模块 - 添加前端需要的缺失API端点
 """
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from typing import List, Optional
 import pymysql
 import logging

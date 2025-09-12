@@ -202,6 +202,14 @@ export default {
     if (savedState !== null) {
       this.sidebarCollapsed = savedState === 'true'
     }
+    
+    // 调试用户信息显示
+    console.log('AppLayout mounted - 用户信息:', {
+      isAuthenticated: this.isAuthenticated,
+      userName: this.userName,
+      userRole: this.userRole,
+      currentUser: this.$store.getters['auth/currentUser']
+    })
   }
 }
 </script>
