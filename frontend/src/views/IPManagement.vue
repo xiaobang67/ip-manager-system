@@ -846,6 +846,22 @@ export default {
       ElMessage.success('数据刷新完成')
     }
     
+    // 刷新当前页面数据，保持分页状态
+    const refreshCurrentPageData = () => {
+      console.log('=== 刷新当前页面数据 ===')
+      console.log('保持当前页面:', currentPage.value)
+      
+      // 如果有当前搜索参数，使用简单搜索，否则使用普通加载
+      if (currentSearchParams.value) {
+        handleSimpleSearch(currentSearchParams.value, false) // 不重置页码
+      } else {
+        loadIPList()
+      }
+      loadStatistics()
+      
+      console.log('=== 当前页面数据刷新完成 ===')
+    }
+    
     const handleSearch = () => {
       currentPage.value = 1
       loadIPList()
@@ -1124,7 +1140,7 @@ export default {
         await ipAPI.allocateIP(submitData)
         ElMessage.success('IP地址分配成功')
         showAllocationDialog.value = false
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         console.error('分配失败:', error) // 调试日志
         ElMessage.error('分配失败：' + error.message)
@@ -1139,7 +1155,7 @@ export default {
         await ipAPI.reserveIP(reservationForm)
         ElMessage.success('IP地址保留成功')
         showReservationDialog.value = false
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         ElMessage.error('保留失败：' + error.message)
       } finally {
@@ -1153,7 +1169,7 @@ export default {
         await ipAPI.releaseIP(releaseForm)
         ElMessage.success('IP地址释放成功')
         showReleaseDialog.value = false
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         ElMessage.error('释放失败：' + error.message)
       } finally {
@@ -1195,7 +1211,7 @@ export default {
         ElMessage.success(`批量操作完成：成功${result.success_count}个，失败${result.failed_count}个`)
         showBulkDialog.value = false
         selectedIPs.value = []
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         ElMessage.error('批量操作失败：' + error.message)
       } finally {
@@ -1356,7 +1372,7 @@ export default {
         await ipAPI.deleteIP(deleteForm)
         ElMessage.success('IP地址删除成功')
         showDeleteDialog.value = false
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         ElMessage.error('删除失败：' + error.message)
       } finally {
@@ -1413,7 +1429,7 @@ export default {
         await ipAPI.updateIP(editForm.ip_address, submitData)
         ElMessage.success('IP地址修改成功')
         showEditDialog.value = false
-        refreshData()
+        refreshCurrentPageData()
       } catch (error) {
         ElMessage.error('修改失败：' + error.message)
       } finally {
@@ -1487,6 +1503,7 @@ export default {
       
       // 方法
       refreshData,
+      refreshCurrentPageData,
       handleSearch,
       handleFilter,
       handleSimpleSearch,
