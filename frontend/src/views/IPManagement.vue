@@ -5,16 +5,13 @@
     <div class="header-section">
       <h1>IP地址管理</h1>
       <div class="header-actions">
-        <el-button type="primary" @click="showBulkDialog = true">
+        <el-button type="info" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
           <el-button type="info" @click="refreshData">
             <el-icon><Refresh /></el-icon>
             刷新
-          </el-button>
-          <el-button type="warning" @click="forceRefreshDeviceTypes">
-            强制刷新设备类型
           </el-button>
       </div>
     </div>
@@ -514,7 +511,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitEdit" :loading="submitting">
+        <el-button type="info" @click="submitEdit" :loading="submitting">
           确认修改
         </el-button>
       </template>
@@ -763,29 +760,16 @@ export default {
     
     const loadDeviceTypes = async () => {
       try {
-        console.log('开始加载设备类型列表...')
         // 从设备类型管理API获取设备类型列表
         const response = await getDeviceTypeOptions()
-        console.log('设备类型API响应:', response)
         
         if (response && response.data && Array.isArray(response.data)) {
           // 处理API响应格式：response.data
           deviceTypes.value = response.data.filter(type => type.status === 'active')
-          console.log('加载的设备类型列表 (response.data):', deviceTypes.value)
-          console.log('设备类型详细信息:')
-          deviceTypes.value.forEach(type => {
-            console.log(`  - code: "${type.code}", name: "${type.name}", status: "${type.status}"`)
-          })
         } else if (response && Array.isArray(response)) {
           // 处理直接响应格式：response
           deviceTypes.value = response.filter(type => type.status === 'active')
-          console.log('加载的设备类型列表 (response):', deviceTypes.value)
-          console.log('设备类型详细信息:')
-          deviceTypes.value.forEach(type => {
-            console.log(`  - code: "${type.code}", name: "${type.name}", status: "${type.status}"`)
-          })
         } else {
-          console.log('API响应格式不正确，使用静态列表')
           // 如果获取失败，使用静态列表作为备选
           deviceTypes.value = [
             { code: 'server', name: '服务器' },
@@ -1328,25 +1312,14 @@ export default {
     }
     
     const getDeviceTypeName = (deviceTypeCode) => {
-      console.log(`=== getDeviceTypeName 被调用 ===`)
-      console.log(`输入的设备类型代码: ${deviceTypeCode}`)
-      console.log(`当前设备类型列表:`, deviceTypes.value)
-      
       if (!deviceTypeCode) return '-'
       
       // 优先从动态加载的设备类型列表中查找（这样可以获取最新的自定义名称）
       if (deviceTypes.value && deviceTypes.value.length > 0) {
-        console.log(`正在从动态列表中查找设备类型: ${deviceTypeCode}`)
         const deviceType = deviceTypes.value.find(type => type.code === deviceTypeCode)
-        console.log(`查找结果:`, deviceType)
         if (deviceType && deviceType.name) {
-          console.log(`✅ 找到设备类型: ${deviceTypeCode} -> ${deviceType.name}`)
           return deviceType.name
-        } else {
-          console.log(`❌ 在动态列表中未找到设备类型: ${deviceTypeCode}`)
         }
-      } else {
-        console.log(`❌ 设备类型列表为空或未加载`)
       }
       
       // 如果动态列表中找不到，使用默认映射作为备选方案
@@ -1370,26 +1343,13 @@ export default {
       }
       
       if (defaultMapping[deviceTypeCode]) {
-        console.log(`⚠️ 使用默认映射: ${deviceTypeCode} -> ${defaultMapping[deviceTypeCode]}`)
         return defaultMapping[deviceTypeCode]
       }
       
       // 如果都找不到，返回代码本身
-      console.log(`❌ 未找到设备类型映射: ${deviceTypeCode}`)
       return deviceTypeCode
     }
     
-    // 强制刷新设备类型数据
-    const forceRefreshDeviceTypes = async () => {
-      console.log('强制刷新设备类型数据...')
-      deviceTypes.value = [] // 清空现有数据
-      await loadDeviceTypes()
-      // 强制重新渲染表格
-      nextTick(() => {
-        console.log('设备类型数据刷新完成，当前列表:', deviceTypes.value)
-      })
-    }
-
     // 生命周期
     onMounted(async () => {
       // 先加载基础数据
@@ -1542,7 +1502,6 @@ export default {
       
       // 方法
       refreshData,
-      forceRefreshDeviceTypes,
       refreshCurrentPageData,
       handleSearch,
       handleFilter,

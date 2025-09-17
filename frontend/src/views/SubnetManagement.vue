@@ -87,7 +87,7 @@
             </el-button>
             <el-button 
               size="small" 
-              type="primary"
+              type="info"
               @click="editSubnet(scope.row)"
             >
               编辑

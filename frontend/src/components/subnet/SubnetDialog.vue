@@ -87,7 +87,7 @@
       <div class="dialog-footer">
         <el-button @click="handleClose">取消</el-button>
         <el-button
-          type="primary"
+          type="info"
           :loading="submitting"
           :disabled="!networkValidation.isValid"
           @click="handleSubmit"

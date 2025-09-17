@@ -5,6 +5,16 @@
         <div class="card-header">
           <h2>欧税通网络资源管理平台</h2>
           <p>请登录您的账户</p>
+          <!-- 会话超时提示 -->
+          <div v-if="showTimeoutMessage" class="timeout-message">
+            <el-alert
+              title="会话已超时"
+              description="由于您长时间未操作，会话已自动过期，请重新登录"
+              type="warning"
+              :closable="false"
+              show-icon
+            />
+          </div>
         </div>
       </template>
       
@@ -83,6 +93,10 @@ export default {
   computed: {
     loading() {
       return this.$store.getters['auth/loginLoading']
+    },
+    showTimeoutMessage() {
+      // 检查URL参数中是否有timeout标识
+      return this.$route.query.timeout === '1'
     }
   },
   methods: {
@@ -187,6 +201,11 @@ export default {
   margin: 0;
   color: #909399;
   font-size: 14px;
+}
+
+.timeout-message {
+  margin-top: 16px;
+  text-align: left;
 }
 
 .login-form {

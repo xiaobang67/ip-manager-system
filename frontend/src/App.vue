@@ -1,32 +1,55 @@
 <template>
   <div id="app">
     <router-view />
+    
+    <!-- 会话超时警告组件 -->
+    <SessionTimeoutWarning />
+    
+    <!-- 用户活动监听器 -->
+    <ActivityMonitor />
   </div>
 </template>
 
 <script>
+import { onMounted, onUnmounted } from 'vue'
+import { useStore } from 'vuex'
+import SessionTimeoutWarning from '@/components/SessionTimeoutWarning.vue'
+import ActivityMonitor from '@/components/ActivityMonitor.vue'
+
 export default {
   name: 'App',
-  
-  mounted() {
-    // 监听存储变化，防止多标签页之间的身份冲突
-    window.addEventListener('storage', this.handleStorageChange)
+  components: {
+    SessionTimeoutWarning,
+    ActivityMonitor
   },
   
-  beforeUnmount() {
-    window.removeEventListener('storage', this.handleStorageChange)
-  },
-  
-  methods: {
-    handleStorageChange(event) {
+  setup() {
+    const store = useStore()
+
+    const handleStorageChange = (event) => {
       // 监听localStorage变化，防止多标签页身份冲突
       if (event.key === 'access_token' && event.newValue === null) {
         // 如果access_token被清除，说明用户在其他标签页登出
         console.log('检测到其他标签页登出，清除当前认证状态')
-        this.$store.commit('auth/CLEAR_AUTH')
-        this.$router.push('/login')
+        store.commit('auth/CLEAR_AUTH')
+        // 使用Vue Router的编程式导航
+        window.location.href = '/login'
       }
     }
+
+    onMounted(() => {
+      // 监听存储变化，防止多标签页之间的身份冲突
+      window.addEventListener('storage', handleStorageChange)
+      
+      // 初始化认证状态（包括启动会话超时监控）
+      store.dispatch('auth/initAuth')
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('storage', handleStorageChange)
+    })
+
+    return {}
   }
 }
 </script>
