@@ -1378,14 +1378,7 @@ def add_missing_endpoints(app, get_db_connection):
             connection.close()
     
 
-    @app.get("/api/users/roles/available")
-    async def get_available_roles_api():
-        """获取可用角色列表"""
-        return [
-            {"value": "admin", "label": "管理员", "description": "系统管理员，拥有所有权限"},
-            {"value": "manager", "label": "经理", "description": "部门经理，拥有部分管理权限"},
-            {"value": "user", "label": "普通用户", "description": "普通用户，拥有基本权限"}
-        ]
+
     
     @app.get("/api/users/themes/available")
     async def get_available_themes_api():
@@ -1549,13 +1542,26 @@ def add_missing_endpoints(app, get_db_connection):
     @app.get("/api/users/roles/available")
     async def get_available_roles_api():
         """获取可用的用户角色列表"""
-        return {
-            "roles": [
-                {"value": "admin", "label": "管理员"},
-                {"value": "manager", "label": "经理"},
-                {"value": "user", "label": "普通用户"}
-            ]
-        }
+        print("=== 角色API被调用 ===")
+        # 强制返回包含只读角色的列表
+        roles_list = [
+            {"value": "admin", "label": "管理员", "description": "系统管理员，拥有所有权限"},
+            {"value": "manager", "label": "经理", "description": "部门经理，拥有部分管理权限"},
+            {"value": "user", "label": "普通用户", "description": "普通用户，拥有基本权限"},
+            {"value": "readonly", "label": "只读用户", "description": "只读用户，只能查看IP地址信息"}
+        ]
+        print(f"返回角色列表: {roles_list}")
+        return {"roles": roles_list}
+    
+    @app.get("/api/users/roles/list")
+    async def get_roles_list_api():
+        """获取角色列表（备用端点）"""
+        return [
+            {"value": "admin", "label": "管理员"},
+            {"value": "manager", "label": "经理"},
+            {"value": "user", "label": "普通用户"},
+            {"value": "readonly", "label": "只读用户"}
+        ]
     
     @app.get("/api/users/themes/available")
     async def get_available_themes_api():

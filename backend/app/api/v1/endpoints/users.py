@@ -319,7 +319,8 @@ async def get_available_roles(
             "label": {
                 "admin": "管理员",
                 "manager": "经理",
-                "user": "普通用户"
+                "user": "普通用户",
+                "readonly": "只读用户"
             }.get(role.value, role.value)
         })
     
