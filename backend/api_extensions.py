@@ -646,6 +646,8 @@ def add_missing_endpoints(app, get_db_connection):
                     
                     if has_chinese:
                         # 中文查询：按匹配精确度排序
+                        # 构建完整的参数列表：WHERE参数 + CASE参数 + LIMIT参数
+                        sort_params = params + [query, query, f"%{query}%", f"%{query}%", limit, skip]
                         cursor.execute(f"""
                             SELECT *,
                                 CASE 
@@ -659,9 +661,11 @@ def add_missing_endpoints(app, get_db_connection):
                             WHERE {where_clause} 
                             ORDER BY relevance_score, INET_ATON(ip_address)
                             LIMIT %s OFFSET %s
-                        """, [query, query, f"%{query}%", f"%{query}%"] + params + [limit, skip])
+                        """, sort_params)
                     else:
                         # 英文/数字查询：按匹配精确度排序
+                        # 构建完整的参数列表：WHERE参数 + CASE参数 + LIMIT参数
+                        sort_params = params + [query, query, f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", limit, skip]
                         cursor.execute(f"""
                             SELECT *,
                                 CASE 
@@ -677,7 +681,7 @@ def add_missing_endpoints(app, get_db_connection):
                             WHERE {where_clause} 
                             ORDER BY relevance_score, INET_ATON(ip_address)
                             LIMIT %s OFFSET %s
-                        """, [query, query, f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"] + params + [limit, skip])
+                        """, sort_params)
                 else:
                     # IP地址查询或无查询条件，使用默认排序
                     cursor.execute(f"""

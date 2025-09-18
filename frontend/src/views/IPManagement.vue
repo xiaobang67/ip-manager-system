@@ -5,7 +5,7 @@
     <div class="header-section">
       <h1>IP地址管理</h1>
       <div class="header-actions">
-        <el-button v-if="!isReadonly" type="info" @click="showBulkDialog = true">
+        <el-button v-if="!isReadonly" type="primary" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
@@ -560,7 +560,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="info" @click="submitEdit" :loading="submitting">
+        <el-button type="primary" @click="submitEdit" :loading="submitting">
           确认修改
         </el-button>
       </template>
@@ -1025,6 +1025,11 @@ export default {
           query: readonlySearchQuery.value.trim()
         }
         
+        // 保存当前搜索参数，用于分页时保持搜索状态
+        currentSearchParams.value = {
+          query: readonlySearchQuery.value.trim()
+        }
+        
         const response = await ipAPI.searchIPs(params)
         
         // 处理响应格式
@@ -1049,6 +1054,7 @@ export default {
       } catch (error) {
         ElMessage.error('搜索失败：' + error.message)
         hasSearched.value = false // 搜索失败时重置状态
+        currentSearchParams.value = null // 清除搜索参数
       } finally {
         loading.value = false
       }
