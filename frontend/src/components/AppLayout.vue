@@ -70,36 +70,46 @@
             :collapse-transition="false"
             router
           >
-            <el-menu-item index="/dashboard">
-              <el-icon><Monitor /></el-icon>
-              <template #title>仪表盘</template>
-            </el-menu-item>
-            
-            <el-sub-menu index="network-resources">
-              <template #title>
-                <el-icon><Connection /></el-icon>
-                <span>网络资源管理</span>
-              </template>
+            <!-- 只读用户只显示IP地址管理 -->
+            <template v-if="userRole?.toLowerCase() === 'readonly'">
               <el-menu-item index="/ip-management">
                 <el-icon><Grid /></el-icon>
                 <template #title>IP地址管理</template>
               </el-menu-item>
-              <el-menu-item index="/device-type-management">
-                <el-icon><Monitor /></el-icon>
-                <template #title>设备类型管理</template>
-              </el-menu-item>
-            </el-sub-menu>
+            </template>
             
-            <el-sub-menu index="subnet-resources">
-              <template #title>
-                <el-icon><Grid /></el-icon>
-                <span>网段资源管理</span>
-              </template>
-              <el-menu-item index="/subnet-management">
-                <el-icon><Grid /></el-icon>
-                <template #title>网段管理</template>
+            <!-- 非只读用户显示完整菜单 -->
+            <template v-else>
+              <el-menu-item index="/dashboard">
+                <el-icon><Monitor /></el-icon>
+                <template #title>仪表盘</template>
               </el-menu-item>
-            </el-sub-menu>
+              <el-sub-menu index="network-resources">
+                <template #title>
+                  <el-icon><Connection /></el-icon>
+                  <span>网络资源管理</span>
+                </template>
+                <el-menu-item index="/ip-management">
+                  <el-icon><Grid /></el-icon>
+                  <template #title>IP地址管理</template>
+                </el-menu-item>
+                <el-menu-item index="/device-type-management">
+                  <el-icon><Monitor /></el-icon>
+                  <template #title>设备类型管理</template>
+                </el-menu-item>
+              </el-sub-menu>
+              
+              <el-sub-menu index="subnet-resources">
+                <template #title>
+                  <el-icon><Grid /></el-icon>
+                  <span>网段资源管理</span>
+                </template>
+                <el-menu-item index="/subnet-management">
+                  <el-icon><Grid /></el-icon>
+                  <template #title>网段管理</template>
+                </el-menu-item>
+              </el-sub-menu>
+            </template>
             
             <el-sub-menu 
               v-if="userRole?.toLowerCase() === 'admin'"

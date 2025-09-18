@@ -5,7 +5,7 @@
     <div class="header-section">
       <h1>IP地址管理</h1>
       <div class="header-actions">
-        <el-button type="info" @click="showBulkDialog = true">
+        <el-button v-if="!isReadonly" type="info" @click="showBulkDialog = true">
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
@@ -16,14 +16,15 @@
       </div>
     </div>
 
-    <!-- 简单筛选组件 -->
+    <!-- 简单筛选组件 - 只读用户不显示 -->
     <SimpleIPFilter
+      v-if="!isReadonly"
       @search="handleSimpleSearch"
       @reset="handleSearchReset"
     />
 
-    <!-- 统计信息卡片 -->
-    <div class="stats-section">
+    <!-- 统计信息卡片 - 只读用户不显示 -->
+    <div v-if="!isReadonly" class="stats-section">
       <el-row :gutter="20">
         <el-col :span="6">
           <el-card class="stats-card">
@@ -60,8 +61,41 @@
       </el-row>
     </div>
 
+    <!-- 只读用户的简化搜索框 -->
+    <div v-if="isReadonly" class="readonly-search-section">
+      <div class="readonly-search-container">
+        <el-input
+          v-model="readonlySearchQuery"
+          placeholder="搜索IP地址、使用人、MAC地址..."
+          @input="handleReadonlySearch"
+          @keyup.enter="handleReadonlySearch"
+          clearable
+          size="large"
+          class="readonly-search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button type="primary" @click="handleReadonlySearch" :loading="loading">
+              搜索
+            </el-button>
+          </template>
+        </el-input>
+      </div>
+    </div>
+
+    <!-- 只读用户的搜索提示 -->
+    <div v-if="isReadonly && !hasSearched" class="readonly-search-hint">
+      <div class="search-hint-content">
+        <el-icon class="search-hint-icon"><Search /></el-icon>
+        <h3>请输入搜索关键词查询IP地址</h3>
+        <p>支持搜索IP地址、使用人、MAC地址等信息</p>
+      </div>
+    </div>
+
     <!-- IP地址列表表格 -->
-    <div class="table-section">
+    <div v-if="!isReadonly || hasSearched" class="table-section">
       <!-- 搜索状态提示 -->
       <div v-if="currentSearchParams" class="search-status">
         <el-alert
@@ -76,13 +110,28 @@
         </el-alert>
       </div>
       
+      <!-- 只读用户的搜索结果提示 -->
+      <div v-if="isReadonly && hasSearched" class="readonly-search-result">
+        <el-alert
+          :title="`搜索结果：共找到 ${total} 条记录`"
+          type="success"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <span v-if="readonlySearchQuery">关键词："{{ readonlySearchQuery }}"</span>
+            <span v-else>显示所有IP地址</span>
+          </template>
+        </el-alert>
+      </div>
+      
       <el-table
         :data="ipList"
         v-loading="loading"
         stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="70" />
+        <el-table-column v-if="!isReadonly" type="selection" width="70" />
         <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
         <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
@@ -125,7 +174,7 @@
             <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right" align="center">
+        <el-table-column v-if="!isReadonly" label="操作" width="280" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
@@ -551,6 +600,7 @@ export default {
     const currentUser = computed(() => store.getters['auth/currentUser'])
     const userRole = computed(() => store.getters['auth/userRole'])
     const isAdmin = computed(() => userRole.value?.toLowerCase() === 'admin')
+    const isReadonly = computed(() => userRole.value?.toLowerCase() === 'readonly')
     
     // 响应式数据
     const loading = ref(false)
@@ -565,6 +615,10 @@ export default {
     const searchQuery = ref('')
     const statusFilter = ref('')
     const subnetFilter = ref('')
+    
+    // 只读用户的搜索
+    const readonlySearchQuery = ref('')
+    const hasSearched = ref(false)
     
     const currentPage = ref(1)
     const pageSize = ref(20)
@@ -950,6 +1004,54 @@ export default {
       currentPage.value = 1
       loadIPList()
       loadStatistics()
+    }
+    
+    // 只读用户的搜索处理
+    const handleReadonlySearch = async () => {
+      // 检查是否有搜索内容
+      if (!readonlySearchQuery.value || !readonlySearchQuery.value.trim()) {
+        ElMessage.warning('请输入搜索关键词')
+        return
+      }
+      
+      loading.value = true
+      try {
+        currentPage.value = 1
+        hasSearched.value = true // 标记已经搜索过
+        
+        const params = {
+          skip: 0,
+          limit: pageSize.value,
+          query: readonlySearchQuery.value.trim()
+        }
+        
+        const response = await ipAPI.searchIPs(params)
+        
+        // 处理响应格式
+        if (response.data && Array.isArray(response.data)) {
+          ipList.value = response.data
+          total.value = response.total || response.data.length
+        } else if (Array.isArray(response)) {
+          ipList.value = response
+          total.value = response.length
+        } else {
+          ipList.value = []
+          total.value = 0
+        }
+        
+        // 显示搜索结果提示
+        if (ipList.value.length === 0) {
+          ElMessage.info('未找到匹配的IP地址')
+        } else {
+          ElMessage.success(`找到 ${total.value} 条匹配记录`)
+        }
+        
+      } catch (error) {
+        ElMessage.error('搜索失败：' + error.message)
+        hasSearched.value = false // 搜索失败时重置状态
+      } finally {
+        loading.value = false
+      }
     }
     
     // 存储当前搜索参数
@@ -1454,6 +1556,7 @@ export default {
       currentUser,
       userRole,
       isAdmin,
+      isReadonly,
       
       // 响应式数据
       loading,
@@ -1471,6 +1574,10 @@ export default {
       total,
       statistics,
       currentSearchParams,
+      
+      // 只读用户搜索
+      readonlySearchQuery,
+      hasSearched,
       
       // 对话框状态
       showAllocationDialog,
@@ -1507,6 +1614,7 @@ export default {
       handleFilter,
       handleSimpleSearch,
       handleSearchReset,
+      handleReadonlySearch,
       handleSizeChange,
       handleCurrentChange,
       handleSelectionChange,
@@ -2037,6 +2145,103 @@ oped>
   
   .table-section {
     padding: 12px;
+  }
+}
+
+/* 只读用户搜索框样式 */
+.readonly-search-section {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-primary, #e4e7ed);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.readonly-search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.readonly-search-input {
+  max-width: 600px;
+  width: 100%;
+}
+
+.readonly-search-input .el-input__inner {
+  font-size: 16px;
+  padding: 12px 15px;
+}
+
+@media (max-width: 768px) {
+  .readonly-search-section {
+    padding: 16px;
+  }
+  
+  .readonly-search-input {
+    max-width: 100%;
+  }
+}
+
+/* 只读用户搜索提示样式 */
+.readonly-search-hint {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 40px 20px;
+  background-color: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-primary, #e4e7ed);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.search-hint-content {
+  text-align: center;
+  color: var(--text-secondary, #606266);
+}
+
+.search-hint-icon {
+  font-size: 48px;
+  color: var(--color-primary, #409eff);
+  margin-bottom: 16px;
+}
+
+.search-hint-content h3 {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 16px 0 8px 0;
+  color: var(--text-primary, #303133);
+}
+
+.search-hint-content p {
+  font-size: 14px;
+  margin: 0;
+  color: var(--text-tertiary, #909399);
+}
+
+/* 只读用户搜索结果提示样式 */
+.readonly-search-result {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .readonly-search-hint {
+    min-height: 200px;
+    padding: 30px 16px;
+  }
+  
+  .search-hint-icon {
+    font-size: 36px;
+  }
+  
+  .search-hint-content h3 {
+    font-size: 16px;
+  }
+  
+  .search-hint-content p {
+    font-size: 13px;
   }
 }
 </style>

@@ -110,6 +110,7 @@ def require_role(required_role: UserRole):
         """
         # 定义角色层级
         role_hierarchy = {
+            UserRole.READONLY: 0,
             UserRole.USER: 1,
             UserRole.MANAGER: 2,
             UserRole.ADMIN: 3
@@ -179,6 +180,31 @@ def require_manager_or_admin(current_user: User = Depends(get_current_active_use
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="需要管理员或经理权限"
+        )
+    return current_user
+
+
+def require_write_permission(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    要求写权限（非只读用户）
+    
+    Args:
+        current_user: 当前用户
+    
+    Returns:
+        User: 有写权限的用户对象
+    
+    Raises:
+        HTTPException: 只读用户时抛出异常
+    """
+    if current_user.role == UserRole.READONLY:
+        logger.warning(
+            f"User {current_user.username} (role: {current_user.role}) "
+            f"attempted to access write operation"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="只读用户无法执行此操作"
         )
     return current_user
 

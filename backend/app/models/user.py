@@ -9,6 +9,7 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     MANAGER = "manager"
     USER = "user"
+    READONLY = "readonly"
 
 
 class UserTheme(str, enum.Enum):
