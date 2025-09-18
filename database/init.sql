@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(100),
-    role ENUM('admin', 'manager', 'user') DEFAULT 'user',
+    role ENUM('admin', 'manager', 'user', 'readonly') DEFAULT 'user',
     theme ENUM('light', 'dark') DEFAULT 'light',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

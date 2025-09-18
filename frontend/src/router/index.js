@@ -4,7 +4,14 @@ import store from '@/store'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: (to) => {
+      // 根据用户角色重定向到不同页面
+      const userRole = store.getters['auth/userRole']
+      if (userRole?.toLowerCase() === 'readonly') {
+        return '/ip-management'
+      }
+      return '/dashboard'
+    }
   },
   {
     path: '/login',
@@ -22,7 +29,7 @@ const routes = [
     path: '/ip-management',
     name: 'IPManagement',
     component: () => import('@/views/IPManagement.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, allowReadonly: true }
   },
   {
     path: '/subnet-management',
@@ -121,6 +128,17 @@ router.beforeEach(async (to, from, next) => {
     console.log('需要管理员权限但不是管理员，重定向到仪表盘')
     next('/dashboard')
     return
+  }
+
+  // 如果是只读用户，检查是否允许访问该页面
+  if (userRole?.toLowerCase() === 'readonly') {
+    // 只读用户只能访问IP管理页面
+    const allowedPaths = ['/ip-management']
+    if (!allowedPaths.includes(to.path)) {
+      console.log('只读用户访问受限页面，重定向到IP管理页面')
+      next('/ip-management')
+      return
+    }
   }
 
   next()

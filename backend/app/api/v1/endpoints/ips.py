@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import get_current_user, require_admin, require_write_permission
 from app.models.user import User
 from app.services.ip_service import IPService
 from app.services.audit_service import AuditService
@@ -49,7 +49,7 @@ async def get_ip_addresses(
 async def allocate_ip(
     request: IPAllocationRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_write_permission),
     http_request: Request = None
 ):
     """分配IP地址"""
@@ -106,7 +106,7 @@ async def allocate_ip(
 async def reserve_ip(
     request: IPReservationRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_write_permission),
     http_request: Request = None
 ):
     """保留IP地址"""
@@ -160,7 +160,7 @@ async def reserve_ip(
 async def release_ip(
     request: IPReleaseRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_write_permission),
     http_request: Request = None
 ):
     """释放IP地址"""
@@ -219,7 +219,7 @@ async def release_ip(
 async def delete_ip(
     request: IPDeleteRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_write_permission),
     http_request: Request = None
 ):
     """删除IP地址"""

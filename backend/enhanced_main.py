@@ -1355,6 +1355,46 @@ async def get_device_type_statistics():
     finally:
         connection.close()
 
+# 用户角色API端点
+@app.get("/api/users/roles/available")
+async def get_available_roles():
+    """获取可用的用户角色列表"""
+    print("=== enhanced_main.py 中的角色API被调用 ===")
+    print("=== 强制返回包含只读角色的列表 ===")
+    result = [
+        {"value": "admin", "label": "管理员", "description": "系统管理员，拥有所有权限"},
+        {"value": "manager", "label": "经理", "description": "部门经理，拥有部分管理权限"},
+        {"value": "user", "label": "普通用户", "description": "普通用户，拥有基本权限"},
+        {"value": "readonly", "label": "只读用户", "description": "只读用户，只能查看IP地址信息"}
+    ]
+    print(f"=== 返回结果: {result} ===")
+    return result
+
+@app.get("/api/users/roles/test")
+async def get_roles_test():
+    """测试角色API端点"""
+    print("=== 测试角色API被调用 ===")
+    return [
+        {"value": "admin", "label": "管理员", "description": "系统管理员，拥有所有权限"},
+        {"value": "manager", "label": "经理", "description": "部门经理，拥有部分管理权限"},
+        {"value": "user", "label": "普通用户", "description": "普通用户，拥有基本权限"},
+        {"value": "readonly", "label": "只读用户", "description": "只读用户，只能查看IP地址信息"}
+    ]
+
+@app.get("/api/users/roles/debug")
+async def get_roles_debug():
+    """调试角色API端点"""
+    print("=== 调试角色API被调用 ===")
+    return {
+        "message": "这是调试端点",
+        "roles": [
+            {"value": "admin", "label": "管理员", "description": "系统管理员，拥有所有权限"},
+            {"value": "manager", "label": "经理", "description": "部门经理，拥有部分管理权限"},
+            {"value": "user", "label": "普通用户", "description": "普通用户，拥有基本权限"},
+            {"value": "readonly", "label": "只读用户", "description": "只读用户，只能查看IP地址信息"}
+        ]
+    }
+
 # 监控相关API端点
 @app.get("/api/monitoring/dashboard")
 async def get_dashboard_summary():

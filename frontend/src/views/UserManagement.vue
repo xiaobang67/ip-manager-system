@@ -860,7 +860,8 @@ const getRoleTagType = (role) => {
   const types = {
     admin: 'danger',
     manager: 'warning',
-    user: 'info'
+    user: 'info',
+    readonly: 'success'
   }
   return types[role] || 'info'
 }
@@ -869,7 +870,8 @@ const getRoleLabel = (role) => {
   const labels = {
     admin: '管理员',
     manager: '经理',
-    user: '普通用户'
+    user: '普通用户',
+    readonly: '只读用户'
   }
   return labels[role] || role
 }
