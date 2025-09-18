@@ -554,24 +554,72 @@ def add_missing_endpoints(app, get_db_connection):
                     # 智能搜索：检测查询类型
                     import re
                     
+
+                    
                     # 检查是否是完整的IP地址格式
                     ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+                    # 检查是否是C类网段格式（如 192.168.1 或 192.168.1.0）
+                    ip_c_subnet_pattern = r'^(\d{1,3}\.){2}\d{1,3}(\.0)?$'
+                    # 检查是否是B类网段格式（如 192.168）
+                    ip_b_subnet_pattern = r'^(\d{1,3}\.){1}\d{1,3}$'
+                    
                     if re.match(ip_pattern, query):
                         # 完整IP地址：只进行精确匹配
+
                         where_conditions.append("ip_address = %s")
                         params.append(query)
+                    elif re.match(ip_c_subnet_pattern, query):
+                        # C类网段搜索（如 192.168.1 或 192.168.1.0）：精确网段匹配
+
+                        # 标准化查询：只有当查询以.0结尾且不是x.x.0格式时才移除.0
+                        # 例如：192.168.1.0 -> 192.168.1，但 192.168.0 保持不变
+                        if query.endswith('.0') and query.count('.') == 3:
+                            normalized_query = query[:-2]  # 移除末尾的.0
+                        else:
+                            normalized_query = query
+                        # 使用精确的网段匹配，确保只匹配该网段
+                        # 使用正则表达式确保精确匹配，避免 192.168.1 匹配到 192.168.10
+                        regex_pattern = f"^{re.escape(normalized_query)}\\.[0-9]+$"
+                        where_conditions.append("ip_address REGEXP %s")
+                        params.append(regex_pattern)
+                    elif re.match(ip_b_subnet_pattern, query):
+                        # B类网段搜索（如 192.168）：匹配整个B类网段
+
+                        where_conditions.append("ip_address LIKE %s")
+                        params.append(f"{query}.%")
                     else:
-                        # 其他情况：进行模糊匹配，但对assigned_to优先精确匹配
-                        # 注意：不在device_type字段中搜索，避免误匹配
-                        where_conditions.append("""(
-                            ip_address LIKE %s OR 
-                            user_name LIKE %s OR 
-                            assigned_to = %s OR
-                            assigned_to LIKE %s OR
-                            mac_address LIKE %s OR
-                            description LIKE %s
-                        )""")
-                        params.extend([f"%{query}%", f"%{query}%", query, f"%{query}%", f"%{query}%", f"%{query}%"])
+                        # 检查是否包含中文字符（用户名通常是中文）
+                        chinese_pattern = r'[\u4e00-\u9fff]'
+                        has_chinese = bool(re.search(chinese_pattern, query))
+                        
+                        # 检查是否可能是IP地址的一部分
+                        ip_part_pattern = r'^\d{1,3}(\.\d{1,3})?$'
+                        is_ip_part = bool(re.match(ip_part_pattern, query))
+                        
+                        if has_chinese:
+                            # 中文查询：主要在用户相关字段中搜索
+                            where_conditions.append("""(
+                                user_name = %s OR 
+                                assigned_to = %s OR
+                                user_name LIKE %s OR 
+                                assigned_to LIKE %s
+                            )""")
+                            params.extend([query, query, f"%{query}%", f"%{query}%"])
+                        elif is_ip_part:
+                            # IP地址部分：精确的IP匹配，避免误匹配
+                            where_conditions.append("ip_address LIKE %s")
+                            params.append(f"{query}.%")
+                        else:
+                            # 其他查询：在所有相关字段中搜索
+                            where_conditions.append("""(
+                                user_name = %s OR 
+                                assigned_to = %s OR
+                                user_name LIKE %s OR 
+                                assigned_to LIKE %s OR
+                                mac_address LIKE %s OR
+                                description LIKE %s
+                            )""")
+                            params.extend([query, query, f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"])
                 
                 if status:
                     where_conditions.append("status = %s")
@@ -590,13 +638,54 @@ def add_missing_endpoints(app, get_db_connection):
                 """, params)
                 total_count = cursor.fetchone()['total']
                 
-                # 然后获取分页数据
-                cursor.execute(f"""
-                    SELECT * FROM ip_addresses 
-                    WHERE {where_clause} 
-                    ORDER BY INET_ATON(ip_address) 
-                    LIMIT %s OFFSET %s
-                """, params + [limit, skip])
+                # 然后获取分页数据，优化排序逻辑
+                if query and not re.match(ip_pattern, query):
+                    # 对于非IP地址查询，使用相关性排序
+                    chinese_pattern = r'[\u4e00-\u9fff]'
+                    has_chinese = bool(re.search(chinese_pattern, query))
+                    
+                    if has_chinese:
+                        # 中文查询：按匹配精确度排序
+                        cursor.execute(f"""
+                            SELECT *,
+                                CASE 
+                                    WHEN user_name = %s THEN 1
+                                    WHEN assigned_to = %s THEN 2
+                                    WHEN user_name LIKE %s THEN 3
+                                    WHEN assigned_to LIKE %s THEN 4
+                                    ELSE 5
+                                END as relevance_score
+                            FROM ip_addresses 
+                            WHERE {where_clause} 
+                            ORDER BY relevance_score, INET_ATON(ip_address)
+                            LIMIT %s OFFSET %s
+                        """, [query, query, f"%{query}%", f"%{query}%"] + params + [limit, skip])
+                    else:
+                        # 英文/数字查询：按匹配精确度排序
+                        cursor.execute(f"""
+                            SELECT *,
+                                CASE 
+                                    WHEN user_name = %s THEN 1
+                                    WHEN assigned_to = %s THEN 2
+                                    WHEN ip_address LIKE %s THEN 3
+                                    WHEN user_name LIKE %s THEN 4
+                                    WHEN assigned_to LIKE %s THEN 5
+                                    WHEN mac_address LIKE %s THEN 6
+                                    ELSE 7
+                                END as relevance_score
+                            FROM ip_addresses 
+                            WHERE {where_clause} 
+                            ORDER BY relevance_score, INET_ATON(ip_address)
+                            LIMIT %s OFFSET %s
+                        """, [query, query, f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"] + params + [limit, skip])
+                else:
+                    # IP地址查询或无查询条件，使用默认排序
+                    cursor.execute(f"""
+                        SELECT * FROM ip_addresses 
+                        WHERE {where_clause} 
+                        ORDER BY INET_ATON(ip_address) 
+                        LIMIT %s OFFSET %s
+                    """, params + [limit, skip])
                 results = cursor.fetchall()
                 
                 data = [
