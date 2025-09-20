@@ -1,7 +1,7 @@
 """
 API扩展模块 - 添加前端需要的缺失API端点
 """
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Header
 from typing import List, Optional
 import pymysql
 import logging
@@ -535,9 +535,16 @@ def add_missing_endpoints(app, get_db_connection):
     @app.get("/api/ips/search")
     async def search_ips_api(skip: int = 0, limit: int = 50, query: Optional[str] = None, 
                             status: Optional[str] = None, subnet_id: Optional[int] = None,
-                            assigned_to: Optional[str] = None):
+                            assigned_to: Optional[str] = None, authorization: str = Header(None)):
         """搜索IP地址"""
-        print(f"搜索参数: query={query}, status={status}, subnet_id={subnet_id}, assigned_to={assigned_to}, skip={skip}, limit={limit}")  # 调试信息
+        # 获取当前用户角色
+        user_role = None
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+            from app.core.security import verify_token
+            payload = verify_token(token, "access")
+            if payload:
+                user_role = payload.get("role")
         
         connection = get_db_connection()
         try:
@@ -629,13 +636,29 @@ def add_missing_endpoints(app, get_db_connection):
                     where_conditions.append("subnet_id = %s")
                     params.append(subnet_id)
                 
-                where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+                # 构建基础where子句
+                base_where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
+                
+                # 只读用户网段限制：只允许查询192.168.10.0/23网段
+                if user_role == "readonly":
+                    # 192.168.10.0/23 包含 192.168.10.0-192.168.11.255
+                    subnet_restriction = "(ip_address LIKE %s OR ip_address LIKE %s)"
+                    subnet_params = ['192.168.10.%', '192.168.11.%']
+                    
+                    if where_conditions:
+                        where_clause = f"({base_where_clause}) AND {subnet_restriction}"
+                        final_params = params + subnet_params
+                    else:
+                        where_clause = subnet_restriction
+                        final_params = subnet_params
+
+                else:
+                    where_clause = base_where_clause
+                    final_params = params
                 
                 # 首先获取总数
-                cursor.execute(f"""
-                    SELECT COUNT(*) as total FROM ip_addresses 
-                    WHERE {where_clause}
-                """, params)
+                count_sql = f"SELECT COUNT(*) as total FROM ip_addresses WHERE {where_clause}"
+                cursor.execute(count_sql, final_params)
                 total_count = cursor.fetchone()['total']
                 
                 # 然后获取分页数据，优化排序逻辑
@@ -645,43 +668,27 @@ def add_missing_endpoints(app, get_db_connection):
                     has_chinese = bool(re.search(chinese_pattern, query))
                     
                     if has_chinese:
-                        # 中文查询：按匹配精确度排序
-                        # 构建完整的参数列表：WHERE参数 + CASE参数 + LIMIT参数
-                        sort_params = params + [query, query, f"%{query}%", f"%{query}%", limit, skip]
-                        cursor.execute(f"""
-                            SELECT *,
-                                CASE 
-                                    WHEN user_name = %s THEN 1
-                                    WHEN assigned_to = %s THEN 2
-                                    WHEN user_name LIKE %s THEN 3
-                                    WHEN assigned_to LIKE %s THEN 4
-                                    ELSE 5
-                                END as relevance_score
-                            FROM ip_addresses 
+                        # 中文查询：使用简单的排序，避免参数重复问题
+                        data_sql = f"""
+                            SELECT * FROM ip_addresses 
                             WHERE {where_clause} 
-                            ORDER BY relevance_score, INET_ATON(ip_address)
+                            ORDER BY INET_ATON(ip_address)
                             LIMIT %s OFFSET %s
-                        """, sort_params)
+                        """
+                        sort_params = final_params + [limit, skip]
+
+                        cursor.execute(data_sql, sort_params)
                     else:
-                        # 英文/数字查询：按匹配精确度排序
-                        # 构建完整的参数列表：WHERE参数 + CASE参数 + LIMIT参数
-                        sort_params = params + [query, query, f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", limit, skip]
-                        cursor.execute(f"""
-                            SELECT *,
-                                CASE 
-                                    WHEN user_name = %s THEN 1
-                                    WHEN assigned_to = %s THEN 2
-                                    WHEN ip_address LIKE %s THEN 3
-                                    WHEN user_name LIKE %s THEN 4
-                                    WHEN assigned_to LIKE %s THEN 5
-                                    WHEN mac_address LIKE %s THEN 6
-                                    ELSE 7
-                                END as relevance_score
-                            FROM ip_addresses 
+                        # 英文/数字查询：使用简单的排序，避免参数重复问题
+                        data_sql = f"""
+                            SELECT * FROM ip_addresses 
                             WHERE {where_clause} 
-                            ORDER BY relevance_score, INET_ATON(ip_address)
+                            ORDER BY INET_ATON(ip_address)
                             LIMIT %s OFFSET %s
-                        """, sort_params)
+                        """
+                        sort_params = final_params + [limit, skip]
+
+                        cursor.execute(data_sql, sort_params)
                 else:
                     # IP地址查询或无查询条件，使用默认排序
                     cursor.execute(f"""
@@ -689,7 +696,7 @@ def add_missing_endpoints(app, get_db_connection):
                         WHERE {where_clause} 
                         ORDER BY INET_ATON(ip_address) 
                         LIMIT %s OFFSET %s
-                    """, params + [limit, skip])
+                    """, final_params + [limit, skip])
                 results = cursor.fetchall()
                 
                 data = [
