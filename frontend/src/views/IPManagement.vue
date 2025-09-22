@@ -67,7 +67,6 @@
         <el-input
           v-model="readonlySearchQuery"
           placeholder="搜索IP地址、使用人、MAC地址..."
-          @input="handleReadonlySearch"
           @keyup.enter="handleReadonlySearch"
           clearable
           size="large"
