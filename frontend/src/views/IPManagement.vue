@@ -9,7 +9,7 @@
           <el-icon><Operation /></el-icon>
           批量操作
         </el-button>
-          <el-button type="info" @click="refreshData">
+          <el-button type="primary" @click="refreshData">
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
@@ -25,8 +25,8 @@
 
     <!-- 统计信息卡片 - 只读用户不显示 -->
     <div v-if="!isReadonly" class="stats-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
+      <el-row :gutter="20" class="stats-row">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.total }}</div>
@@ -34,7 +34,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.available }}</div>
@@ -42,7 +42,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.allocated }}</div>
@@ -50,7 +50,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stats-card">
             <div class="stats-item">
               <div class="stats-value">{{ statistics.utilization_rate }}%</div>
@@ -129,10 +129,13 @@
         v-loading="loading"
         stripe
         @selection-change="handleSelectionChange"
+        class="responsive-table"
+        :class="{ 'readonly-table': isReadonly }"
+        style="width: 100%"
       >
-        <el-table-column v-if="!isReadonly" type="selection" width="70" />
+        <el-table-column v-if="!isReadonly" type="selection" width="45" />
         <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
-        <el-table-column prop="status" label="状态" width="120" align="center">
+        <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag 
               :type="getStatusTagType(row.status)" 
@@ -143,37 +146,37 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="120" align="center">
+        <el-table-column prop="user_name" label="使用人" width="110" align="center">
           <template #default="{ row }">
             <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="mac_address" label="MAC地址" width="160" align="center">
+        <el-table-column prop="mac_address" label="MAC地址" width="140" align="center">
           <template #default="{ row }">
             <span>{{ row.mac_address || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="device_type" label="设备类型" width="140" align="center">
+        <el-table-column prop="device_type" label="设备类型" width="100" align="center">
           <template #default="{ row }">
             <span>{{ getDeviceTypeName(row.device_type) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="assigned_to" label="所属部门" width="140" align="center">
+        <el-table-column prop="assigned_to" label="所属部门" width="110" align="center">
           <template #default="{ row }">
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip align="center">
+        <el-table-column prop="description" label="描述" width="150" show-overflow-tooltip align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="allocated_at" label="分配时间" width="220" align="center">
+        <el-table-column prop="allocated_at" label="分配时间" width="160" align="center">
           <template #default="{ row }">
             <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column v-if="!isReadonly" label="操作" width="280" fixed="right" align="center">
+        <el-table-column v-if="!isReadonly" label="操作" width="240" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
@@ -185,7 +188,7 @@
                 分配
               </el-button>
               <el-button
-                type="info"
+                type="primary"
                 size="small"
                 @click="editIP(row)"
               >
@@ -2108,7 +2111,113 @@ oped>
   margin-top: 4px;
 }
 
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.responsive-table .el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__body-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__header,
+.responsive-table .el-table__body {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.readonly-table {
+  /* 只读用户表格的特殊样式 */
+}
+
+/* 确保表格容器占满宽度 */
+.table-section {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-section .el-table {
+  width: 100% !important;
+}
+
+/* 强制表格占满整个容器宽度 */
+.responsive-table table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 确保表格内容不会溢出 */
+.responsive-table .cell {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 最简单有效的表格居中样式 */
+.ip-management :deep(.el-table td),
+.ip-management :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.ip-management :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+/* 强制表格列按比例分配宽度 */
+.responsive-table .el-table__header colgroup,
+.responsive-table .el-table__body colgroup {
+  width: 100% !important;
+}
+
+/* 让min-width列能够扩展 */
+.responsive-table .el-table__header colgroup col[min-width],
+.responsive-table .el-table__body colgroup col[min-width] {
+  width: auto !important;
+}
+
+/* 操作按钮响应式 */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-buttons .el-button {
+  margin: 2px;
+  min-width: 60px;
+}
+
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .ip-management {
+    padding: 20px;
+  }
+  
+  .stats-section .el-col {
+    margin-bottom: 12px;
+  }
+  
+  .action-buttons {
+    gap: 2px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 50px;
+  }
+}
+
 @media (max-width: 768px) {
   .ip-management {
     padding: 16px;
@@ -2118,6 +2227,7 @@ oped>
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+    padding: 16px;
   }
   
   .header-actions {
@@ -2132,24 +2242,56 @@ oped>
   
   .table-section {
     padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .responsive-table {
+    min-width: 800px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
+    margin: 1px 0;
   }
 }
 
 @media (max-width: 480px) {
+  .ip-management {
+    padding: 12px;
+  }
+  
   .header-section {
-    padding: 16px;
+    padding: 12px;
   }
   
   .header-section h1 {
-    font-size: 20px;
+    font-size: 18px;
   }
   
   .stats-value {
-    font-size: 24px;
+    font-size: 20px;
   }
   
   .table-section {
-    padding: 12px;
+    padding: 8px;
+  }
+  
+  .responsive-table {
+    min-width: 600px;
+  }
+  
+  .pagination-section {
+    margin-top: 16px;
+  }
+  
+  .pagination-section .el-pagination {
+    justify-content: center;
   }
 }
 

@@ -45,34 +45,37 @@
           stripe
           style="width: 100%"
           @sort-change="handleSortChange"
+          class="responsive-table"
         >
-          <el-table-column prop="id" label="ID" width="80" sortable />
-          <el-table-column prop="name" label="部门名称" min-width="200" sortable />
-          <el-table-column prop="code" label="部门编码" width="150" />
-          <el-table-column prop="created_at" label="创建时间" width="180" sortable>
+          <el-table-column prop="id" label="ID" width="60" sortable />
+          <el-table-column prop="name" label="部门名称" width="200" sortable />
+          <el-table-column prop="code" label="部门编码" width="120" />
+          <el-table-column prop="created_at" label="创建时间" width="140" sortable>
             <template #default="{ row }">
               {{ formatDateTime(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
+          <el-table-column label="操作" width="120" fixed="right">
             <template #default="{ row }">
-              <el-button
-                size="small"
-                type="primary"
-                @click="editDepartment(row)"
-                v-if="canManageDepartments"
-              >
-                编辑
-              </el-button>
-              <el-button
-                size="small"
-                type="danger"
-                plain
-                @click="confirmDeleteDepartment(row)"
-                v-if="canManageDepartments"
-              >
-                删除
-              </el-button>
+              <div class="action-buttons">
+                <el-button
+                  size="small"
+                  type="primary"
+                  @click="editDepartment(row)"
+                  v-if="canManageDepartments"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  size="small"
+                  type="danger"
+                  plain
+                  @click="confirmDeleteDepartment(row)"
+                  v-if="canManageDepartments"
+                >
+                  删除
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -556,15 +559,89 @@ watch(showEditDialog, (newVal) => {
   gap: 10px;
 }
 
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.responsive-table .el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__body-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__header,
+.responsive-table .el-table__body {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 确保表格容器占满宽度 */
+.table-card {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-card .el-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* 强制所有表格内容居中对齐 */
+.responsive-table .el-table__body td,
+.responsive-table .el-table__header th {
+  text-align: center !important;
+}
+
+.responsive-table .el-table__body td .cell,
+.responsive-table .el-table__header th .cell {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+/* 操作按钮响应式 */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-buttons .el-button {
+  margin: 2px;
+  min-width: 60px;
+}
+
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .department-management {
+    padding: 20px;
+  }
+  
+  .action-buttons {
+    gap: 2px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 50px;
+  }
+}
+
 @media (max-width: 768px) {
   .department-management {
-    padding: 10px;
+    padding: 16px;
   }
   
   .page-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
+    align-items: flex-start;
   }
   
   .stats-cards .el-col {
@@ -573,6 +650,43 @@ watch(showEditDialog, (newVal) => {
   
   .filter-card .el-row .el-col {
     margin-bottom: 10px;
+  }
+  
+  .table-card {
+    overflow-x: auto;
+  }
+  
+  .responsive-table {
+    min-width: 600px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
+    margin: 1px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .department-management {
+    padding: 12px;
+  }
+  
+  .page-header h1 {
+    font-size: 18px;
+  }
+  
+  .responsive-table {
+    min-width: 500px;
+  }
+  
+  .pagination-wrapper {
+    padding: 16px;
   }
 }
 

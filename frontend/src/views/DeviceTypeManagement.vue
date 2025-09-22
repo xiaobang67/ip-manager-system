@@ -40,8 +40,8 @@
 
       <!-- 统计信息卡片 -->
       <div class="stats-section">
-        <el-row :gutter="20">
-          <el-col :span="6">
+        <el-row :gutter="20" class="stats-row">
+          <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.total }}</div>
@@ -49,7 +49,7 @@
               </div>
             </el-card>
           </el-col>
-          <el-col :span="6">
+          <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.active }}</div>
@@ -57,7 +57,7 @@
               </div>
             </el-card>
           </el-col>
-          <el-col :span="6">
+          <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.inactive }}</div>
@@ -65,7 +65,7 @@
               </div>
             </el-card>
           </el-col>
-          <el-col :span="6">
+          <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
             <el-card class="stats-card">
               <div class="stats-item">
                 <div class="stats-value">{{ statistics.usage_count }}</div>
@@ -83,18 +83,19 @@
           v-loading="loading"
           stripe
           @selection-change="handleSelectionChange"
+          class="responsive-table"
         >
-          <el-table-column type="selection" width="80" />
-          <el-table-column prop="name" label="设备类型名称" width="220" sortable align="center" />
-          <el-table-column prop="code" label="类型代码" width="160" align="center" />
-          <el-table-column prop="category" label="设备分类" width="160" align="center">
+          <el-table-column type="selection" width="45" />
+          <el-table-column prop="name" label="设备类型名称" width="160" sortable align="center" />
+          <el-table-column prop="code" label="类型代码" width="110" align="center" />
+          <el-table-column prop="category" label="设备分类" width="100" align="center">
             <template #default="{ row }">
               <el-tag :type="getCategoryTagType(row.category)" size="small">
                 {{ getCategoryText(row.category) }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="120" align="center">
+          <el-table-column prop="status" label="状态" width="80" align="center">
             <template #default="{ row }">
               <el-tag 
                 :type="getStatusTagType(row.status)" 
@@ -105,18 +106,18 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="usage_count" label="使用数量" width="140" align="center" />
-          <el-table-column prop="description" label="描述" width="200" show-overflow-tooltip align="center">
+          <el-table-column prop="usage_count" label="使用数量" width="90" align="center" />
+          <el-table-column prop="description" label="描述" width="120" show-overflow-tooltip align="center">
             <template #default="{ row }">
               <span>{{ row.description || '-' }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="创建时间" width="200" align="center">
+          <el-table-column prop="created_at" label="创建时间" width="140" align="center">
             <template #default="{ row }">
               <span>{{ formatDate(row.created_at) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="260" fixed="right" align="center">
+          <el-table-column label="操作" width="160" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button
@@ -791,46 +792,208 @@ export default {
   color: #c0c4ant;
 }
 
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.responsive-table .el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__body-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__header,
+.responsive-table .el-table__body {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 确保表格容器占满宽度 */
+.table-section {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-section .el-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* 强制表格自适应宽度 */
+.responsive-table .el-table__body-wrapper,
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__footer-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__body,
+.responsive-table .el-table__header,
+.responsive-table .el-table__footer {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 表格列自适应 */
+.responsive-table .el-table__body col,
+.responsive-table .el-table__header col {
+  width: auto !important;
+}
+
+/* 移除固定宽度，让表格自然分布 */
+.responsive-table .el-table-column--selection {
+  width: auto !important;
+  min-width: 50px !important;
+}
+
+/* 确保表格内容不会溢出 */
+.responsive-table .cell {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 强制所有表格内容居中对齐 - 使用最高优先级 */
+.device-type-management :deep(.el-table .el-table__body td),
+.device-type-management :deep(.el-table .el-table__header th) {
+  text-align: center !important;
+}
+
+.device-type-management :deep(.el-table .el-table__body td .cell),
+.device-type-management :deep(.el-table .el-table__header th .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.device-type-management :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 特别针对文本内容的居中样式 */
+.device-type-management :deep(.el-table .cell span) {
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+/* 操作按钮响应式 */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-buttons .el-button {
+  margin: 2px;
+  min-width: 60px;
+}
+
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .device-type-management {
+    padding: 20px;
+  }
+  
+  .stats-section .el-col {
+    margin-bottom: 12px;
+  }
+  
+  .action-buttons {
+    gap: 2px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 50px;
+  }
+}
+
 @media (max-width: 768px) {
+  .device-type-management {
+    padding: 16px;
+  }
+  
   .header-section {
     flex-direction: column;
     gap: 16px;
-    align-items: stretch;
+    align-items: flex-start;
+    padding: 16px;
   }
   
   .header-actions {
-    justify-content: center;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
   
   .stats-section .el-col {
     margin-bottom: 16px;
   }
   
+  .table-section {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .responsive-table {
+    min-width: 800px;
+  }
+  
   .action-buttons {
     flex-direction: column;
     gap: 4px;
+    align-items: stretch;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
+    margin: 1px 0;
   }
 }
 
 @media (max-width: 480px) {
   .device-type-management {
-    padding: 0;
+    padding: 12px;
   }
   
-  .header-section,
-  .search-section,
+  .header-section {
+    padding: 12px;
+  }
+  
+  .header-section h1 {
+    font-size: 18px;
+  }
+  
+  .stats-value {
+    font-size: 20px;
+  }
+  
   .table-section {
-    margin: 0 -12px 16px -12px;
-    border-radius: 0;
+    padding: 8px;
   }
   
-  .stats-section {
-    margin: 0 -12px 16px -12px;
+  .responsive-table {
+    min-width: 600px;
   }
   
-  .stats-section .el-col {
-    padding: 0 6px;
+  .pagination-section {
+    margin-top: 16px;
+  }
+  
+  .pagination-section .el-pagination {
+    justify-content: center;
   }
 }
 </style>
