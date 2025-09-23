@@ -22,8 +22,8 @@
 
     <!-- 统计卡片 -->
     <div class="stats-cards" v-if="statistics">
-      <el-row :gutter="20">
-        <el-col :span="6">
+      <el-row :gutter="20" class="stats-row">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stat-card">
             <div class="stat-content">
               <div class="stat-number">{{ statistics.total_users }}</div>
@@ -32,7 +32,7 @@
             <el-icon class="stat-icon"><User /></el-icon>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stat-card">
             <div class="stat-content">
               <div class="stat-number">{{ statistics.active_users }}</div>
@@ -41,7 +41,7 @@
             <el-icon class="stat-icon active"><UserFilled /></el-icon>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stat-card">
             <div class="stat-content">
               <div class="stat-number">{{ statistics.role_distribution?.admin || 0 }}</div>
@@ -50,7 +50,7 @@
             <el-icon class="stat-icon admin"><Star /></el-icon>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
           <el-card class="stat-card">
             <div class="stat-content">
               <div class="stat-number">{{ statistics.inactive_users }}</div>
@@ -115,11 +115,12 @@
         stripe
         style="width: 100%"
         @sort-change="handleSortChange"
+        class="responsive-table"
       >
-        <el-table-column prop="id" label="ID" align="center" width="80" sortable />
-        <el-table-column prop="username" label="用户名" align="center" min-width="120" sortable />
-        <el-table-column prop="email" label="邮箱" align="center" min-width="180" />
-        <el-table-column prop="role" label="角色" align="center"  width="100">
+        <el-table-column prop="id" label="ID" align="center" width="60" sortable />
+        <el-table-column prop="username" label="用户名" align="center" width="120" sortable />
+        <el-table-column prop="email" label="邮箱" align="center" min-width="160" />
+        <el-table-column prop="role" label="角色" align="center" width="90">
           <template #default="{ row }">
             <el-tag
               :type="getRoleTagType(row.role)"
@@ -129,7 +130,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="theme" label="主题"  align="center" width="100">
+        <el-table-column prop="theme" label="主题" align="center" width="70">
           <template #default="{ row }">
             <el-tag
               :type="row.theme === 'dark' ? 'info' : 'success'"
@@ -139,7 +140,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="is_active" label="状态" align="center"  width="100">
+        <el-table-column prop="is_active" label="状态" align="center" width="70">
           <template #default="{ row }">
             <el-tag
               :type="row.is_active ? 'success' : 'danger'"
@@ -149,38 +150,40 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间"  align="center" width="180" sortable>
+        <el-table-column prop="created_at" label="创建时间" align="center" width="140" sortable>
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200"  align="center" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              type="primary"
-              @click="editUser(row)"
-              v-if="canManageUsers"
-            >
-              编辑
-            </el-button>
-            <el-button
-              size="small"
-              :type="row.is_active ? 'warning' : 'primary'"
-              @click="handleToggleUserStatus(row)"
-              v-if="canManageUsers && row.id !== currentUserId"
-            >
-              {{ row.is_active ? '停用' : '启用' }}
-            </el-button>
-            <el-button
-              size="small"
-              type="danger"
-              plain
-              @click="confirmDeleteUser(row)"
-              v-if="canManageUsers && row.id !== currentUserId"
-            >
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-button
+                size="small"
+                type="primary"
+                @click="editUser(row)"
+                v-if="canManageUsers"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                :type="row.is_active ? 'warning' : 'primary'"
+                @click="handleToggleUserStatus(row)"
+                v-if="canManageUsers && row.id !== currentUserId"
+              >
+                {{ row.is_active ? '停用' : '启用' }}
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                plain
+                @click="confirmDeleteUser(row)"
+                v-if="canManageUsers && row.id !== currentUserId"
+              >
+                删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -1013,23 +1016,158 @@ watch(showResetPasswordDialog, (newVal) => {
   gap: 10px;
 }
 
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.responsive-table .el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__body-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__header,
+.responsive-table .el-table__body {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 确保表格容器占满宽度 */
+.table-card {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-card .el-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* 强制所有表格内容居中对齐 - 使用更高优先级 */
+.user-management :deep(.el-table .el-table__body td),
+.user-management :deep(.el-table .el-table__header th) {
+  text-align: center !important;
+}
+
+.user-management :deep(.el-table .el-table__body td .cell),
+.user-management :deep(.el-table .el-table__header th .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.user-management :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 特别针对文本内容的居中样式 */
+.user-management :deep(.el-table .cell span) {
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+/* 操作按钮响应式 */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-buttons .el-button {
+  margin: 2px;
+  min-width: 60px;
+}
+
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .user-management {
+    padding: 20px;
+  }
+  
+  .stats-cards .el-col {
+    margin-bottom: 12px;
+  }
+  
+  .action-buttons {
+    gap: 2px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 50px;
+  }
+}
+
 @media (max-width: 768px) {
   .user-management {
-    padding: 10px;
+    padding: 16px;
   }
   
   .page-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
+    align-items: flex-start;
   }
   
   .stats-cards .el-col {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
   }
   
   .filter-card .el-row .el-col {
     margin-bottom: 10px;
+  }
+  
+  .table-card {
+    overflow-x: auto;
+  }
+  
+  .responsive-table {
+    min-width: 800px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
+    margin: 1px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-management {
+    padding: 12px;
+  }
+  
+  .page-header h1 {
+    font-size: 18px;
+  }
+  
+  .stat-number {
+    font-size: 20px;
+  }
+  
+  .responsive-table {
+    min-width: 600px;
+  }
+  
+  .pagination-wrapper {
+    padding: 16px;
   }
 }
 

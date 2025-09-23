@@ -32,7 +32,7 @@
           />
         </el-col>
         <el-col :span="4">
-          <el-button type="info" @click="resetFilters">重置</el-button>
+          <el-button type="primary" @click="resetFilters">重置</el-button>
         </el-col>
       </el-row>
     </div>
@@ -45,16 +45,17 @@
         stripe
         style="width: 100%"
         @sort-change="handleSortChange"
+        class="responsive-table"
       >
-        <el-table-column prop="network" label="网段" width="150" sortable align="center" />
-        <el-table-column prop="netmask" label="子网掩码" width="120" align="center" />
-        <el-table-column prop="gateway" label="网关" width="120" align="center" />
+        <el-table-column prop="network" label="网段" width="120" sortable align="center" />
+        <el-table-column prop="netmask" label="子网掩码" width="110" align="center" />
+        <el-table-column prop="gateway" label="网关" width="110" align="center" />
         <el-table-column prop="vlan_id" label="VLAN ID" width="80" sortable align="center" />
-        <el-table-column prop="location" label="位置" width="120" align="center" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip align="center" />
+        <el-table-column prop="location" label="位置" width="90" align="center" />
+        <el-table-column prop="description" label="描述" width="120" show-overflow-tooltip align="center" />
         
         <!-- IP使用情况 -->
-        <el-table-column label="IP使用情况" width="200" align="center">
+        <el-table-column label="IP使用情况" width="150" align="center">
           <template #default="scope">
             <div class="ip-usage">
               <div class="usage-text">
@@ -70,46 +71,49 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="created_at" label="创建时间" width="160" sortable align="center">
+        <el-table-column prop="created_at" label="创建时间" width="130" sortable align="center">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="280" fixed="right" align="center">
+        <el-table-column label="操作" width="220" fixed="right" align="center">
           <template #default="scope">
-            <el-button 
-              size="small" 
-              type="info"
-              @click="viewSubnet(scope.row)"
-            >
-              查看
-            </el-button>
-            <el-button 
-              size="small" 
-              type="info"
-              @click="editSubnet(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button 
-              size="small" 
-              type="warning"
-              @click="syncSubnetIPs(scope.row)"
-              :loading="scope.row.syncing"
-            >
-              同步IP
-            </el-button>
-            <el-button
-              v-if="isAdmin"
-              size="small"
-              type="danger"
-              plain
-              @click="deleteSubnet(scope.row)"
-              :disabled="scope.row.allocated_count > 0"
-            >
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-button 
+                size="small" 
+                type="info"
+                @click="viewSubnet(scope.row)"
+                class="btn-view"
+              >
+                查看
+              </el-button>
+              <el-button 
+                size="small" 
+                type="primary"
+                @click="editSubnet(scope.row)"
+              >
+                编辑
+              </el-button>
+              <el-button 
+                size="small" 
+                type="warning"
+                @click="syncSubnetIPs(scope.row)"
+                :loading="scope.row.syncing"
+              >
+                同步IP
+              </el-button>
+              <el-button
+                v-if="isAdmin"
+                size="small"
+                type="danger"
+                plain
+                @click="deleteSubnet(scope.row)"
+                :disabled="scope.row.allocated_count > 0"
+              >
+                删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -560,6 +564,18 @@ export default {
   width: 100%;
 }
 
+/* 强制所有表格内容居中对齐 */
+.responsive-table .el-table__body td,
+.responsive-table .el-table__header th {
+  text-align: center !important;
+}
+
+.responsive-table .el-table__body td .cell,
+.responsive-table .el-table__header th .cell {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
 /* 强制表格所有单元格内容居中 */
 .subnet-list :deep(.el-table .cell) {
   display: flex;
@@ -634,6 +650,126 @@ export default {
 .btn-history:hover, .btn-view:hover {
   background-color: #a6a9ad !important;
   border-color: #a6a9ad !important;
+}
+
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.responsive-table .el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table .el-table__header-wrapper,
+.responsive-table .el-table__body-wrapper {
+  width: 100% !important;
+}
+
+.responsive-table .el-table__header,
+.responsive-table .el-table__body {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 确保表格容器占满宽度 */
+.subnet-list {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.subnet-list .el-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* 操作按钮响应式 */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-buttons .el-button {
+  margin: 2px;
+  min-width: 60px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .subnet-management {
+    padding: 20px;
+  }
+  
+  .action-buttons {
+    gap: 2px;
+  }
+  
+  .action-buttons .el-button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .subnet-management {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .theme-search-section .el-row .el-col {
+    margin-bottom: 10px;
+  }
+  
+  .subnet-list {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .responsive-table {
+    min-width: 800px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
+    margin: 1px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .subnet-management {
+    padding: 12px;
+  }
+  
+  .page-header h1 {
+    font-size: 18px;
+  }
+  
+  .subnet-list {
+    padding: 8px;
+  }
+  
+  .responsive-table {
+    min-width: 600px;
+  }
+  
+  .pagination {
+    margin-top: 16px;
+  }
 }
 
 /* 暗黑主题适配 */
