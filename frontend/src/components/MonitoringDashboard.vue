@@ -692,6 +692,18 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+
+/* 特别针对文本内容的居中样式 */
+.table-card .el-table .cell span {
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* 标签样式优化 */

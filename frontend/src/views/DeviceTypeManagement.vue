@@ -918,7 +918,25 @@ export default {
 /* 特别针对文本内容的居中样式 */
 .device-type-management :deep(.el-table .cell span) {
   text-align: center !important;
-  display: block !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 确保所有文本元素都垂直居中 */
+.device-type-management :deep(.el-table .cell) {
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+
+/* 特别处理标签元素，保持原有大小 */
+.device-type-management :deep(.el-table .el-tag) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
 }
 
 /* 额外的强制居中样式 - 覆盖所有可能的冲突 */

@@ -660,6 +660,18 @@ watch(showEditDialog, (newVal) => {
   justify-content: center !important;
   display: flex !important;
   align-items: center !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+
+/* 特别针对文本内容的居中样式 */
+.department-management :deep(.el-table .cell span) {
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* 额外的强制居中样式 - 覆盖所有可能的冲突 */
