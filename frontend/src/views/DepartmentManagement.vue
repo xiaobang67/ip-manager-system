@@ -47,15 +47,15 @@
           @sort-change="handleSortChange"
           class="responsive-table"
         >
-          <el-table-column prop="id" label="ID" width="60" sortable />
-          <el-table-column prop="name" label="部门名称" width="200" sortable />
-          <el-table-column prop="code" label="部门编码" width="120" />
-          <el-table-column prop="created_at" label="创建时间" width="140" sortable>
+          <el-table-column prop="id" label="ID" sortable align="center" />
+          <el-table-column prop="name" label="部门名称" sortable align="center" />
+          <el-table-column prop="code" label="部门编码" align="center" />
+          <el-table-column prop="created_at" label="创建时间" sortable align="center">
             <template #default="{ row }">
               {{ formatDateTime(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column label="操作" width="160" fixed="right">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button
@@ -561,23 +561,8 @@ watch(showEditDialog, (newVal) => {
 
 /* 表格响应式样式 */
 .responsive-table {
-  width: 100%;
-  table-layout: auto;
-}
-
-.responsive-table .el-table__body-wrapper {
-  overflow-x: auto;
-}
-
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__body-wrapper {
   width: 100% !important;
-}
-
-.responsive-table .el-table__header,
-.responsive-table .el-table__body {
-  width: 100% !important;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 /* 确保表格容器占满宽度 */
@@ -587,33 +572,152 @@ watch(showEditDialog, (newVal) => {
 }
 
 .table-card .el-table {
-  width: 100%;
-  min-width: 100%;
+  width: 100% !important;
+  min-width: 800px;
+}
+
+/* 强制表格自适应宽度 */
+.department-management :deep(.el-table) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.department-management :deep(.el-table__body-wrapper),
+.department-management :deep(.el-table__header-wrapper),
+.department-management :deep(.el-table__footer-wrapper) {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.department-management :deep(.el-table__body),
+.department-management :deep(.el-table__header),
+.department-management :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 表格列宽度分配 */
+.department-management :deep(.el-table th:nth-child(1)) { /* ID */
+  width: 10% !important;
+}
+
+.department-management :deep(.el-table th:nth-child(2)) { /* 部门名称 */
+  width: 35% !important;
+}
+
+.department-management :deep(.el-table th:nth-child(3)) { /* 部门编码 */
+  width: 25% !important;
+}
+
+.department-management :deep(.el-table th:nth-child(4)) { /* 创建时间 */
+  width: 20% !important;
+}
+
+.department-management :deep(.el-table th:nth-child(5)) { /* 操作 */
+  width: 120px !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.department-management :deep(.el-table td:nth-child(1)) { width: 10% !important; }
+.department-management :deep(.el-table td:nth-child(2)) { width: 35% !important; }
+.department-management :deep(.el-table td:nth-child(3)) { width: 25% !important; }
+.department-management :deep(.el-table td:nth-child(4)) { width: 20% !important; }
+.department-management :deep(.el-table td:nth-child(5)) { width: 120px !important; }
+
+/* 确保表格内容不会溢出 */
+.department-management :deep(.el-table .cell) {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px 12px;
+  width: auto !important;
+}
+
+/* 部门名称列允许换行 */
+.department-management :deep(.el-table td:nth-child(2) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 /* 强制所有表格内容居中对齐 */
-.responsive-table .el-table__body td,
-.responsive-table .el-table__header th {
+.department-management :deep(.el-table .el-table__body td),
+.department-management :deep(.el-table .el-table__header th) {
   text-align: center !important;
 }
 
-.responsive-table .el-table__body td .cell,
-.responsive-table .el-table__header th .cell {
+.department-management :deep(.el-table .el-table__body td .cell),
+.department-management :deep(.el-table .el-table__header th .cell) {
   text-align: center !important;
   justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.department-management :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.department-management :deep(.el-table td),
+.department-management :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.department-management :deep(.el-table td > *),
+.department-management :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.department-management :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.department-management :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+
+
+/* 排序图标居中对齐 */
+.department-management :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.department-management :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.department-management :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 /* 操作按钮响应式 */
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .action-buttons .el-button {
-  margin: 2px;
-  min-width: 60px;
+  margin: 0;
+  min-width: 50px;
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */

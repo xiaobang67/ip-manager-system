@@ -84,18 +84,19 @@
           stripe
           @selection-change="handleSelectionChange"
           class="responsive-table"
+          style="width: 100%"
         >
-          <el-table-column type="selection" width="45" />
-          <el-table-column prop="name" label="设备类型名称" width="160" sortable align="center" />
-          <el-table-column prop="code" label="类型代码" width="110" align="center" />
-          <el-table-column prop="category" label="设备分类" width="100" align="center">
+          <el-table-column type="selection" width="50" />
+          <el-table-column prop="name" label="设备类型名称" sortable align="center" />
+          <el-table-column prop="code" label="类型代码" align="center" />
+          <el-table-column prop="category" label="设备分类" align="center">
             <template #default="{ row }">
               <el-tag :type="getCategoryTagType(row.category)" size="small">
                 {{ getCategoryText(row.category) }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="80" align="center">
+          <el-table-column prop="status" label="状态" align="center">
             <template #default="{ row }">
               <el-tag 
                 :type="getStatusTagType(row.status)" 
@@ -106,18 +107,18 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="usage_count" label="使用数量" width="90" align="center" />
-          <el-table-column prop="description" label="描述" width="120" show-overflow-tooltip align="center">
+          <el-table-column prop="usage_count" label="使用数量" align="center" />
+          <el-table-column prop="description" label="描述" show-overflow-tooltip align="center">
             <template #default="{ row }">
               <span>{{ row.description || '-' }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="创建时间" width="140" align="center">
+          <el-table-column prop="created_at" label="创建时间" align="center">
             <template #default="{ row }">
               <span>{{ formatDate(row.created_at) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right" align="center">
+          <el-table-column label="操作" width="180" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button
@@ -794,23 +795,8 @@ export default {
 
 /* 表格响应式样式 */
 .responsive-table {
-  width: 100%;
-  table-layout: auto;
-}
-
-.responsive-table .el-table__body-wrapper {
-  overflow-x: auto;
-}
-
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__body-wrapper {
   width: 100% !important;
-}
-
-.responsive-table .el-table__header,
-.responsive-table .el-table__body {
-  width: 100% !important;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 /* 确保表格容器占满宽度 */
@@ -820,42 +806,92 @@ export default {
 }
 
 .table-section .el-table {
-  width: 100%;
-  min-width: 100%;
+  width: 100% !important;
+  min-width: 1000px;
 }
 
 /* 强制表格自适应宽度 */
-.responsive-table .el-table__body-wrapper,
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__footer-wrapper {
+.device-type-management :deep(.el-table) {
   width: 100% !important;
+  table-layout: fixed !important;
 }
 
-.responsive-table .el-table__body,
-.responsive-table .el-table__header,
-.responsive-table .el-table__footer {
+.device-type-management :deep(.el-table__body-wrapper),
+.device-type-management :deep(.el-table__header-wrapper),
+.device-type-management :deep(.el-table__footer-wrapper) {
   width: 100% !important;
-  table-layout: auto !important;
+  overflow: visible !important;
 }
 
-/* 表格列自适应 */
-.responsive-table .el-table__body col,
-.responsive-table .el-table__header col {
-  width: auto !important;
+.device-type-management :deep(.el-table__body),
+.device-type-management :deep(.el-table__header),
+.device-type-management :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: fixed !important;
 }
 
-/* 移除固定宽度，让表格自然分布 */
-.responsive-table .el-table-column--selection {
-  width: auto !important;
-  min-width: 50px !important;
+/* 表格列宽度分配 */
+.device-type-management :deep(.el-table th:nth-child(1)) { /* 选择列 */
+  width: 50px !important;
 }
+
+.device-type-management :deep(.el-table th:nth-child(2)) { /* 设备类型名称 */
+  width: 15% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(3)) { /* 类型代码 */
+  width: 12% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(4)) { /* 设备分类 */
+  width: 12% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(5)) { /* 状态 */
+  width: 8% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(6)) { /* 使用数量 */
+  width: 8% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(7)) { /* 描述 */
+  width: 25% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(8)) { /* 创建时间 */
+  width: 15% !important;
+}
+
+.device-type-management :deep(.el-table th:nth-child(9)) { /* 操作 */
+  width: 140px !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.device-type-management :deep(.el-table td:nth-child(1)) { width: 50px !important; }
+.device-type-management :deep(.el-table td:nth-child(2)) { width: 15% !important; }
+.device-type-management :deep(.el-table td:nth-child(3)) { width: 12% !important; }
+.device-type-management :deep(.el-table td:nth-child(4)) { width: 12% !important; }
+.device-type-management :deep(.el-table td:nth-child(5)) { width: 8% !important; }
+.device-type-management :deep(.el-table td:nth-child(6)) { width: 8% !important; }
+.device-type-management :deep(.el-table td:nth-child(7)) { width: 25% !important; }
+.device-type-management :deep(.el-table td:nth-child(8)) { width: 15% !important; }
+.device-type-management :deep(.el-table td:nth-child(9)) { width: 140px !important; }
 
 /* 确保表格内容不会溢出 */
-.responsive-table .cell {
+.device-type-management :deep(.el-table .cell) {
   word-break: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 8px 12px;
+}
+
+/* 描述列允许换行 */
+.device-type-management :deep(.el-table td:nth-child(7) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 /* 强制所有表格内容居中对齐 - 使用最高优先级 */
@@ -882,21 +918,68 @@ export default {
 /* 特别针对文本内容的居中样式 */
 .device-type-management :deep(.el-table .cell span) {
   text-align: center !important;
-  width: 100% !important;
   display: block !important;
+}
+
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.device-type-management :deep(.el-table td),
+.device-type-management :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.device-type-management :deep(.el-table td > *),
+.device-type-management :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.device-type-management :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.device-type-management :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+/* 修复cell内容居中问题 */
+.device-type-management :deep(.el-table .cell) {
+  width: auto !important;
+}
+
+/* 排序图标居中对齐 */
+.device-type-management :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.device-type-management :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.device-type-management :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 /* 操作按钮响应式 */
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .action-buttons .el-button {
-  margin: 2px;
-  min-width: 60px;
+  margin: 0;
+  min-width: 50px;
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */

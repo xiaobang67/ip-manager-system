@@ -112,18 +112,18 @@
     <!-- 表格测试 -->
     <div class="theme-table-section" v-theme="tableSection">
       <h2>表格测试</h2>
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="姓名" width="120" />
-        <el-table-column prop="email" label="邮箱" width="200" />
-        <el-table-column prop="role" label="角色" width="100">
+      <el-table :data="tableData" style="width: 100%" class="responsive-table">
+        <el-table-column prop="id" label="ID" />
+        <el-table-column prop="name" label="姓名" />
+        <el-table-column prop="email" label="邮箱" />
+        <el-table-column prop="role" label="角色">
           <template #default="scope">
             <el-tag :type="getRoleType(scope.row.role)">
               {{ getRoleText(scope.row.role) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'active' ? 'success' : 'info'">
               {{ scope.row.status === 'active' ? '活跃' : '非活跃' }}
@@ -483,5 +483,157 @@ export default {
 .example-card p {
   margin: 0;
   color: var(--text-secondary);
+}
+
+/* 表格响应式样式 */
+.responsive-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 强制表格自适应宽度 */
+.theme-test-page :deep(.el-table) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.theme-test-page :deep(.el-table__body-wrapper),
+.theme-test-page :deep(.el-table__header-wrapper),
+.theme-test-page :deep(.el-table__footer-wrapper) {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.theme-test-page :deep(.el-table__body),
+.theme-test-page :deep(.el-table__header),
+.theme-test-page :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 表格列宽度分配 */
+.theme-test-page :deep(.el-table th:nth-child(1)) { /* ID */
+  width: 8% !important;
+}
+
+.theme-test-page :deep(.el-table th:nth-child(2)) { /* 姓名 */
+  width: 15% !important;
+}
+
+.theme-test-page :deep(.el-table th:nth-child(3)) { /* 邮箱 */
+  width: 25% !important;
+}
+
+.theme-test-page :deep(.el-table th:nth-child(4)) { /* 角色 */
+  width: 12% !important;
+}
+
+.theme-test-page :deep(.el-table th:nth-child(5)) { /* 状态 */
+  width: 12% !important;
+}
+
+.theme-test-page :deep(.el-table th:nth-child(6)) { /* 创建时间 */
+  width: 28% !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.theme-test-page :deep(.el-table td:nth-child(1)) { width: 8% !important; }
+.theme-test-page :deep(.el-table td:nth-child(2)) { width: 15% !important; }
+.theme-test-page :deep(.el-table td:nth-child(3)) { width: 25% !important; }
+.theme-test-page :deep(.el-table td:nth-child(4)) { width: 12% !important; }
+.theme-test-page :deep(.el-table td:nth-child(5)) { width: 12% !important; }
+.theme-test-page :deep(.el-table td:nth-child(6)) { width: 28% !important; }
+
+/* 确保表格内容不会溢出 */
+.theme-test-page :deep(.el-table .cell) {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px 12px;
+}
+
+/* 邮箱列允许换行 */
+.theme-test-page :deep(.el-table td:nth-child(3) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* 强制所有表格内容居中对齐 */
+.theme-test-page :deep(.el-table .el-table__body td),
+.theme-test-page :deep(.el-table .el-table__header th) {
+  text-align: center !important;
+}
+
+.theme-test-page :deep(.el-table .el-table__body td .cell),
+.theme-test-page :deep(.el-table .el-table__header th .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.theme-test-page :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 确保表格容器可以横向滚动 */
+.theme-table-section {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.theme-table-section .el-table {
+  min-width: 800px;
+}
+
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.theme-test-page :deep(.el-table td),
+.theme-test-page :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.theme-test-page :deep(.el-table td > *),
+.theme-test-page :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.theme-test-page :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.theme-test-page :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+/* 修复cell内容居中问题 */
+.theme-test-page :deep(.el-table .cell) {
+  width: auto !important;
+}
+
+/* 排序图标居中对齐 */
+.theme-test-page :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.theme-test-page :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.theme-test-page :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 </style>

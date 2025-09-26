@@ -117,10 +117,10 @@
         @sort-change="handleSortChange"
         class="responsive-table"
       >
-        <el-table-column prop="id" label="ID" align="center" width="60" sortable />
-        <el-table-column prop="username" label="用户名" align="center" width="120" sortable />
-        <el-table-column prop="email" label="邮箱" align="center" min-width="160" />
-        <el-table-column prop="role" label="角色" align="center" width="90">
+        <el-table-column prop="id" label="ID" align="center" sortable />
+        <el-table-column prop="username" label="用户名" align="center" sortable />
+        <el-table-column prop="email" label="邮箱" align="center" />
+        <el-table-column prop="role" label="角色" align="center">
           <template #default="{ row }">
             <el-tag
               :type="getRoleTagType(row.role)"
@@ -130,7 +130,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="theme" label="主题" align="center" width="70">
+        <el-table-column prop="theme" label="主题" align="center">
           <template #default="{ row }">
             <el-tag
               :type="row.theme === 'dark' ? 'info' : 'success'"
@@ -140,7 +140,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="is_active" label="状态" align="center" width="70">
+        <el-table-column prop="is_active" label="状态" align="center">
           <template #default="{ row }">
             <el-tag
               :type="row.is_active ? 'success' : 'danger'"
@@ -150,12 +150,12 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间" align="center" width="140" sortable>
+        <el-table-column prop="created_at" label="创建时间" align="center" sortable>
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" align="center" fixed="right">
+        <el-table-column label="操作" width="250" align="center" fixed="right">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
@@ -1018,23 +1018,8 @@ watch(showResetPasswordDialog, (newVal) => {
 
 /* 表格响应式样式 */
 .responsive-table {
-  width: 100%;
-  table-layout: auto;
-}
-
-.responsive-table .el-table__body-wrapper {
-  overflow-x: auto;
-}
-
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__body-wrapper {
   width: 100% !important;
-}
-
-.responsive-table .el-table__header,
-.responsive-table .el-table__body {
-  width: 100% !important;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 /* 确保表格容器占满宽度 */
@@ -1044,8 +1029,87 @@ watch(showResetPasswordDialog, (newVal) => {
 }
 
 .table-card .el-table {
-  width: 100%;
-  min-width: 100%;
+  width: 100% !important;
+  min-width: 1000px;
+}
+
+/* 强制表格自适应宽度 */
+.user-management :deep(.el-table) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.user-management :deep(.el-table__body-wrapper),
+.user-management :deep(.el-table__header-wrapper),
+.user-management :deep(.el-table__footer-wrapper) {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.user-management :deep(.el-table__body),
+.user-management :deep(.el-table__header),
+.user-management :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 表格列宽度分配 */
+.user-management :deep(.el-table th:nth-child(1)) { /* ID */
+  width: 8% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(2)) { /* 用户名 */
+  width: 15% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(3)) { /* 邮箱 */
+  width: 20% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(4)) { /* 角色 */
+  width: 10% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(5)) { /* 主题 */
+  width: 8% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(6)) { /* 状态 */
+  width: 8% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(7)) { /* 创建时间 */
+  width: 16% !important;
+}
+
+.user-management :deep(.el-table th:nth-child(8)) { /* 操作 */
+  width: 200px !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.user-management :deep(.el-table td:nth-child(1)) { width: 8% !important; }
+.user-management :deep(.el-table td:nth-child(2)) { width: 15% !important; }
+.user-management :deep(.el-table td:nth-child(3)) { width: 20% !important; }
+.user-management :deep(.el-table td:nth-child(4)) { width: 10% !important; }
+.user-management :deep(.el-table td:nth-child(5)) { width: 8% !important; }
+.user-management :deep(.el-table td:nth-child(6)) { width: 8% !important; }
+.user-management :deep(.el-table td:nth-child(7)) { width: 16% !important; }
+.user-management :deep(.el-table td:nth-child(8)) { width: 200px !important; }
+
+/* 确保表格内容不会溢出 */
+.user-management :deep(.el-table .cell) {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px 12px;
+}
+
+/* 邮箱列允许换行 */
+.user-management :deep(.el-table td:nth-child(3) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 /* 强制所有表格内容居中对齐 - 使用更高优先级 */
@@ -1072,21 +1136,68 @@ watch(showResetPasswordDialog, (newVal) => {
 /* 特别针对文本内容的居中样式 */
 .user-management :deep(.el-table .cell span) {
   text-align: center !important;
-  width: 100% !important;
   display: block !important;
+}
+
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.user-management :deep(.el-table td),
+.user-management :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.user-management :deep(.el-table td > *),
+.user-management :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.user-management :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.user-management :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+/* 修复cell内容居中问题 */
+.user-management :deep(.el-table .cell) {
+  width: auto !important;
+}
+
+/* 排序图标居中对齐 */
+.user-management :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.user-management :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.user-management :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 /* 操作按钮响应式 */
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .action-buttons .el-button {
-  margin: 2px;
-  min-width: 60px;
+  margin: 0;
+  min-width: 50px;
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */
