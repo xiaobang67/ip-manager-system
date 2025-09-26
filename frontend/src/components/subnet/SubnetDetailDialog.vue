@@ -116,7 +116,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="$emit('update:visible', false)">关闭</el-button>
-        <el-button type="primary" @click="editSubnet">编辑网段</el-button>
+        <el-button type="info" @click="editSubnet">编辑网段</el-button>
       </div>
     </template>
   </el-dialog>

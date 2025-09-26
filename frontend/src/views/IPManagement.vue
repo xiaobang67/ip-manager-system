@@ -133,9 +133,9 @@
         :class="{ 'readonly-table': isReadonly }"
         style="width: 100%"
       >
-        <el-table-column v-if="!isReadonly" type="selection" width="45" />
-        <el-table-column prop="ip_address" label="IP地址" width="130" sortable align="center" />
-        <el-table-column prop="status" label="状态" width="90" align="center">
+        <el-table-column v-if="!isReadonly" type="selection" width="50" />
+        <el-table-column prop="ip_address" label="IP地址" sortable align="center" />
+        <el-table-column prop="status" label="状态" align="center">
           <template #default="{ row }">
             <el-tag 
               :type="getStatusTagType(row.status)" 
@@ -146,37 +146,37 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="user_name" label="使用人" width="110" align="center">
+        <el-table-column prop="user_name" label="使用人" align="center">
           <template #default="{ row }">
             <span>{{ row.user_name || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="mac_address" label="MAC地址" width="140" align="center">
+        <el-table-column prop="mac_address" label="MAC地址" align="center">
           <template #default="{ row }">
             <span>{{ row.mac_address || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="device_type" label="设备类型" width="100" align="center">
+        <el-table-column prop="device_type" label="设备类型" align="center">
           <template #default="{ row }">
             <span>{{ getDeviceTypeName(row.device_type) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="assigned_to" label="所属部门" width="110" align="center">
+        <el-table-column prop="assigned_to" label="所属部门" align="center">
           <template #default="{ row }">
             <span>{{ row.assigned_to || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" width="150" show-overflow-tooltip align="center">
+        <el-table-column prop="description" label="描述" show-overflow-tooltip align="center">
           <template #default="{ row }">
             <span>{{ row.description || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="allocated_at" label="分配时间" width="160" align="center">
+        <el-table-column prop="allocated_at" label="分配时间" align="center">
           <template #default="{ row }">
             <span>{{ row.allocated_at ? formatDate(row.allocated_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column v-if="!isReadonly" label="操作" width="240" fixed="right" align="center">
+        <el-table-column v-if="!isReadonly" label="操作" width="300" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
@@ -184,13 +184,15 @@
                 type="primary"
                 size="small"
                 @click="allocateIP(row)"
+                class="btn-allocation"
               >
                 分配
               </el-button>
               <el-button
-                type="primary"
+                type="info"
                 size="small"
                 @click="editIP(row)"
+                class="btn-edit"
               >
                 编辑
               </el-button>
@@ -199,6 +201,7 @@
                 type="warning"
                 size="small"
                 @click="reserveIP(row)"
+                class="btn-reservation"
               >
                 保留
               </el-button>
@@ -207,6 +210,7 @@
                 type="danger"
                 size="small"
                 @click="releaseIP(row)"
+                class="btn-release"
               >
                 释放
               </el-button>
@@ -216,6 +220,7 @@
                 size="small"
                 plain
                 @click="deleteIP(row)"
+                class="btn-delete"
               >
                 删除
               </el-button>
@@ -318,7 +323,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showAllocationDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitAllocation" :loading="submitting">
+        <el-button type="primary" @click="submitAllocation" :loading="submitting" class="btn-allocation">
           确认分配
         </el-button>
       </template>
@@ -351,7 +356,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReservationDialog = false">取消</el-button>
-        <el-button type="warning" @click="submitReservation" :loading="submitting">
+        <el-button type="warning" @click="submitReservation" :loading="submitting" class="btn-reservation">
           确认保留
         </el-button>
       </template>
@@ -384,7 +389,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showReleaseDialog = false">取消</el-button>
-        <el-button type="danger" @click="submitRelease" :loading="submitting">
+        <el-button type="danger" @click="submitRelease" :loading="submitting" class="btn-release">
           确认释放
         </el-button>
       </template>
@@ -485,7 +490,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showDeleteDialog = false">取消</el-button>
-        <el-button type="danger" @click="submitDelete" :loading="submitting">
+        <el-button type="danger" @click="submitDelete" :loading="submitting" class="btn-delete">
           确认删除
         </el-button>
       </template>
@@ -562,7 +567,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitEdit" :loading="submitting">
+        <el-button type="info" @click="submitEdit" :loading="submitting" class="btn-edit">
           确认修改
         </el-button>
       </template>
@@ -2112,28 +2117,10 @@ oped>
 }
 
 /* 表格响应式样式 */
+/* 表格响应式样式 */
 .responsive-table {
   width: 100% !important;
   table-layout: fixed !important;
-}
-
-.responsive-table .el-table__body-wrapper {
-  overflow-x: auto;
-}
-
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__body-wrapper {
-  width: 100% !important;
-}
-
-.responsive-table .el-table__header,
-.responsive-table .el-table__body {
-  width: 100% !important;
-  table-layout: fixed !important;
-}
-
-.readonly-table {
-  /* 只读用户表格的特殊样式 */
 }
 
 /* 确保表格容器占满宽度 */
@@ -2144,20 +2131,145 @@ oped>
 
 .table-section .el-table {
   width: 100% !important;
+  min-width: 1200px;
 }
 
-/* 强制表格占满整个容器宽度 */
-.responsive-table table {
+/* 强制表格自适应宽度 */
+.ip-management :deep(.el-table) {
   width: 100% !important;
-  table-layout: fixed !important;
+  table-layout: auto !important;
 }
+
+.ip-management :deep(.el-table__body-wrapper),
+.ip-management :deep(.el-table__header-wrapper),
+.ip-management :deep(.el-table__footer-wrapper) {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+.ip-management :deep(.el-table__body),
+.ip-management :deep(.el-table__header),
+.ip-management :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* 表格列宽度分配 - 有选择列的情况 */
+.ip-management :deep(.el-table th:nth-child(1)) { /* 选择列 */
+  width: 50px !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(2)) { /* IP地址 */
+  width: 12% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(3)) { /* 状态 */
+  width: 8% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(4)) { /* 使用人 */
+  width: 10% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(5)) { /* MAC地址 */
+  width: 15% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(6)) { /* 设备类型 */
+  width: 10% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(7)) { /* 所属部门 */
+  width: 10% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(8)) { /* 描述 */
+  width: 15% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(9)) { /* 分配时间 */
+  width: 15% !important;
+}
+
+.ip-management :deep(.el-table th:nth-child(10)) { /* 操作 */
+  width: 240px !important;
+}
+
+/* 只读模式下没有选择列的宽度分配 */
+.readonly-table :deep(.el-table th:nth-child(1)) { /* IP地址 */
+  width: 13% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(2)) { /* 状态 */
+  width: 9% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(3)) { /* 使用人 */
+  width: 11% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(4)) { /* MAC地址 */
+  width: 16% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(5)) { /* 设备类型 */
+  width: 11% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(6)) { /* 所属部门 */
+  width: 11% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(7)) { /* 描述 */
+  width: 16% !important;
+}
+
+.readonly-table :deep(.el-table th:nth-child(8)) { /* 分配时间 */
+  width: 13% !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.ip-management :deep(.el-table td:nth-child(1)) { width: 50px !important; }
+.ip-management :deep(.el-table td:nth-child(2)) { width: 12% !important; }
+.ip-management :deep(.el-table td:nth-child(3)) { width: 8% !important; }
+.ip-management :deep(.el-table td:nth-child(4)) { width: 10% !important; }
+.ip-management :deep(.el-table td:nth-child(5)) { width: 15% !important; }
+.ip-management :deep(.el-table td:nth-child(6)) { width: 10% !important; }
+.ip-management :deep(.el-table td:nth-child(7)) { width: 10% !important; }
+.ip-management :deep(.el-table td:nth-child(8)) { width: 15% !important; }
+.ip-management :deep(.el-table td:nth-child(9)) { width: 15% !important; }
+.ip-management :deep(.el-table td:nth-child(10)) { width: 240px !important; }
+
+/* 只读模式td宽度 */
+.readonly-table :deep(.el-table td:nth-child(1)) { width: 13% !important; }
+.readonly-table :deep(.el-table td:nth-child(2)) { width: 9% !important; }
+.readonly-table :deep(.el-table td:nth-child(3)) { width: 11% !important; }
+.readonly-table :deep(.el-table td:nth-child(4)) { width: 16% !important; }
+.readonly-table :deep(.el-table td:nth-child(5)) { width: 11% !important; }
+.readonly-table :deep(.el-table td:nth-child(6)) { width: 11% !important; }
+.readonly-table :deep(.el-table td:nth-child(7)) { width: 16% !important; }
+.readonly-table :deep(.el-table td:nth-child(8)) { width: 13% !important; }
 
 /* 确保表格内容不会溢出 */
-.responsive-table .cell {
+.ip-management :deep(.el-table .cell) {
   word-break: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 8px 12px;
+}
+
+/* 描述列允许换行 */
+.ip-management :deep(.el-table td:nth-child(8) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.readonly-table :deep(.el-table td:nth-child(7) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 /* 最简单有效的表格居中样式 */
@@ -2169,32 +2281,64 @@ oped>
 .ip-management :deep(.el-table .cell) {
   text-align: center !important;
   justify-content: center !important;
-  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-/* 强制表格列按比例分配宽度 */
-.responsive-table .el-table__header colgroup,
-.responsive-table .el-table__body colgroup {
-  width: 100% !important;
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.ip-management :deep(.el-table td > *),
+.ip-management :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
 }
 
-/* 让min-width列能够扩展 */
-.responsive-table .el-table__header colgroup col[min-width],
-.responsive-table .el-table__body colgroup col[min-width] {
+.ip-management :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.ip-management :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+/* 修复cell内容居中问题 */
+.ip-management :deep(.el-table .cell) {
   width: auto !important;
+}
+
+/* 排序图标居中对齐 */
+.ip-management :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.ip-management :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.ip-management :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 /* 操作按钮响应式 */
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .action-buttons .el-button {
-  margin: 2px;
-  min-width: 60px;
+  margin: 0;
+  min-width: 50px;
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */

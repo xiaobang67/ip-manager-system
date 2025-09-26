@@ -47,15 +47,15 @@
         @sort-change="handleSortChange"
         class="responsive-table"
       >
-        <el-table-column prop="network" label="网段" width="120" sortable align="center" />
-        <el-table-column prop="netmask" label="子网掩码" width="110" align="center" />
-        <el-table-column prop="gateway" label="网关" width="110" align="center" />
-        <el-table-column prop="vlan_id" label="VLAN ID" width="80" sortable align="center" />
-        <el-table-column prop="location" label="位置" width="90" align="center" />
-        <el-table-column prop="description" label="描述" width="120" show-overflow-tooltip align="center" />
+        <el-table-column prop="network" label="网段" sortable align="center" />
+        <el-table-column prop="netmask" label="子网掩码" align="center" />
+        <el-table-column prop="gateway" label="网关" align="center" />
+        <el-table-column prop="vlan_id" label="VLAN ID" sortable align="center" />
+        <el-table-column prop="location" label="位置" align="center" />
+        <el-table-column prop="description" label="描述" show-overflow-tooltip align="center" />
         
         <!-- IP使用情况 -->
-        <el-table-column label="IP使用情况" width="150" align="center">
+        <el-table-column label="IP使用情况" align="center">
           <template #default="scope">
             <div class="ip-usage">
               <div class="usage-text">
@@ -71,35 +71,37 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="created_at" label="创建时间" width="130" sortable align="center">
+        <el-table-column prop="created_at" label="创建时间" sortable align="center">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="220" fixed="right" align="center">
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="scope">
             <div class="action-buttons">
               <el-button 
                 size="small" 
                 type="info"
                 @click="viewSubnet(scope.row)"
-                class="btn-view"
+                class="btn-history"
               >
                 查看
               </el-button>
               <el-button 
                 size="small" 
-                type="primary"
+                type="info"
                 @click="editSubnet(scope.row)"
+                class="btn-edit"
               >
                 编辑
               </el-button>
               <el-button 
                 size="small" 
-                type="warning"
+                type="primary"
                 @click="syncSubnetIPs(scope.row)"
                 :loading="scope.row.syncing"
+                class="btn-allocation"
               >
                 同步IP
               </el-button>
@@ -110,6 +112,7 @@
                 plain
                 @click="deleteSubnet(scope.row)"
                 :disabled="scope.row.allocated_count > 0"
+                class="btn-delete"
               >
                 删除
               </el-button>
@@ -608,15 +611,26 @@ export default {
 }
 
 /* 按钮颜色统一样式 */
-.btn-allocation, .btn-edit {
+.btn-allocation {
   background-color: #409eff !important;
   border-color: #409eff !important;
   color: white !important;
 }
 
-.btn-allocation:hover, .btn-edit:hover {
+.btn-allocation:hover {
   background-color: #66b1ff !important;
   border-color: #66b1ff !important;
+}
+
+.btn-edit {
+  background-color: #909399 !important;
+  border-color: #909399 !important;
+  color: white !important;
+}
+
+.btn-edit:hover {
+  background-color: #a6a9ad !important;
+  border-color: #a6a9ad !important;
 }
 
 .btn-reservation, .btn-sync {
@@ -654,23 +668,8 @@ export default {
 
 /* 表格响应式样式 */
 .responsive-table {
-  width: 100%;
-  table-layout: auto;
-}
-
-.responsive-table .el-table__body-wrapper {
-  overflow-x: auto;
-}
-
-.responsive-table .el-table__header-wrapper,
-.responsive-table .el-table__body-wrapper {
   width: 100% !important;
-}
-
-.responsive-table .el-table__header,
-.responsive-table .el-table__body {
-  width: 100% !important;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 /* 确保表格容器占满宽度 */
@@ -680,21 +679,174 @@ export default {
 }
 
 .subnet-list .el-table {
-  width: 100%;
-  min-width: 100%;
+  width: 100% !important;
+  min-width: 1200px;
+}
+
+/* 强制表格自适应宽度 */
+.subnet-management :deep(.el-table) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.subnet-management :deep(.el-table__body-wrapper),
+.subnet-management :deep(.el-table__header-wrapper),
+.subnet-management :deep(.el-table__footer-wrapper) {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.subnet-management :deep(.el-table__body),
+.subnet-management :deep(.el-table__header),
+.subnet-management :deep(.el-table__footer) {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 表格列宽度分配 */
+.subnet-management :deep(.el-table th:nth-child(1)) { /* 网段 */
+  width: 12% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(2)) { /* 子网掩码 */
+  width: 12% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(3)) { /* 网关 */
+  width: 12% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(4)) { /* VLAN ID */
+  width: 8% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(5)) { /* 位置 */
+  width: 10% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(6)) { /* 描述 */
+  width: 15% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(7)) { /* IP使用情况 */
+  width: 12% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(8)) { /* 创建时间 */
+  width: 14% !important;
+}
+
+.subnet-management :deep(.el-table th:nth-child(9)) { /* 操作 */
+  width: 220px !important;
+}
+
+/* 对应的td列也设置相同宽度 */
+.subnet-management :deep(.el-table td:nth-child(1)) { width: 12% !important; }
+.subnet-management :deep(.el-table td:nth-child(2)) { width: 12% !important; }
+.subnet-management :deep(.el-table td:nth-child(3)) { width: 12% !important; }
+.subnet-management :deep(.el-table td:nth-child(4)) { width: 8% !important; }
+.subnet-management :deep(.el-table td:nth-child(5)) { width: 10% !important; }
+.subnet-management :deep(.el-table td:nth-child(6)) { width: 15% !important; }
+.subnet-management :deep(.el-table td:nth-child(7)) { width: 12% !important; }
+.subnet-management :deep(.el-table td:nth-child(8)) { width: 14% !important; }
+.subnet-management :deep(.el-table td:nth-child(9)) { width: 220px !important; }
+
+/* 确保表格内容不会溢出 */
+.subnet-management :deep(.el-table .cell) {
+  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px 12px;
+}
+
+/* 描述列允许换行 */
+.subnet-management :deep(.el-table td:nth-child(6) .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* 强制所有表格内容居中对齐 */
+.subnet-management :deep(.el-table .el-table__body td),
+.subnet-management :deep(.el-table .el-table__header th) {
+  text-align: center !important;
+}
+
+.subnet-management :deep(.el-table .el-table__body td .cell),
+.subnet-management :deep(.el-table .el-table__header th .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.subnet-management :deep(.el-table .cell) {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 额外的强制居中样式 - 覆盖所有可能的冲突 */
+.subnet-management :deep(.el-table td),
+.subnet-management :deep(.el-table th) {
+  text-align: center !important;
+}
+
+.subnet-management :deep(.el-table td > *),
+.subnet-management :deep(.el-table th > *) {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+.subnet-management :deep(.el-table .el-tag) {
+  margin: 0 auto !important;
+}
+
+.subnet-management :deep(.el-table .action-buttons) {
+  justify-content: center !important;
+  display: flex !important;
+}
+
+/* 修复cell内容居中问题 */
+.subnet-management :deep(.el-table .cell) {
+  width: auto !important;
+}
+
+/* 排序图标居中对齐 */
+.subnet-management :deep(.el-table .caret-wrapper) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 4px !important;
+}
+
+.subnet-management :deep(.el-table .sort-caret) {
+  margin: 0 !important;
+}
+
+.subnet-management :deep(.el-table th .cell) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 /* 操作按钮响应式 */
 .action-buttons {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .action-buttons .el-button {
-  margin: 2px;
-  min-width: 60px;
+  margin: 0;
+  min-width: 50px;
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */
